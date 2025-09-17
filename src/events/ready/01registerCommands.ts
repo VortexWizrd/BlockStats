@@ -1,9 +1,8 @@
 import { Client, Events, REST, Routes } from "discord.js";
 import path from "path";
 import fs from "fs";
+import getAllFiles from "../../utils/getAllFiles";
 require('dotenv').config();
-
-const getLocalCommands = require('../../utils/getLocalCommands');
 
 module.exports = {
     data: {
@@ -11,17 +10,21 @@ module.exports = {
             once: false,
     },
     execute(client: Client): void {
-        const localCommands = getLocalCommands();
+
+        const commandCategories = getAllFiles(path.join(__dirname, '../../commands'), true);
         const commands = [];
-        for (const command of localCommands) {
-            commands.push(command.data.toJSON());
+        for (const category of commandCategories) {
+            const commandFiles = getAllFiles(category);
+            for (const file of commandFiles) {
+                commands.push(require(file).data.toJSON());
+            }
         }
 
         const rest = new REST().setToken(String(process.env.CLIENT_TOKEN));
 
         (async () => {
             try {
-                console.log(`Started refreshing ${localCommands.length} application (/) commands.`);
+                console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
                 const clientId = String(process.env.CLIENT_ID);
                 const guildId = String(process.env.GUILD_ID);
