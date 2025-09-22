@@ -30,7 +30,7 @@ module.exports = {
                 const guildId = String(process.env.GUILD_ID);
 
                 const data = await rest.put(
-			        Routes.applicationGuildCommands(clientId, guildId),
+			        Routes.applicationCommands(clientId),
 			        { body: commands },
 		        );
 
