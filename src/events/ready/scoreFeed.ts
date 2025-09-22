@@ -5,13 +5,10 @@ import Player from '../../models/Player';
 
 async function outputScore(client: Client, score: any): Promise<void> {
 
-    
-    const query = {
-        beatleaderIds: { $in: [score.beatLeaderData.player.id] }
-    }
-
     try {
-        const scoreFeeds = await ScoreFeed.find(query);
+        const scoreFeeds = await ScoreFeed.find({
+        beatleaderIds: { $in: [score.beatLeaderData.playerId] }
+    });
         for (const feed of scoreFeeds) {
 
             const player = await Player.findOne({discordId: score.discordId});
@@ -62,7 +59,7 @@ async function outputScore(client: Client, score: any): Promise<void> {
                     if (missValue > 1)  {
                         missText = " Misses";
                     }
-                    info += " • " + score.beatLeaderData.badCuts + score.beatLeaderData.missedNotes + missText;
+                    info += " • " + missValue + missText;
                 }
 
                 if (score.beatLeaderData.contextExtensions[0].modifiers) {
@@ -179,6 +176,7 @@ module.exports = {
 
             const score = await Score.findOne({
                 discordId: player.discordId,
+                "beatLeaderData.leaderboard.song.hash": scoreData.leaderboard.songHash.toLowerCase(),
                 scoreSaberData: { $in: [undefined, null] }
                 });
 
@@ -192,7 +190,7 @@ module.exports = {
                 } else {
                     const newScore = new Score({
                         discordId: player.discordId,
-                        beatLeaderData: scoreData
+                        scoreSaberData: scoreData
                     });
                     newScore.save().catch(err => console.log(err));
                 }
