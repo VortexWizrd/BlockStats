@@ -13,6 +13,20 @@ const scoreFeedSchema = new Schema({
         type: [String],
         required: true
     },
+    displayType: {
+        type: String,
+        required: true,
+        default: "embed"
+    },
+    requestType: {
+        type: String,
+        required: true,
+        default: "closed"
+    },
+    requestIds: {
+        type: [String],
+        required: true
+    }
 });
 
 export default model('ScoreFeed', scoreFeedSchema);
