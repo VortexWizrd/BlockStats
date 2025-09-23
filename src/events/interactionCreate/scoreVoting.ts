@@ -24,10 +24,10 @@ module.exports = {
             case "score-like": {
 
                 if (score.downVoteIds.includes(player.beatLeaderId)) {
-                    score.downVoteIds.filter(id => id !== player.beatLeaderId);
+                    score.downVoteIds = score.downVoteIds.filter(id => id != player.beatLeaderId);
                 }
                 if (score.upVoteIds.includes(player.beatLeaderId)) {
-                    score.upVoteIds.filter(id => id !== player.beatLeaderId);
+                    score.upVoteIds = score.upVoteIds.filter(id => id != player.beatLeaderId);
                     await interaction.reply({content: "Removed like!", ephemeral: true});
                 } else {
                     score.upVoteIds.push(player.beatLeaderId);
@@ -39,10 +39,10 @@ module.exports = {
             case "score-dislike": {
 
                 if (score.upVoteIds.includes(player.beatLeaderId)) {
-                    score.upVoteIds.filter(id => id !== player.beatLeaderId);
+                    score.upVoteIds = score.upVoteIds.filter(id => id != player.beatLeaderId);
                 }
                 if (score.downVoteIds.includes(player.beatLeaderId)) {
-                    score.downVoteIds.filter(id => id !== player.beatLeaderId);
+                    score.downVoteIds = score.downVoteIds.filter(id => id != player.beatLeaderId);
                     await interaction.reply({content: "Removed dislike!", ephemeral: true});
                 } else {
                     score.downVoteIds.push(player.beatLeaderId);
