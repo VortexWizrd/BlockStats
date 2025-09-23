@@ -21,8 +21,21 @@ const scoreSchema = new Schema({
         required: true,
         default: []
     },
-    messageIds: {
-        type: [String],
+    messages: {
+        type: [{
+            messageId: {
+                type: String,
+                required: true
+            },
+            channelId: {
+                type: String,
+                required: true
+            },
+            guildId: {
+                type: String,
+                required: true
+            }
+        }],
         required: true,
         default: []
     }

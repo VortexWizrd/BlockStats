@@ -1,4 +1,4 @@
-import { Client, Embed, EmbedBuilder, Events, SortOrderType, TextChannel } from 'discord.js';
+import { ActionRowBuilder, ActionRowComponent, ActionRowComponentData, ButtonBuilder, ButtonStyle, Client, Embed, EmbedBuilder, Events, SortOrderType, TextChannel } from 'discord.js';
 import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
@@ -97,9 +97,27 @@ async function outputScore(client: Client, score: any): Promise<void> {
                         { name: "Modifiers", value: score.beatLeaderData.contextExtensions[0].modifiers, inline: true})
                 } 
 
-                const message = channel.send({ embeds: [embed] });
+                // Add buttons
+                const like = new ButtonBuilder()
+                    .setCustomId('score-like')
+                    .setLabel('👍 Like')
+                    .setStyle(ButtonStyle.Success);
 
-                (await message).id
+                const dislike = new ButtonBuilder()
+                    .setCustomId('score-dislike')
+                    .setLabel('👎 Dislike')
+                    .setStyle(ButtonStyle.Danger);
+
+                const row = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(like, dislike);
+
+                // Add embeds, images, buttons
+                const message = channel.send({ embeds: [embed], components: [row] });
+                console.log((await message).id);
+
+                // Add message id to score data
+                score.messages.push({messageId: (await message).id, channelId: (await message).channel.id, guildId: (await message).guild.id});
+                score.save().catch((err: any) => console.log(err));
             }
         }
     } catch (error) {
