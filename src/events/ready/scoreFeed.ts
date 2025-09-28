@@ -1,7 +1,8 @@
-import { ActionRowBuilder, ActionRowComponent, ActionRowComponentData, ButtonBuilder, ButtonStyle, Client, Embed, EmbedBuilder, Events, SortOrderType, TextChannel } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Events, TextChannel } from 'discord.js';
 import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
+import getAccuracyColor from '../../utils/getAccuracyColor';
 
 async function outputScore(client: Client, score: any): Promise<void> {
 
@@ -33,19 +34,6 @@ async function outputScore(client: Client, score: any): Promise<void> {
                     difficultyName += ` | ${(Math.round(score.beatLeaderData.leaderboard.difficulty.stars * 100) / 100)}★ BL`;
                 } 
 
-                let color = 0x3e3e3e;
-                if (score.beatLeaderData.contextExtensions[0].accuracy >= 0.95) {
-                    color = 0x8f48db;
-                } else if (score.beatLeaderData.contextExtensions[0].accuracy >= 0.90) {
-                    color = 0xbf2a42;
-                } else if (score.beatLeaderData.contextExtensions[0].accuracy >= 0.85) {
-                    color = 0xff6347;
-                } else if (score.beatLeaderData.contextExtensions[0].accuracy >= 0.80) {
-                    color = 0x59b0f4;
-                } else if (score.beatLeaderData.contextExtensions[0].accuracy >= 0.70) {
-                    color = 0x3cb371;
-                }
-
                 let modifiersName;
                 let modifiersValue;
 
@@ -75,7 +63,7 @@ async function outputScore(client: Client, score: any): Promise<void> {
                     })
                     .setTitle(`New score on **${score.beatLeaderData.leaderboard.song.name} [${difficultyName}]**`)
                     .setURL("https://replay.beatleader.com/?link=" + score.beatLeaderData.replay)
-                    .setColor(color)
+                    .setColor(getAccuracyColor(score.beatLeaderData.contextExtensions[0].accuracy))
                     .setThumbnail(score.beatLeaderData.leaderboard.song.coverImage)
                     .setDescription(`# ${info}`)
                     .setTimestamp()
@@ -132,11 +120,13 @@ module.exports = {
     },
     execute(client: Client): void {
 
-        const blSocket = new WebSocket('wss://sockets.api.beatleader.com/scores');
-        const ssSocket = new WebSocket('wss://scoresaber.com/ws');
+        let blSocket = new WebSocket('wss://sockets.api.beatleader.com/scores');
+        let ssSocket = new WebSocket('wss://scoresaber.com/ws');
 
         blSocket.addEventListener('message', async message => {
             const scoreData = JSON.parse(message.data);
+
+            console.log(scoreData.playerId, (new Date()).toLocaleString());
 
             const player = await Player.findOne({
                 beatLeaderId: scoreData.player.id
@@ -148,7 +138,9 @@ module.exports = {
                 
                 const score = await Score.findOne({
                     discordId: player.discordId,
-                    beatLeaderData: { $in: [undefined, null] }
+                    beatLeaderData: { $in: [undefined, null] },
+                    "scoreSaberData.leaderboard.songHash": scoreData.leaderboard.song.hash.toUpperCase(),
+                    "scoreSaberData.score.baseScore": scoreData.contextExtensions[0].baseScore
                 });
 
                 if (score) {
@@ -175,6 +167,12 @@ module.exports = {
 
         });
 
+        blSocket.addEventListener('close', async () => {
+            console.log("BeatLeader socket closed. Attempting to reconnect...")
+            blSocket = new WebSocket('wss://sockets.api.beatleader.com/scores');
+
+        })
+
         ssSocket.addEventListener('message', async (message: any) => {
             if (message.data == 'Connected to the ScoreSaber WSS') {
                 return;
@@ -195,6 +193,7 @@ module.exports = {
             const score = await Score.findOne({
                 discordId: player.discordId,
                 "beatLeaderData.leaderboard.song.hash": scoreData.leaderboard.songHash.toLowerCase(),
+                "beatLeaderData.contextExtensions[0].baseScore": scoreData.score.baseScore,
                 scoreSaberData: { $in: [undefined, null] }
                 });
 
@@ -215,6 +214,10 @@ module.exports = {
 
         })
 
+        ssSocket.addEventListener('close', async () => {
+            console.log("ScoreSaber socket closed. Attempting to reconnect...")
+            ssSocket = new WebSocket('wss://scoresaber.com/ws');
+        })
 
         
     }
