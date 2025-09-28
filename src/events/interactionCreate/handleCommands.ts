@@ -2,7 +2,6 @@ import { Client, CommandInteraction, Events, Interaction } from 'discord.js';
 import getAllFiles from '../../utils/getAllFiles';
 import path from 'path';
 require('dotenv').config();
-const getLocalCommands = require('../../utils/getLocalCommands');
 
 module.exports = {
     data: {
