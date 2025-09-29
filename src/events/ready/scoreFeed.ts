@@ -3,6 +3,7 @@ import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
 import getAccuracyColor from '../../utils/getAccuracyColor';
+import ReconnectingWebSocket from 'reconnectingwebsocket';
 
 async function outputScore(client: Client, score: any): Promise<void> {
 
@@ -120,13 +121,10 @@ module.exports = {
     },
     execute(client: Client): void {
 
-        let blSocket = new WebSocket('wss://sockets.api.beatleader.com/scores');
-        let blSocketConnected = false;
-        let ssSocket = new WebSocket('wss://scoresaber.com/ws');
-        let ssSocketConnected = false;
+        let blSocket = new ReconnectingWebSocket('wss://sockets.api.beatleader.com/scores');
+        let ssSocket = new ReconnectingWebSocket('wss://scoresaber.com/ws');
 
         blSocket.addEventListener('message', async message => {
-            blSocketConnected = true;
             const scoreData = JSON.parse(message.data);
 
             const player = await Player.findOne({
@@ -168,18 +166,7 @@ module.exports = {
 
         });
 
-        blSocket.addEventListener('close', async () => {
-            console.log("BeatLeader socket closed. Attempting to reconnect...");
-            do {
-                setTimeout(() => {
-                    blSocket = new WebSocket('wss://sockets.api.beatleader.com/scores');
-                }, 30000)
-            } while (blSocketConnected === false); 
-            console.log("BeatLeader socket reconnected");
-        })
-
         ssSocket.addEventListener('message', async (message: any) => {
-            ssSocketConnected = true;
             if (message.data == 'Connected to the ScoreSaber WSS') {
                 return;
             }
@@ -219,18 +206,5 @@ module.exports = {
                 }
 
         })
-
-        ssSocket.addEventListener('close', async () => {
-            
-            console.log("ScoreSaber socket closed. Attempting to reconnect...");
-            do {
-                setTimeout(() => {
-                    ssSocket = new WebSocket('wss://scoresaber.com/ws');
-                }, 30000)
-            } while (ssSocketConnected === false); 
-            console.log("ScoreSaber socket reconnected");
-        })
-
-        
     }
 }
