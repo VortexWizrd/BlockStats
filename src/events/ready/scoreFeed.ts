@@ -3,7 +3,7 @@ import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
 import getAccuracyColor from '../../utils/getAccuracyColor';
-import ReconnectingWebSocket from 'reconnectingwebsocket';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 async function outputScore(client: Client, score: any): Promise<void> {
 
@@ -124,87 +124,91 @@ module.exports = {
         let blSocket = new ReconnectingWebSocket('wss://sockets.api.beatleader.com/scores');
         let ssSocket = new ReconnectingWebSocket('wss://scoresaber.com/ws');
 
-        blSocket.addEventListener('message', async message => {
-            const scoreData = JSON.parse(message.data);
+        blSocket.addEventListener('message', (message) => {
+            (async () => {
+                const scoreData = JSON.parse(message.data);
 
-            const player = await Player.findOne({
-                beatLeaderId: scoreData.player.id
-            })
+                console.log(scoreData);
 
-            if (!player) return;
+                const player = await Player.findOne({
+                    beatLeaderId: scoreData.player.id
+                })
 
-            if (player.scoreSaberId) {
-                
-                const score = await Score.findOne({
-                    discordId: player.discordId,
-                    beatLeaderData: { $in: [undefined, null] },
-                    "scoreSaberData.leaderboard.songHash": scoreData.leaderboard.song.hash.toUpperCase(),
-                    "scoreSaberData.score.baseScore": scoreData.contextExtensions[0].baseScore
-                });
+                if (!player) return;
 
-                if (score) {
-                    score.beatLeaderData = scoreData;
-                    score.save().catch(err => console.log(err));
+                if (player.scoreSaberId) {
+                    
+                    const score = await Score.findOne({
+                        discordId: player.discordId,
+                        beatLeaderData: { $in: [undefined, null] },
+                        "scoreSaberData.leaderboard.songHash": scoreData.leaderboard.song.hash.toUpperCase(),
+                        "scoreSaberData.score.baseScore": scoreData.contextExtensions[0].baseScore
+                    });
 
-                    await outputScore(client, score);
+                    if (score) {
+                        score.beatLeaderData = scoreData;
+                        score.save().catch(err => console.log(err));
+
+                        await outputScore(client, score);
+                    } else {
+                        const newScore = new Score({
+                            discordId: player.discordId,
+                            beatLeaderData: scoreData
+                        });
+                        newScore.save().catch(err => console.log(err));
+                    }
                 } else {
                     const newScore = new Score({
                         discordId: player.discordId,
                         beatLeaderData: scoreData
                     });
                     newScore.save().catch(err => console.log(err));
+                    
+                    await outputScore(client, newScore);
                 }
-            } else {
-                const newScore = new Score({
-                    discordId: player.discordId,
-                    beatLeaderData: scoreData
-                });
-                newScore.save().catch(err => console.log(err));
-                
-                await outputScore(client, newScore);
-            }
-
+            })();
         });
 
-        ssSocket.addEventListener('message', async (message: any) => {
-            if (message.data == 'Connected to the ScoreSaber WSS') {
-                return;
-            }
-
-            const messageData = JSON.parse(message.data);
-
-            if (messageData.commandName !== 'score') return;
-
-            const scoreData = messageData.commandData;
-
-            const player = await Player.findOne({
-                scoreSaberId: scoreData.score.leaderboardPlayerInfo.id
-            })
-
-            if (!player) return;
-
-            const score = await Score.findOne({
-                discordId: player.discordId,
-                "beatLeaderData.leaderboard.song.hash": scoreData.leaderboard.songHash.toLowerCase(),
-                "beatLeaderData.contextExtensions[0].baseScore": scoreData.score.baseScore,
-                scoreSaberData: { $in: [undefined, null] }
-                });
-
-                if (score) {
-                    score.scoreSaberData = scoreData;
-                    score.save().catch(err => console.log(err));
-
-                    if (score.beatLeaderData) {
-                        await outputScore(client, score);
-                    }
-                } else {
-                    const newScore = new Score({
-                        discordId: player.discordId,
-                        scoreSaberData: scoreData
-                    });
-                    newScore.save().catch(err => console.log(err));
+        ssSocket.addEventListener('message', (message) => {
+            (async () => {
+                if (message.data == 'Connected to the ScoreSaber WSS') {
+                    return;
                 }
 
+                const messageData = JSON.parse(message.data);
+
+                if (messageData.commandName !== 'score') return;
+
+                const scoreData = messageData.commandData;
+
+                const player = await Player.findOne({
+                    scoreSaberId: scoreData.score.leaderboardPlayerInfo.id
+                })
+
+                if (!player) return;
+
+                const score = await Score.findOne({
+                    discordId: player.discordId,
+                    "beatLeaderData.leaderboard.song.hash": scoreData.leaderboard.songHash.toLowerCase(),
+                    "beatLeaderData.contextExtensions[0].baseScore": scoreData.score.baseScore,
+                    scoreSaberData: { $in: [undefined, null] }
+                    });
+
+                    if (score) {
+                        score.scoreSaberData = scoreData;
+                        score.save().catch(err => console.log(err));
+
+                        if (score.beatLeaderData) {
+                            await outputScore(client, score);
+                        }
+                    } else {
+                        const newScore = new Score({
+                            discordId: player.discordId,
+                            scoreSaberData: scoreData
+                        });
+                        newScore.save().catch(err => console.log(err));
+                    }
+            })();
         })
     }
 }
