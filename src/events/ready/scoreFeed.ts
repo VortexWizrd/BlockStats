@@ -1,16 +1,20 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Events, TextChannel } from 'discord.js';
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Events, TextChannel } from 'discord.js';
 import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
-import getAccuracyColor from '../../utils/getAccuracyColor';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import ScoreDisplay from '../../utils/getScoreDisplay';
 
 async function outputScore(client: Client, score: any): Promise<void> {
 
     try {
-        const scoreFeeds = await ScoreFeed.find({
-        beatleaderIds: { $in: [score.beatLeaderData.playerId] }
-    });
+
+        const scoreFeeds = await ScoreFeed.find({ 
+            beatleaderIds: { $in: [score.beatLeaderData.playerId] }
+        });
+
+        const scoreDisplay = new ScoreDisplay(score);
+
         for (const feed of scoreFeeds) {
 
             const player = await Player.findOne({discordId: score.discordId});
@@ -19,96 +23,22 @@ async function outputScore(client: Client, score: any): Promise<void> {
             const channel = await client.channels.fetch(feed.channelId);
             if (channel instanceof TextChannel) {
 
-                let difficultyName = score.beatLeaderData.leaderboard.difficulty.difficultyName;
-                if (difficultyName === 'ExpertPlus') {
-                            difficultyName = 'Expert+';
-                }
-                if (score.beatLeaderData.leaderboard.difficulty.modeName !== 'Standard') {
-                            difficultyName += ` ${score.beatLeaderData.leaderboard.difficulty.modeName}`;
-                }
-                if (score.scoreSaberData) {
-                    if (score.scoreSaberData.leaderboard.ranked || score.scoreSaberData.leaderboard.qualified) {
-                        difficultyName += ` | ${(Math.round(score.scoreSaberData.leaderboard.stars * 100) / 100)}★ SS`;
-                    }
-                }
-                if (score.beatLeaderData.leaderboard.difficulty.stars !== null) {
-                    difficultyName += ` | ${(Math.round(score.beatLeaderData.leaderboard.difficulty.stars * 100) / 100)}★ BL`;
-                } 
+                const message = await channel.send({ 
+                    embeds: [scoreDisplay.getEmbed()], 
+                    components: [scoreDisplay.getButtons()]
+                });
 
-                let modifiersName;
-                let modifiersValue;
+                score.messages.push({
+                    messageId: message.id,
+                    channelId: message.channel.id,
+                    guildId: message.guild.id
+                })
 
-                let info = "\u200B#" + score.beatLeaderData.contextExtensions[0].rank + " • " + (Math.round(score.beatLeaderData.contextExtensions[0].accuracy * 10000) / 100) + "%";
-                
-                if (score.beatLeaderData.fullCombo) {
-                    info += " • " + "FC"
-                } else {
-                    const missValue = score.beatLeaderData.badCuts + score.beatLeaderData.missedNotes;
-                    let missText = " Miss";
-                    if (missValue > 1)  {
-                        missText = " Misses";
-                    }
-                    info += " • " + missValue + missText;
-                }
-
-                if (score.beatLeaderData.contextExtensions[0].modifiers) {
-                    modifiersName = "Modifiers";
-                    modifiersValue = score.beatLeaderData.contextExtensions[0].modifiers;
-                }     
-
-                const embed = new EmbedBuilder()
-                    .setAuthor({
-                        name: score.beatLeaderData.player.name,
-                        iconURL: score.beatLeaderData.player.avatar,
-                        url: 'https://beatleader.com/u/' + score.beatLeaderData.player.id
-                    })
-                    .setTitle(`New score on **${score.beatLeaderData.leaderboard.song.name} [${difficultyName}]**`)
-                    .setURL("https://replay.beatleader.com/?link=" + score.beatLeaderData.replay)
-                    .setColor(getAccuracyColor(score.beatLeaderData.contextExtensions[0].accuracy))
-                    .setThumbnail(score.beatLeaderData.leaderboard.song.coverImage)
-                    .setDescription(`# ${info}`)
-                    .setTimestamp()
-
-                if (score.beatLeaderData.contextExtensions[0].pp > 0) {
-                    embed.addFields(
-                        { name: "BeatLeader pp", value: Math.round(score.beatLeaderData.contextExtensions[0].pp * 100) / 100 + "pp", inline: true})
-                }
-
-                if (score.scoreSaberData) {
-                    if (score.scoreSaberData.score.pp > 0) {
-                        embed.addFields(
-                            { name: "ScoreSaber pp", value: Math.round(score.scoreSaberData.score.pp * 100) / 100 + "pp", inline: true})
-                    }
-                }
-
-                if (score.beatLeaderData.contextExtensions[0].modifiers) {
-                    embed.addFields(
-                        { name: "Modifiers", value: score.beatLeaderData.contextExtensions[0].modifiers, inline: true})
-                } 
-
-                // Add buttons
-                const like = new ButtonBuilder()
-                    .setCustomId('score-like')
-                    .setLabel('👍 Like')
-                    .setStyle(ButtonStyle.Success);
-
-                const dislike = new ButtonBuilder()
-                    .setCustomId('score-dislike')
-                    .setLabel('👎 Dislike')
-                    .setStyle(ButtonStyle.Danger);
-
-                const row = new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(like, dislike);
-
-                // Add embeds, images, buttons
-                const message = channel.send({ embeds: [embed], components: [row] });
-                console.log((await message).id);
-
-                // Add message id to score data
-                score.messages.push({messageId: (await message).id, channelId: (await message).channel.id, guildId: (await message).guild.id});
                 score.save().catch((err: any) => console.log(err));
+                
             }
         }
+    console.log(`[${new Date().toLocaleTimeString()}] New score by ${score.beatLeaderData.player.name}`);
     } catch (error) {
         console.error('Error fetching score feeds:', error);
     }
@@ -126,9 +56,8 @@ module.exports = {
 
         blSocket.addEventListener('message', (message) => {
             (async () => {
-                const scoreData = JSON.parse(message.data);
 
-                console.log(scoreData);
+                const scoreData = JSON.parse(message.data);
 
                 const player = await Player.findOne({
                     beatLeaderId: scoreData.player.id
@@ -142,22 +71,27 @@ module.exports = {
                         discordId: player.discordId,
                         beatLeaderData: { $in: [undefined, null] },
                         "scoreSaberData.leaderboard.songHash": scoreData.leaderboard.song.hash.toUpperCase(),
-                        "scoreSaberData.score.baseScore": scoreData.contextExtensions[0].baseScore
+                        "scoreSaberData.score.baseScore": scoreData.baseScore
                     });
 
                     if (score) {
+
                         score.beatLeaderData = scoreData;
                         score.save().catch(err => console.log(err));
 
                         await outputScore(client, score);
+
                     } else {
+
                         const newScore = new Score({
                             discordId: player.discordId,
                             beatLeaderData: scoreData
                         });
                         newScore.save().catch(err => console.log(err));
+
                     }
                 } else {
+
                     const newScore = new Score({
                         discordId: player.discordId,
                         beatLeaderData: scoreData
@@ -165,12 +99,14 @@ module.exports = {
                     newScore.save().catch(err => console.log(err));
                     
                     await outputScore(client, newScore);
+
                 }
             })();
         });
 
         ssSocket.addEventListener('message', (message) => {
             (async () => {
+
                 if (message.data == 'Connected to the ScoreSaber WSS') {
                     return;
                 }
@@ -180,7 +116,7 @@ module.exports = {
                 if (messageData.commandName !== 'score') return;
 
                 const scoreData = messageData.commandData;
-
+                
                 const player = await Player.findOne({
                     scoreSaberId: scoreData.score.leaderboardPlayerInfo.id
                 })
@@ -190,25 +126,29 @@ module.exports = {
                 const score = await Score.findOne({
                     discordId: player.discordId,
                     "beatLeaderData.leaderboard.song.hash": scoreData.leaderboard.songHash.toLowerCase(),
-                    "beatLeaderData.contextExtensions[0].baseScore": scoreData.score.baseScore,
+                    "beatLeaderData.baseScore": scoreData.score.baseScore,
                     scoreSaberData: { $in: [undefined, null] }
+                });
+
+                if (score) {
+
+                    score.scoreSaberData = scoreData;
+                    score.save().catch(err => console.log(err));
+                    await outputScore(client, score);
+
+                } else {
+
+                    const newScore = new Score({
+                        discordId: player.discordId,
+                        scoreSaberData: scoreData
                     });
 
-                    if (score) {
-                        score.scoreSaberData = scoreData;
-                        score.save().catch(err => console.log(err));
-
-                        if (score.beatLeaderData) {
-                            await outputScore(client, score);
-                        }
-                    } else {
-                        const newScore = new Score({
-                            discordId: player.discordId,
-                            scoreSaberData: scoreData
-                        });
-                        newScore.save().catch(err => console.log(err));
-                    }
+                    newScore.save().catch(err => console.log(err));
+                    
+                }
             })();
         })
+
+
     }
 }
