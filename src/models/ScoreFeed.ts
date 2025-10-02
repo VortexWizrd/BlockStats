@@ -26,6 +26,39 @@ const scoreFeedSchema = new Schema({
     requestIds: {
         type: [String],
         required: true
+    },
+    filters: {
+        type: {
+            scoreSaberStars: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            minScoreSaberPP: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            beatLeaderStars: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            minBeatLeaderPP: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            lowestRank: {
+                type: Number,
+            },
+            maxMisses: {
+                type: Number,
+            },
+            minAccuracy: {
+                type: Number
+            }
+        },
     }
 });
 
