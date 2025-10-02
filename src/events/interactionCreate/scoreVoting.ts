@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonInteraction, Client, CommandInteraction, Events, Interaction, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonInteraction, Events, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Player from '../../models/Player';
 import Score from '../../models/Score';
 require('dotenv').config();

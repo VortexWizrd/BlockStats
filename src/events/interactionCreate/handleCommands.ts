@@ -1,4 +1,4 @@
-import { Client, CommandInteraction, Events, Interaction } from 'discord.js';
+import { CommandInteraction, Events } from 'discord.js';
 import getAllFiles from '../../utils/getAllFiles';
 import path from 'path';
 require('dotenv').config();

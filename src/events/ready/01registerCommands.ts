@@ -1,6 +1,5 @@
 import { Client, Events, REST, Routes } from "discord.js";
 import path from "path";
-import fs from "fs";
 import getAllFiles from "../../utils/getAllFiles";
 require('dotenv').config();
 
