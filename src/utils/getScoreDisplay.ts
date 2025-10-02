@@ -1,10 +1,5 @@
-import Canvas, { Path2D } from "@napi-rs/canvas";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, Embed, EmbedBuilder } from "discord.js";
 import getAccuracyColor from "./getAccuracyColor";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { throwDeprecation } from "process";
-
 
 
 export default class ScoreDisplay {
