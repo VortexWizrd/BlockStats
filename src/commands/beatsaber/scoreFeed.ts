@@ -1,4 +1,4 @@
-import { CommandInteraction, SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, PermissionsBitField } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionsBitField } from 'discord.js';
 import ScoreFeed from '../../models/ScoreFeed';
 import Player from '../../models/Player';
 
