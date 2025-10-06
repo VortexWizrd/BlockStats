@@ -8,9 +8,9 @@
     "clean": "rm -r dist/"
   },
   "keywords": [],
-  "author": "",
+  "author": "VortexWizrd",
   "license": "ISC",
-  "description": "",
+  "description": "A Beat Saber Discord bot that tracks score uploads, rating, and more!",
   "devDependencies": {
     "@types/node": "^24.3.1",
     "@types/reconnectingwebsocket": "^1.0.10",
