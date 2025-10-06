@@ -23,7 +23,7 @@ export default class ScoreDisplay {
                 url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`
             })
             .setTitle(`New score on **${this.score.beatLeaderData.leaderboard.song.name} ` +
-                `${this.score.beatLeaderData.leaderboard.song.subName ? `${this.score.beatLeaderData.leaderboard.song.subName }` : ""} ` +
+                `${this.score.beatLeaderData.leaderboard.song.subName ? `${this.score.beatLeaderData.leaderboard.song.subName} ` : ""}` +
                 `[` + 
                 `${this.score.beatLeaderData.leaderboard.difficulty.difficultyName === "ExpertPlus" ? "Expert+" : this.score.beatLeaderData.leaderboard.difficulty.difficultyName}` +
                 `${this.score.beatLeaderData.leaderboard.difficulty.modeName === "Standard" ? "" : this.score.beatLeaderData.leaderboard.difficulty.modeName}` +
