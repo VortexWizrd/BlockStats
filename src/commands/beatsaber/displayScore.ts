@@ -37,7 +37,7 @@ module.exports = {
         })
 
         if (score) {
-            await interaction.deferReply();
+            await interaction.deferReply({ ephemeral: true });
 
             const scoreDisplay = new ScoreDisplay(score);
 
@@ -49,11 +49,11 @@ module.exports = {
             score.messages.push({messageId: message.id, channelId: message.channel.id, guildId: message.guild.id});
             score.save().catch((err: any) => console.log(err));
 
-            await interaction.reply({ content: "Fetched score!", ephemeral: true})
+            await interaction.editReply({ content: "Fetched score!" })
 
         } else {
 
-            await interaction.reply({ content: "Score not found", ephemeral: true})
+            await interaction.editReply({ content: "Score not found" })
 
         }
     }
