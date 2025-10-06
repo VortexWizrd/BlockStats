@@ -8,5 +8,5 @@ export default async function cleanDatabase() {
             Score.deleteOne({ _id: score._id });
         }
     }
-    console.log("Removed " + i + "invalid scores!");
+    console.log("Removed " + i + " invalid scores!");
 }

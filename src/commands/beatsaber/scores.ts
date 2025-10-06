@@ -84,7 +84,7 @@ module.exports = {
 
                 sortTitle = "Recent"
 
-                scores = scores.sort((a: any, b: any) => Number(b.beatLeaderData.timeset) - Number(a.beatLeaderData.timeset));
+                scores = scores.sort((a: any, b: any) => Number(b.beatLeaderData.timeset || 0) - Number(a.beatLeaderData.timeset || 0));
 
                 break;
 
