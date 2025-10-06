@@ -187,9 +187,10 @@ module.exports = {
         const embed = new EmbedBuilder()
             .setTitle(`${isGlobal ? "" : user.displayName + "'s "}${sortTitle} Scores${page === 1 ? "" : ` (Page ${page})`}`)
             .setDescription(sortList)
+            .setTimestamp()
 
         if (!isGlobal) {
-            embed.setThumbnail(interaction.user.displayAvatarURL())
+            embed.setThumbnail(user.displayAvatarURL())
         }
 
         return interaction.reply({ embeds: [embed] });
