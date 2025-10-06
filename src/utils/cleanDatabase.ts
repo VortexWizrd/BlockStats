@@ -5,7 +5,7 @@ export default async function cleanDatabase() {
     let i = 0;
     for (const score of scores) {
         if (score.beatLeaderData == null || score.beatLeaderData.timeset == null) {
-            Score.deleteOne({ _id: score._id });
+            Score.findOneAndDelete({ _id: score._id });
             i++;
         }
     }
