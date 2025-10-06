@@ -182,7 +182,7 @@ module.exports = {
             }
         }
 
-        if (sortList == "") sortList = "\u200B";
+        if (sortList == "") sortList = "## No scores found :(";
 
         const embed = new EmbedBuilder()
             .setTitle(`${isGlobal ? "" : user.displayName + "'s "}${sortTitle} Scores${page === 1 ? "" : ` (Page ${page})`}`)
