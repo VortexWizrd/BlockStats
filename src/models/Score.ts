@@ -29,11 +29,15 @@ const scoreSchema = new Schema({
             },
             channelId: {
                 type: String,
-                required: true
+                required: false
             },
             guildId: {
                 type: String,
-                required: true
+                required: false
+            },
+            userId: {
+                type: String,
+                required: false
             }
         }],
         required: true,

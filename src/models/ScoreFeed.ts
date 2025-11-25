@@ -3,11 +3,15 @@ import { Schema, model } from 'mongoose';
 const scoreFeedSchema = new Schema({
     guildId: {
         type: String,
-        required: true
+        required: false
     },
     channelId: {
         type: String,
-        required: true
+        required: false
+    },
+    userId: {
+        type: String,
+        required: false
     },
     beatleaderIds: {
         type: [String],

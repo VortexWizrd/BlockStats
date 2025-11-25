@@ -9,33 +9,55 @@ async function outputScore(client: Client, score: any): Promise<void> {
 
     try {
 
+        const scoreDisplay = new ScoreDisplay(score);
+        const messageData = { 
+            embeds: [scoreDisplay.getEmbed()], 
+            components: [scoreDisplay.getButtons()]
+        }
+
         const scoreFeeds = await ScoreFeed.find({ 
             beatleaderIds: { $in: [score.beatLeaderData.playerId] }
         });
 
-        const scoreDisplay = new ScoreDisplay(score);
-
         for (const feed of scoreFeeds) {
+
+            console.log(feed);
 
             const player = await Player.findOne({discordId: score.discordId});
             if (!player) return;
 
-            const channel = await client.channels.fetch(feed.channelId);
-            if (channel instanceof TextChannel) {
+            if (feed.channelId && feed.guildId) {
 
-                const message = await channel.send({ 
-                    embeds: [scoreDisplay.getEmbed()], 
-                    components: [scoreDisplay.getButtons()]
-                });
+                const channel = await client.channels.fetch(feed.channelId || "");
+                if (channel && channel instanceof TextChannel) {
+    
+                    const message = await channel.send(messageData);
+    
+                    score.messages.push({
+                        messageId: message.id,
+                        channelId: message.channel.id,
+                        guildId: message.guild.id
+                    })
+    
+                    score.save().catch((err: any) => console.log(err));
+                }
 
-                score.messages.push({
-                    messageId: message.id,
-                    channelId: message.channel.id,
-                    guildId: message.guild.id
-                })
+            } else if (feed.userId) {
+                const user = await client.users.fetch(feed.userId || "");
+                console.log(user);
 
-                score.save().catch((err: any) => console.log(err));
-                
+                if (user) {
+
+                    const message = await user.send(messageData);
+
+                    score.messages.push({
+                        messageId: message.id,
+                        userId: feed.userId
+                    })
+    
+                    score.save().catch((err: any) => console.log(err));
+                    
+                }
             }
         }
     console.log(`[${new Date().toLocaleTimeString()}] New score by ${score.beatLeaderData.player.name}`);

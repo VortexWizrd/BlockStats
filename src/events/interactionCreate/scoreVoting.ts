@@ -57,43 +57,60 @@ module.exports = {
         // refresh button labels
         for (const messageData of score.messages) {
 
-            const guild = interaction.client.guilds.cache.get(messageData.guildId);
-            if (!guild) {
-                score.messages.filter((item) => item !== messageData);
-                score.save().catch(err => console.log(err));
-                return;
-            };
+            const guild = interaction.client.guilds.cache.get(messageData.guildId || "");
+            if (guild) {
+                const channel = guild?.channels.cache.get(messageData.channelId || "");
+                if (channel && channel.isTextBased()) {
+                    const message = await channel?.messages.fetch(messageData.messageId);
+                    if (message) {
+                        const like = new ButtonBuilder()
+                            .setCustomId('score-like')
+                            .setLabel('👍 Like • ' + score.upVoteIds.length)
+                            .setStyle(ButtonStyle.Success);
+                    
+                        const dislike = new ButtonBuilder()
+                            .setCustomId('score-dislike')
+                            .setLabel('👎 Dislike • ' + score.downVoteIds.length)
+                            .setStyle(ButtonStyle.Danger);
+        
+                        const row = new ActionRowBuilder<ButtonBuilder>()
+                            .addComponents(like, dislike);
+        
+                        await message.edit({components: [row]});
+                    }
+                }
+            } else {
+                const user = await interaction.client.users.fetch(messageData.userId || "");
+                if (user) {
+                    const dmChannel = await user.createDM();
+                    const message = await dmChannel?.messages.fetch(messageData.messageId);
+                    if (message) {
+                        const like = new ButtonBuilder()
+                            .setCustomId('score-like')
+                            .setLabel('👍 Like • ' + score.upVoteIds.length)
+                            .setStyle(ButtonStyle.Success);
+                
+                        const dislike = new ButtonBuilder()
+                            .setCustomId('score-dislike')
+                            .setLabel('👎 Dislike • ' + score.downVoteIds.length)
+                            .setStyle(ButtonStyle.Danger);
+    
+                        const row = new ActionRowBuilder<ButtonBuilder>()
+                        .   addComponents(like, dislike);
+    
+                        await message.edit({components: [row]});
+                    }
 
-            const channel = guild?.channels.cache.get(messageData.channelId);
-            if (!channel || !(channel.isTextBased())) {
-                score.messages.filter((item) => item !== messageData);
-                score.save().catch(err => console.log(err));
-                return;
+                    
+    
+                } else {
+                    score.messages.filter((item) => item !== messageData);
+                    score.save().catch(err => console.log(err));
+                    return;
+                }
             }
 
-            const message = await channel?.messages.fetch(messageData.messageId);
-            if (!message) {
-                score.messages.filter((item) => item !== messageData);
-                score.save().catch(err => console.log(err));
-                return;
-            }
-
-
-
-            const like = new ButtonBuilder()
-                .setCustomId('score-like')
-                .setLabel('👍 Like • ' + score.upVoteIds.length)
-                .setStyle(ButtonStyle.Success);
             
-            const dislike = new ButtonBuilder()
-                .setCustomId('score-dislike')
-                .setLabel('👎 Dislike • ' + score.downVoteIds.length)
-                .setStyle(ButtonStyle.Danger);
-
-            const row = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(like, dislike);
-
-            await interaction.message.edit({components: [row]});
         }
         
     }
