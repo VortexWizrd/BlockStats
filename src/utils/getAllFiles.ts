@@ -1,7 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-export default function getAllFiles(directory: string, foldersOnly = false): string[] {
+export default function getAllFiles(
+    directory: string,
+    foldersOnly = false
+): string[] {
     let fileNames: string[] = [];
 
     const files = fs.readdirSync(directory, { withFileTypes: true });
@@ -12,7 +15,7 @@ export default function getAllFiles(directory: string, foldersOnly = false): str
         if (foldersOnly) {
             if (file.isDirectory()) {
                 fileNames.push(filePath);
-            } 
+            }
         } else {
             if (file.isFile()) {
                 fileNames.push(filePath);

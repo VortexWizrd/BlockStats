@@ -1,35 +1,35 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const scoreFeedSchema = new Schema({
     guildId: {
         type: String,
-        required: false
+        required: false,
     },
     channelId: {
         type: String,
-        required: false
+        required: false,
     },
     userId: {
         type: String,
-        required: false
+        required: false,
     },
     beatleaderIds: {
         type: [String],
-        required: true
+        required: true,
     },
     displayType: {
         type: String,
         required: true,
-        default: "embed"
+        default: "embed",
     },
     requestType: {
         type: String,
         required: true,
-        default: "closed"
+        default: "closed",
     },
     requestIds: {
         type: [String],
-        required: true
+        required: true,
     },
     filters: {
         type: {
@@ -60,10 +60,10 @@ const scoreFeedSchema = new Schema({
                 type: Number,
             },
             minAccuracy: {
-                type: Number
-            }
+                type: Number,
+            },
         },
-    }
+    },
 });
 
-export default model('ScoreFeed', scoreFeedSchema);
+export default model("ScoreFeed", scoreFeedSchema);

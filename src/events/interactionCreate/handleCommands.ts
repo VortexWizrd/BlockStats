@@ -1,7 +1,7 @@
-import { CommandInteraction, Events } from 'discord.js';
-import getAllFiles from '../../utils/getAllFiles';
-import path from 'path';
-require('dotenv').config();
+import { CommandInteraction, Events } from "discord.js";
+import getAllFiles from "../../utils/getAllFiles";
+import path from "path";
+require("dotenv").config();
 
 module.exports = {
     data: {
@@ -11,7 +11,10 @@ module.exports = {
     async execute(interaction: CommandInteraction): Promise<void> {
         if (!interaction.isChatInputCommand()) return;
 
-        const commandCategories = getAllFiles(path.join(__dirname, '../../commands'), true);
+        const commandCategories = getAllFiles(
+            path.join(__dirname, "../../commands"),
+            true
+        );
         const commands = [];
         for (const category of commandCategories) {
             const commandFiles = getAllFiles(category);
@@ -21,15 +24,15 @@ module.exports = {
         }
 
         try {
-            const commandObject = commands.find((cmd: any) => cmd.data.name === interaction.commandName);
+            const commandObject = commands.find(
+                (cmd: any) => cmd.data.name === interaction.commandName
+            );
 
             if (!commandObject) return;
 
             await commandObject.execute(interaction);
-
-
         } catch (error) {
-            console.error('Error executing command:', error);
+            console.error("Error executing command:", error);
         }
-    }
-}
+    },
+};

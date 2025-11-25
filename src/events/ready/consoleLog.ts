@@ -1,4 +1,4 @@
-import { Client, Events } from 'discord.js';
+import { Client, Events } from "discord.js";
 
 module.exports = {
     data: {
@@ -7,5 +7,5 @@ module.exports = {
     },
     execute(client: Client): void {
         console.log(`Ready! Logged in as ${client.user?.tag}`);
-    }
-}
+    },
+};

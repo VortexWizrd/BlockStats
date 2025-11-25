@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const playerSchema = new Schema({
     discordId: {
@@ -10,13 +10,13 @@ const playerSchema = new Schema({
         required: true,
     },
     scoreSaberId: {
-        type: String
+        type: String,
     },
     scoreIds: {
         type: [String],
         required: true,
-        default: []
-    }
+        default: [],
+    },
 });
 
-export default model('Player', playerSchema);
+export default model("Player", playerSchema);

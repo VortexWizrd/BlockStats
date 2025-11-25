@@ -1,5 +1,5 @@
-import { Client, Events } from 'discord.js';
-import cleanDatabase from '../../utils/cleanDatabase';
+import { Client, Events } from "discord.js";
+import cleanDatabase from "../../utils/cleanDatabase";
 
 module.exports = {
     data: {
@@ -9,5 +9,5 @@ module.exports = {
     execute(client: Client): void {
         cleanDatabase();
         setInterval(cleanDatabase, 60 * 60 * 1000);
-    }
-}
+    },
+};
