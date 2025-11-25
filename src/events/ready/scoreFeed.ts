@@ -1,4 +1,4 @@
-import { Client, Events, TextChannel } from 'discord.js';
+import { Client, Events, MessageCreateOptions, TextChannel } from 'discord.js';
 import ScoreFeed from '../../models/ScoreFeed';
 import Score from '../../models/Score';
 import Player from '../../models/Player';
@@ -10,9 +10,19 @@ async function outputScore(client: Client, score: any): Promise<void> {
     try {
 
         const scoreDisplay = new ScoreDisplay(score);
-        const messageData = { 
-            embeds: [scoreDisplay.getEmbed()], 
-            components: [scoreDisplay.getButtons()]
+        let messageData: MessageCreateOptions;
+
+        const player = await Player.findOne({discordId: score.discordId});
+        if (player) {
+            messageData = {
+                embeds: [scoreDisplay.getEmbed()], 
+                components: [scoreDisplay.getButtons()]
+            }
+        } else {
+            messageData = {
+                embeds: [scoreDisplay.getEmbed()]
+            }
+            ScoreFeed.deleteOne(score);
         }
 
         const scoreFeeds = await ScoreFeed.find({ 
@@ -22,9 +32,6 @@ async function outputScore(client: Client, score: any): Promise<void> {
         for (const feed of scoreFeeds) {
 
             console.log(feed);
-
-            const player = await Player.findOne({discordId: score.discordId});
-            if (!player) return;
 
             if (feed.channelId && feed.guildId) {
 
@@ -85,7 +92,19 @@ module.exports = {
                     beatLeaderId: scoreData.player.id
                 })
 
-                if (!player) return;
+                if (!player) {
+                    
+                    if (await ScoreFeed.findOne({ 
+                        beatleaderIds: { $in: [scoreData.player.id] }
+                    })) {
+                        const newScore = new Score({
+                            beatLeaderData: scoreData
+                        });
+                        newScore.save().catch(err => console.log(err));
+                        await outputScore(client, newScore);
+                    }
+                    return;
+                };
 
                 if (player.scoreSaberId) {
                     
