@@ -21,6 +21,18 @@ class ScoreSaberAPI extends EventEmitter {
     public get lastSocketUpdate(): Date {
         return this._lastSocketUpdate;
     }
+
+    public async getUserFromId(id: string | number): Promise<any> {
+        try {
+            const response = await fetch(
+                `https://scoresaber.com/api/player/${id}/basic`
+            );
+            return response.json();
+        } catch (error) {
+            console.log("Error getting ScoreSaber user: " + error);
+            return;
+        }
+    }
 }
 
 export default new ScoreSaberAPI();

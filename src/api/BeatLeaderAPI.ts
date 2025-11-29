@@ -20,6 +20,21 @@ class BeatLeaderAPI extends EventEmitter {
     public get lastSocketUpdate(): Date {
         return this._lastSocketUpdate;
     }
+
+    public async getUserFromDiscord(discordId: string | number): Promise<any> {
+        try {
+            const response = await fetch(
+                `https://api.beatleader.com/player/discord/${discordId}`,
+                {}
+            );
+            return response.json();
+        } catch (error) {
+            console.log(
+                "Error fetching BeatLeader user from Discord ID: " + error
+            );
+            return;
+        }
+    }
 }
 
 export default new BeatLeaderAPI();

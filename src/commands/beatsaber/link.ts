@@ -1,5 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import Player from "../../models/Player";
+import BeatLeaderAPI from "../../api/BeatLeaderAPI";
+import ScoreSaberAPI from "../../api/ScoreSaberAPI";
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,49 +21,33 @@ module.exports = {
             .getString("scoresaberid")
             ?.replace(/[^0-9]/g, "");
 
-        const getBeatLeader = async () => {
-            try {
-                const response = await fetch(
-                    `https://api.beatleader.com/player/discord/${interaction.user.id}`,
-                    {}
-                );
-                return response.json();
-            } catch (error) {
-                console.error("Error fetching BeatLeader data:", error);
-                await interaction.reply({
-                    content:
-                        "There was an error attempting to fetch BeatLeader data. Please try again later.",
-                    ephemeral: true,
-                });
-                return;
-            }
-        };
+        const beatLeaderData: any = await BeatLeaderAPI.getUserFromDiscord(
+            interaction.user.id
+        );
 
-        const getScoreSaber = async (id: string) => {
-            try {
-                const response = await fetch(
-                    `https://scoresaber.com/api/player/${id}/basic`
-                );
-                return response.json();
-            } catch (error) {
-                await interaction.reply({
-                    content: "Invalid ScoreSaber ID",
-                    ephemeral: true,
-                });
-                return;
-            }
-        };
-
-        const beatLeaderData: any = await getBeatLeader();
+        if (!beatLeaderData) {
+            return await interaction.reply({
+                content:
+                    "You must link your Discord account to your BeatLeader profile!",
+                ephemeral: true,
+            });
+        }
 
         const player = await Player.findOne({ discordId: interaction.user.id });
 
         if (player) {
             if (beatLeaderData && beatLeaderData.id === player.beatLeaderId) {
                 if (scoreSaberId && scoreSaberId !== player.scoreSaberId) {
-                    const scoreSaberProfile: any = await getScoreSaber(
-                        scoreSaberId
-                    );
+                    const scoreSaberProfile: any =
+                        await ScoreSaberAPI.getUserFromId(scoreSaberId);
+
+                    if (!ScoreSaberAPI) {
+                        await interaction.reply({
+                            content: "Invalid ScoreSaber ID",
+                            ephemeral: true,
+                        });
+                        return;
+                    }
 
                     if (
                         scoreSaberProfile &&
