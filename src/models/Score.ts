@@ -7,6 +7,9 @@ const scoreSchema = new Schema({
     beatLeaderData: {
         type: Object,
     },
+    beatLeaderStatistic: {
+        type: Object,
+    },
     scoreSaberData: {
         type: Object,
     },

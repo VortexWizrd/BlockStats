@@ -114,6 +114,8 @@ module.exports = {
                     const newScore = new Score({
                         discordId: player.discordId,
                         beatLeaderData: scoreData,
+                        beatLeaderStatistic:
+                            await BeatLeaderAPI.getScoreStatistic(scoreData.id),
                     });
                     newScore.save().catch((err) => console.log(err));
                 }
@@ -121,6 +123,9 @@ module.exports = {
                 const newScore = new Score({
                     discordId: player.discordId,
                     beatLeaderData: scoreData,
+                    beatLeaderStatistic: await BeatLeaderAPI.getScoreStatistic(
+                        scoreData.id
+                    ),
                 });
                 newScore.save().catch((err) => console.log(err));
                 await outputScore(client, newScore);

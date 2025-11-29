@@ -35,6 +35,19 @@ class BeatLeaderAPI extends EventEmitter {
             return;
         }
     }
+
+    public async getScoreStatistic(scoreId: string | number): Promise<any> {
+        try {
+            const response = await fetch(
+                `https://api.beatleader.com/score/statistic/${scoreId}`,
+                {}
+            );
+            return response.json();
+        } catch (error) {
+            console.log("Error fetching BeatLeader score statistic: " + error);
+            return;
+        }
+    }
 }
 
 export default new BeatLeaderAPI();
