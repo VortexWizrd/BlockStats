@@ -29,8 +29,6 @@ async function outputScore(client: Client, score: any): Promise<void> {
         });
 
         for (const feed of scoreFeeds) {
-            console.log(feed);
-
             if (feed.channelId && feed.guildId) {
                 const channel = await client.channels.fetch(
                     feed.channelId || ""
@@ -108,6 +106,8 @@ module.exports = {
                 });
                 if (score) {
                     score.beatLeaderData = scoreData;
+                    score.beatLeaderStatistic =
+                        await BeatLeaderAPI.getScoreStatistic(scoreData.id);
                     score.save().catch((err) => console.log(err));
                     await outputScore(client, score);
                 } else {
