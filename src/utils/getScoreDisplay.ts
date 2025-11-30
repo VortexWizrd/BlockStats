@@ -119,19 +119,21 @@ export default class ScoreDisplay {
         }
 
         if (this.score.beatLeaderData.scoreImprovement) {
-            let symbol = "";
             let change = this.score.beatLeaderData.scoreImprovement.accuracy;
-            if (change > 0) {
-                symbol = "+";
+            if (change != 0) {
+                let symbol = "";
+                if (change > 0) {
+                    symbol = "+";
+                }
+                embed.addFields({
+                    name: "Gain",
+                    value: `${symbol}${(change * 100).toFixed(2)}% (from ${(
+                        (this.score.beatLeaderData.accuracy - change) *
+                        100
+                    ).toFixed(2)}%)`,
+                    inline: true,
+                });
             }
-            embed.addFields({
-                name: "Gain",
-                value: `${symbol}${(change * 100).toFixed(2)}% (from ${(
-                    (this.score.beatLeaderData.accuracy - change) *
-                    100
-                ).toFixed(2)}%)`,
-                inline: true,
-            });
         }
 
         return embed;

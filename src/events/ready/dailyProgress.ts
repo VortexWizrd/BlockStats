@@ -10,7 +10,7 @@ module.exports = {
 
         setInterval(() => {
             if (Date.now() - lastCheckedDay * 8.64e7 > 8.64e7) {
-                console.log("hi");
+                lastCheckedDay = Math.floor(Date.now() / 8.64e7);
             }
         }, 60000);
     },
