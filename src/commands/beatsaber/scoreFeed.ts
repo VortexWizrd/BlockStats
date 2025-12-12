@@ -238,8 +238,7 @@ module.exports = {
             },
             {
               name: "Min Accuracy",
-              value:
-                existingFeed.filters.minAccuracy?.toString() + "%" || "any",
+              value: existingFeed.filters.minAccuracy?.toString() || "any",
               inline: true,
             },
             {
