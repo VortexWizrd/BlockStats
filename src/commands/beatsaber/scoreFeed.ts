@@ -19,12 +19,11 @@ module.exports = {
           option
             .setName("request_type")
             .setDescription(
-              "Select whether server members can join the score feed"
+              "Select whether members can join the score feed (for servers)"
             )
             .setRequired(true)
             .addChoices(
               { name: "closed", value: "closed" },
-              { name: "invite", value: "invite" },
               { name: "open", value: "open" }
             )
         )
@@ -79,7 +78,7 @@ module.exports = {
           option
             .setName("id")
             .setDescription("BeatLeader profile ID")
-            .setRequired(true)
+            .setRequired(false)
         )
     )
     .addSubcommand((subcommand) =>
@@ -109,57 +108,93 @@ module.exports = {
 
     switch (interaction.options.getSubcommand()) {
       case "add": {
-        // Check if user has permissions
-        const member = interaction.guild.members.cache.get(interaction.user.id);
-        if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-          await interaction.reply({
-            content: "You do not have permission to use this command!",
-            ephemeral: true,
-          });
-          return;
-        }
+        if (interaction.channel?.isDMBased) {
+          // Check if score feed already exists for this user
+          const query = { userId: interaction.user.id };
+          const existingFeed = await ScoreFeed.findOne(query);
+          if (existingFeed) {
+            await interaction.reply({
+              content:
+                "You have already set up a personal score feed! Please use the `edit` or `remove` command to modify it.",
+              ephemeral: true,
+            });
+            return;
+          }
 
-        // Check if score feed already exists for this server
-        const query = { guildId: interaction.guild.id };
-        const existingFeed = await ScoreFeed.findOne(query);
-        if (existingFeed) {
-          await interaction.reply({
-            content:
-              "A score feed already exists for this server! Please use the `edit` or `remove` command to modify it.",
-            ephemeral: true,
+          // Create a new score feed
+          const newFeed = new ScoreFeed({
+            userId: interaction.user.id,
+            displayType: interaction.options.getString("display_type"),
+            requestType: "open",
           });
-          return;
-        }
+          await newFeed.save();
+        } else {
+          // Check if user has permissions
+          const member = interaction.guild.members.cache.get(
+            interaction.user.id
+          );
+          if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+            await interaction.reply({
+              content: "You do not have permission to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
 
-        // Create a new score feed
-        const newFeed = new ScoreFeed({
-          guildId: interaction.guild.id,
-          channelId: interaction.channel?.id,
-          displayType: interaction.options.getString("display_type"),
-          requestType: interaction.options.getString("request_type"),
-        });
-        await newFeed.save();
+          // Check if score feed already exists for this server
+          const query = { guildId: interaction.guild.id };
+          const existingFeed = await ScoreFeed.findOne(query);
+          if (existingFeed) {
+            await interaction.reply({
+              content:
+                "A score feed already exists for this server! Please use the `edit` or `remove` command to modify it.",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          // Create a new score feed
+          const newFeed = new ScoreFeed({
+            guildId: interaction.guild.id,
+            channelId: interaction.channel?.id,
+            displayType: interaction.options.getString("display_type"),
+            requestType: interaction.options.getString("request_type"),
+          });
+          await newFeed.save();
+        }
 
         await interaction.reply({
           content: "Score feed created!",
           ephemeral: true,
         });
+
         break;
       }
 
       case "filters": {
-        // Check if user has permissions
-        const member = interaction.guild.members.cache.get(interaction.user.id);
-        if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-          await interaction.reply({
-            content: "You do not have permission to use this command!",
-            ephemeral: true,
-          });
-          return;
+        let query = {};
+        if (interaction.channel?.isDMBased) {
+          query = { userId: interaction.user.id };
+        } else {
+          // Check if user has permissions
+          const member = interaction.guild.members.cache.get(
+            interaction.user.id
+          );
+          if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+            await interaction.reply({
+              content: "You do not have permission to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          query = {
+            guildId: interaction.guild.id,
+            channelId: interaction.channel?.id,
+          };
         }
 
-        // Check if score feed exists for this server
-        const query = { guildId: interaction.guild.id };
+        // Check if score feed exists
         const existingFeed = await ScoreFeed.findOne(query);
         if (!existingFeed) {
           await interaction.reply({
@@ -259,85 +294,211 @@ module.exports = {
       }
 
       case "remove": {
-        // Handle removing a score feed
-        const member = interaction.guild.members.cache.get(interaction.user.id);
-        if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-          await interaction.reply({
-            content: "You do not have permission to use this command!",
-            ephemeral: true,
+        if (interaction.channel?.isDMBased) {
+          // Check if score feed exists for this user
+          const feed = await ScoreFeed.findOne({
+            userId: interaction.user.id,
           });
-          return;
+          if (!feed) {
+            await interaction.reply({
+              content: "No score feed exists!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          // Remove the score feed
+          await ScoreFeed.deleteOne({ guildId: interaction.user.id });
+        } else {
+          // Handle removing a score feed
+          const member = interaction.guild.members.cache.get(
+            interaction.user.id
+          );
+          if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+            await interaction.reply({
+              content: "You do not have permission to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          // Check if score feed exists for this server
+          const feed = await ScoreFeed.findOne({
+            guildId: interaction.guild.id,
+          });
+          if (!feed) {
+            await interaction.reply({
+              content: "No score feed exists for this server!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          // Remove the score feed
+          await ScoreFeed.deleteOne({ guildId: interaction.guild.id });
         }
 
-        // Check if score feed exists for this server
-        const feed = await ScoreFeed.findOne({
-          guildId: interaction.guild.id,
-        });
-        if (!feed) {
-          await interaction.reply({
-            content: "No score feed exists for this server!",
-            ephemeral: true,
-          });
-          return;
-        }
-
-        // Remove the score feed
-        await ScoreFeed.deleteOne({ guildId: interaction.guild.id });
         await interaction.reply({
           content: "Score feed removed!",
           ephemeral: true,
         });
+
         break;
       }
 
       case "link": {
-        // Check if user has permissions
-        const member = interaction.guild.members.cache.get(interaction.user.id);
-        if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+        if (interaction.channel?.isDMBased) {
+          // Handle adding a player to the score feed
+          let beatleaderId = interaction.options.getString("id");
+          if (!beatleaderId) {
+            const player = await Player.findOne({
+              discordId: interaction.user.id,
+            });
+            if (player) {
+              beatleaderId = player.beatLeaderId;
+            } else {
+              await interaction.reply({
+                content:
+                  "Please input a BeatLeader ID or use /link to link your BeatLeader profile to the bot!",
+              });
+              return;
+            }
+          }
+
+          // Check if score feed exists for this server
+          const feed = await ScoreFeed.findOne({
+            userId: interaction.user.id,
+          });
+          if (!feed) {
+            await interaction.reply({
+              content: "No score feed exists!",
+              ephemeral: true,
+            });
+            return;
+          }
+
+          // Add player to the score feed
+          if (feed.beatleaderIds.includes(beatleaderId)) {
+            await interaction.reply({
+              content: "This player is already linked to the score feed!",
+              ephemeral: true,
+            });
+            return;
+          }
+          feed.beatleaderIds.push(beatleaderId);
+          await feed.save();
+
           await interaction.reply({
-            content: "You do not have permission to use this command!",
+            content: `Player with BeatLeader ID [${beatleaderId}](https://beatleader.com/u/${beatleaderId}) linked to the score feed!`,
             ephemeral: true,
           });
-          return;
-        }
+        } else {
+          const member = interaction.guild.members.cache.get(
+            interaction.user.id
+          );
+          if (member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+            // Handle adding a player to the score feed
+            let beatleaderId = interaction.options.getString("id");
+            if (!beatleaderId) {
+              const player = await Player.findOne({
+                discordId: interaction.user.id,
+              });
+              if (player) {
+                beatleaderId = player.beatLeaderId;
+              } else {
+                await interaction.reply({
+                  content:
+                    "Please input a BeatLeader ID or use /link to link your BeatLeader profile to the bot!",
+                });
+                return;
+              }
+            }
 
-        // Handle adding a player to the score feed
-        const beatleaderId = interaction.options.getString("id", true);
-        if (!beatleaderId) {
-          await interaction.reply({
-            content: "You must provide a valid BeatLeader ID!",
-            ephemeral: true,
-          });
-          return;
-        }
+            // Check if score feed exists for this server
+            const feed = await ScoreFeed.findOne({
+              guildId: interaction.guild.id,
+            });
+            if (!feed) {
+              await interaction.reply({
+                content: "No score feed exists for this server!",
+                ephemeral: true,
+              });
+              return;
+            }
 
-        // Check if score feed exists for this server
-        const feed = await ScoreFeed.findOne({
-          guildId: interaction.guild.id,
-        });
-        if (!feed) {
-          await interaction.reply({
-            content: "No score feed exists for this server!",
-            ephemeral: true,
-          });
-          return;
-        }
+            // Add player to the score feed
+            if (feed.beatleaderIds.includes(beatleaderId)) {
+              await interaction.reply({
+                content: "This player is already linked to the score feed!",
+                ephemeral: true,
+              });
+              return;
+            }
+            feed.beatleaderIds.push(beatleaderId);
+            await feed.save();
 
-        // Add player to the score feed
-        if (feed.beatleaderIds.includes(beatleaderId)) {
-          await interaction.reply({
-            content: "This player is already linked to the score feed!",
-            ephemeral: true,
-          });
-          return;
-        }
-        feed.beatleaderIds.push(beatleaderId);
-        await feed.save();
+            await interaction.reply({
+              content: `Player with BeatLeader ID [${beatleaderId}](https://beatleader.com/u/${beatleaderId}) linked to the score feed!`,
+              ephemeral: true,
+            });
+          } else {
+            if (interaction.options.getString("id")) {
+              await interaction.reply({
+                content:
+                  "You do not have permission to add other users to the score feed!",
+                ephemeral: true,
+              });
+              return;
+            }
+            const player = await Player.findOne({
+              discordId: interaction.user.id,
+            });
+            if (!player) {
+              return await interaction.reply({
+                content:
+                  "Link your profile using /link before using this command!",
+                ephemeral: true,
+              });
+            }
 
-        await interaction.reply({
-          content: `Player with BeatLeader ID [${beatleaderId}](https://beatleader.com/u/${beatleaderId}) linked to the score feed!`,
-          ephemeral: true,
-        });
+            const feed = await ScoreFeed.findOne({
+              guildId: interaction.guild.id,
+            });
+            if (!feed) {
+              return await interaction.reply({
+                content: "No score feed exists for this server!",
+                ephemeral: true,
+              });
+            }
+
+            switch (feed.requestType) {
+              case "closed": {
+                return await interaction.reply({
+                  content:
+                    "This server's score feed is not taking profile requests!",
+                  ephemeral: true,
+                });
+              }
+              case "invite": {
+                feed.requestIds.push(player.beatLeaderId);
+                feed.save().catch((err) => console.log(err));
+                return await interaction.reply({
+                  content:
+                    "Your request has been sent! Please wait until someone accepts your request.",
+                  ephemeral: true,
+                });
+              }
+              case "open": {
+                feed.beatleaderIds.push(player.beatLeaderId);
+                feed.save().catch((err) => console.log(err));
+                return await interaction.reply({
+                  content: "Your profile has been added to the score feed!",
+                  ephemeral: true,
+                });
+              }
+            }
+          }
+        }
 
         break;
       }
@@ -408,52 +569,6 @@ module.exports = {
       }
 
       case "request": {
-        const player = await Player.findOne({
-          discordId: interaction.user.id,
-        });
-        if (!player) {
-          return await interaction.reply({
-            content: "Link your profile using /link before using this command!",
-            ephemeral: true,
-          });
-        }
-
-        const feed = await ScoreFeed.findOne({
-          guildId: interaction.guild.id,
-        });
-        if (!feed) {
-          return await interaction.reply({
-            content: "No score feed exists for this server!",
-            ephemeral: true,
-          });
-        }
-
-        switch (feed.requestType) {
-          case "closed": {
-            return await interaction.reply({
-              content:
-                "This server's score feed is not taking profile requests!",
-              ephemeral: true,
-            });
-          }
-          case "invite": {
-            feed.requestIds.push(player.beatLeaderId);
-            feed.save().catch((err) => console.log(err));
-            return await interaction.reply({
-              content:
-                "Your request has been sent! Please wait until someone accepts your request.",
-              ephemeral: true,
-            });
-          }
-          case "open": {
-            feed.beatleaderIds.push(player.beatLeaderId);
-            feed.save().catch((err) => console.log(err));
-            return await interaction.reply({
-              content: "Your profile has been added to the score feed!",
-              ephemeral: true,
-            });
-          }
-        }
       }
     }
   },
