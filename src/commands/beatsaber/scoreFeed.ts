@@ -98,14 +98,6 @@ module.exports = {
         .setDescription("Request your profile to be added to the score feed")
     ),
   async execute(interaction: ChatInputCommandInteraction) {
-    if (!interaction.guild) {
-      await interaction.reply({
-        content: "You must be in a server to use this command!",
-        ephemeral: true,
-      });
-      return;
-    }
-
     switch (interaction.options.getSubcommand()) {
       case "add": {
         if (interaction.channel?.isDMBased) {
@@ -129,6 +121,13 @@ module.exports = {
           });
           await newFeed.save();
         } else {
+          if (!interaction.guild) {
+            await interaction.reply({
+              content: "You must be in a server to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
           // Check if user has permissions
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -176,6 +175,13 @@ module.exports = {
         if (interaction.channel?.isDMBased) {
           query = { userId: interaction.user.id };
         } else {
+          if (!interaction.guild) {
+            await interaction.reply({
+              content: "You must be in a server to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
           // Check if user has permissions
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -310,6 +316,13 @@ module.exports = {
           // Remove the score feed
           await ScoreFeed.deleteOne({ guildId: interaction.user.id });
         } else {
+          if (!interaction.guild) {
+            await interaction.reply({
+              content: "You must be in a server to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
           // Handle removing a score feed
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -393,6 +406,13 @@ module.exports = {
             ephemeral: true,
           });
         } else {
+          if (!interaction.guild) {
+            await interaction.reply({
+              content: "You must be in a server to use this command!",
+              ephemeral: true,
+            });
+            return;
+          }
           const member = interaction.guild.members.cache.get(
             interaction.user.id
           );
@@ -504,6 +524,13 @@ module.exports = {
       }
 
       case "unlink": {
+        if (!interaction.guild) {
+          await interaction.reply({
+            content: "You must be in a server to use this command!",
+            ephemeral: true,
+          });
+          return;
+        }
         // Check if user has permissions
         const member = interaction.guild.members.cache.get(interaction.user.id);
         if (!member?.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
@@ -566,9 +593,6 @@ module.exports = {
         });
 
         break;
-      }
-
-      case "request": {
       }
     }
   },
