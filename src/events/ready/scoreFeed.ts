@@ -38,8 +38,8 @@ async function outputScore(client: Client, score: any): Promise<void> {
           (feed.filters?.scoreSaberStars || 0) ||
         (score.beatLeaderData.leaderboard.difficulty.stars || 0) <
           (feed.filters?.beatLeaderStars || 0) ||
-        score.beatLeaderData.rank >
-          (feed.filters?.lowestRank || -Number.MAX_SAFE_INTEGER) ||
+        score.beatLeaderData.rank <
+          (feed.filters?.lowestRank || Number.MAX_SAFE_INTEGER) ||
         score.beatLeaderData.accuracy <
           (feed.filters?.minAccuracy || -Number.MAX_SAFE_INTEGER) ||
         score.beatleaderData.fullCombo !=
@@ -47,7 +47,7 @@ async function outputScore(client: Client, score: any): Promise<void> {
         score.beatLeaderData.badCuts + score.beatLeaderData.missedNotes >
           (feed.filters?.maxMisses || Number.MAX_SAFE_INTEGER)
       )
-        return;
+        continue;
       // Send message
       if (feed.channelId && feed.guildId) {
         const channel = await client.channels.fetch(feed.channelId || "");
