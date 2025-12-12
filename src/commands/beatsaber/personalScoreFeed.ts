@@ -1,4 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+} from "discord.js";
 import ScoreFeed from "../../models/ScoreFeed";
 
 module.exports = {
@@ -165,14 +169,58 @@ module.exports = {
           interaction.options.getInteger("max_misses") ||
           existingFeed.filters.maxMisses;
 
+        const embed = new EmbedBuilder()
+          .setTitle("Score Feed Filters")
+          .addFields(
+            {
+              name: "Min ScoreSaber Stars",
+              value: existingFeed.filters.scoreSaberStars.toString(),
+              inline: true,
+            },
+            {
+              name: "Min ScoreSaber PP",
+              value: existingFeed.filters.minScoreSaberPP.toString(),
+              inline: true,
+            },
+            {
+              name: "Min BeatLeader Stars",
+              value: existingFeed.filters.beatLeaderStars.toString(),
+              inline: true,
+            },
+            {
+              name: "Min BeatLeader PP",
+              value: existingFeed.filters.minBeatLeaderPP.toString(),
+              inline: true,
+            },
+            {
+              name: "Lowest Rank",
+              value: existingFeed.filters.lowestRank?.toString() || "any",
+              inline: true,
+            },
+            {
+              name: "Require Full Combo",
+              value: existingFeed.filters.fullCombo?.toString() || "false",
+              inline: true,
+            },
+            {
+              name: "Min Accuracy",
+              value: existingFeed.filters.minAccuracy?.toString() || "any",
+              inline: true,
+            },
+            {
+              name: "Max Misses",
+              value: existingFeed.filters.maxMisses?.toString() || "any",
+              inline: true,
+            }
+          );
+
+        await interaction.reply({
+          embeds: [embed],
+        });
+
         await existingFeed
           .save()
           .catch((e) => console.log("Error saving score feed: " + e));
-
-        await interaction.reply({
-          content: "Applied filters!",
-          ephemeral: true,
-        });
 
         break;
       }
