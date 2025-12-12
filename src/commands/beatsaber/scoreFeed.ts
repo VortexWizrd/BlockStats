@@ -100,7 +100,7 @@ module.exports = {
   async execute(interaction: ChatInputCommandInteraction) {
     switch (interaction.options.getSubcommand()) {
       case "add": {
-        if (interaction.channel?.isDMBased) {
+        if (!interaction.guild) {
           // Check if score feed already exists for this user
           const query = { userId: interaction.user.id };
           const existingFeed = await ScoreFeed.findOne(query);
@@ -121,13 +121,6 @@ module.exports = {
           });
           await newFeed.save();
         } else {
-          if (!interaction.guild) {
-            await interaction.reply({
-              content: "You must be in a server to use this command!",
-              ephemeral: true,
-            });
-            return;
-          }
           // Check if user has permissions
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -172,16 +165,9 @@ module.exports = {
 
       case "filters": {
         let query = {};
-        if (interaction.channel?.isDMBased) {
+        if (!interaction.guild) {
           query = { userId: interaction.user.id };
         } else {
-          if (!interaction.guild) {
-            await interaction.reply({
-              content: "You must be in a server to use this command!",
-              ephemeral: true,
-            });
-            return;
-          }
           // Check if user has permissions
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -300,7 +286,7 @@ module.exports = {
       }
 
       case "remove": {
-        if (interaction.channel?.isDMBased) {
+        if (!interaction.guild) {
           // Check if score feed exists for this user
           const feed = await ScoreFeed.findOne({
             userId: interaction.user.id,
@@ -316,13 +302,6 @@ module.exports = {
           // Remove the score feed
           await ScoreFeed.deleteOne({ guildId: interaction.user.id });
         } else {
-          if (!interaction.guild) {
-            await interaction.reply({
-              content: "You must be in a server to use this command!",
-              ephemeral: true,
-            });
-            return;
-          }
           // Handle removing a score feed
           const member = interaction.guild.members.cache.get(
             interaction.user.id
@@ -360,7 +339,7 @@ module.exports = {
       }
 
       case "link": {
-        if (interaction.channel?.isDMBased) {
+        if (!interaction.guild) {
           // Handle adding a player to the score feed
           let beatleaderId = interaction.options.getString("id");
           if (!beatleaderId) {
@@ -406,13 +385,6 @@ module.exports = {
             ephemeral: true,
           });
         } else {
-          if (!interaction.guild) {
-            await interaction.reply({
-              content: "You must be in a server to use this command!",
-              ephemeral: true,
-            });
-            return;
-          }
           const member = interaction.guild.members.cache.get(
             interaction.user.id
           );
