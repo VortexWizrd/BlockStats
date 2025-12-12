@@ -60,7 +60,7 @@ const scoreFeedSchema = new Schema({
         type: Number,
       },
       fullCombo: {
-        type: Number,
+        type: Boolean,
       },
       minAccuracy: {
         type: Number,
