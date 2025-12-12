@@ -47,7 +47,6 @@ async function outputScore(client: Client, score: any): Promise<void> {
         score.beatLeaderData.badCuts + score.beatLeaderData.missedNotes >
           (feed.filters?.maxMisses || Number.MAX_SAFE_INTEGER)
       ) {
-        console.log("filtered");
         continue;
       }
       // Send message
