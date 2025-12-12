@@ -19,6 +19,43 @@ module.exports = {
     )
     .addSubcommand((subcommand) =>
       subcommand
+        .setName("filters")
+        .setDescription("Filter out scores from the score feed")
+        .addNumberOption((option) =>
+          option
+            .setName("min_stars_ss")
+            .setDescription("Minimum ScoreSaber stars")
+        )
+        .addNumberOption((option) =>
+          option.setName("min_pp_ss").setDescription("Minimum ScoreSaber PP")
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("min_stars_bl")
+            .setDescription("Minimum BeatLeader stars")
+        )
+        .addNumberOption((option) =>
+          option.setName("min_pp_bl").setDescription("Minimum BeatLeader pp")
+        )
+        .addIntegerOption((option) =>
+          option.setName("lowest_rank").setDescription("Lowest rank")
+        )
+        .addIntegerOption((option) =>
+          option
+            .setName("max_misses")
+            .setDescription("Maximum number of misses")
+        )
+        .addBooleanOption((option) =>
+          option.setName("full_combo").setDescription("Require full combo")
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("min_accuracy")
+            .setDescription("Minimum accuracy as a percentage")
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
         .setName("remove")
         .setDescription("Remove the score feed from the current server")
     )
