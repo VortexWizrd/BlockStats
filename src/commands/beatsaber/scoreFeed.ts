@@ -300,7 +300,7 @@ module.exports = {
           }
 
           // Remove the score feed
-          await ScoreFeed.deleteOne({ guildId: interaction.user.id });
+          await ScoreFeed.deleteOne({ userId: interaction.user.id });
         } else {
           // Handle removing a score feed
           const member = interaction.guild.members.cache.get(
