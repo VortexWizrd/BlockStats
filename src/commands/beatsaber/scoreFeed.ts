@@ -179,27 +179,27 @@ module.exports = {
         }
 
         existingFeed.filters.scoreSaberStars =
-          interaction.options.getNumber("min_stars_ss") ||
+          interaction.options.getNumber("min_stars_ss") ??
           existingFeed.filters.scoreSaberStars;
         existingFeed.filters.minScoreSaberPP =
-          interaction.options.getNumber("min_pp_ss") ||
+          interaction.options.getNumber("min_pp_ss") ??
           existingFeed.filters.minScoreSaberPP;
         existingFeed.filters.beatLeaderStars =
-          interaction.options.getNumber("min_stars_bl") ||
+          interaction.options.getNumber("min_stars_bl") ??
           existingFeed.filters.beatLeaderStars;
         existingFeed.filters.minBeatLeaderPP =
-          interaction.options.getNumber("min_pp_bl") ||
+          interaction.options.getNumber("min_pp_bl") ??
           existingFeed.filters.minBeatLeaderPP;
         existingFeed.filters.lowestRank =
-          interaction.options.getInteger("lowest_rank") ||
+          interaction.options.getInteger("lowest_rank") ??
           existingFeed.filters.lowestRank;
         existingFeed.filters.fullCombo =
           interaction.options.getBoolean("full_combo");
         existingFeed.filters.minAccuracy =
-          interaction.options.getNumber("min_accuracy") ||
+          interaction.options.getNumber("min_accuracy") ??
           existingFeed.filters.minAccuracy;
         existingFeed.filters.maxMisses =
-          interaction.options.getInteger("max_misses") ||
+          interaction.options.getInteger("max_misses") ??
           existingFeed.filters.maxMisses;
 
         const embed = new EmbedBuilder()

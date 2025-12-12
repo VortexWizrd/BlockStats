@@ -31,21 +31,21 @@ async function outputScore(client: Client, score: any): Promise<void> {
     for (const feed of scoreFeeds) {
       // Apply feed filters
       if (
-        (score.scoreSaberData?.score.pp || 0) <
-          (feed.filters?.minScoreSaberPP || 0) ||
-        (score.beatLeaderData.pp || 0) < (feed.filters?.minBeatLeaderPP || 0) ||
-        (score.scoreSaberData?.leaderboard.stars || 0) <
-          (feed.filters?.scoreSaberStars || 0) ||
-        (score.beatLeaderData.leaderboard.difficulty.stars || 0) <
-          (feed.filters?.beatLeaderStars || 0) ||
+        (score.scoreSaberData?.score.pp ?? 0) <
+          (feed.filters?.minScoreSaberPP ?? 0) ||
+        (score.beatLeaderData.pp ?? 0) < (feed.filters?.minBeatLeaderPP ?? 0) ||
+        (score.scoreSaberData?.leaderboard.stars ?? 0) <
+          (feed.filters?.scoreSaberStars ?? 0) ||
+        (score.beatLeaderData.leaderboard.difficulty.stars ?? 0) <
+          (feed.filters?.beatLeaderStars ?? 0) ||
         score.beatLeaderData.rank >
-          (feed.filters?.lowestRank || Number.MAX_SAFE_INTEGER) ||
+          (feed.filters?.lowestRank ?? Number.MAX_SAFE_INTEGER) ||
         score.beatLeaderData.accuracy * 100 <
-          (feed.filters?.minAccuracy || -Number.MAX_SAFE_INTEGER) ||
+          (feed.filters?.minAccuracy ?? -Number.MAX_SAFE_INTEGER) ||
         score.beatLeaderData.fullCombo !=
-          (feed.filters?.fullCombo || score.beatLeaderData.fullCombo) ||
+          (feed.filters?.fullCombo ?? score.beatLeaderData.fullCombo) ||
         score.beatLeaderData.badCuts + score.beatLeaderData.missedNotes >
-          (feed.filters?.maxMisses || Number.MAX_SAFE_INTEGER)
+          (feed.filters?.maxMisses ?? Number.MAX_SAFE_INTEGER)
       ) {
         continue;
       }
