@@ -183,7 +183,7 @@ module.exports = {
           existingFeed.filters.scoreSaberStars;
         existingFeed.filters.minScoreSaberPP =
           interaction.options.getNumber("min_pp_ss") ||
-          existingFeed.filters.scoreSaberStars;
+          existingFeed.filters.minScoreSaberPP;
         existingFeed.filters.beatLeaderStars =
           interaction.options.getNumber("min_stars_bl") ||
           existingFeed.filters.beatLeaderStars;
