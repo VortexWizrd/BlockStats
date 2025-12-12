@@ -36,7 +36,7 @@ async function outputScore(client: Client, score: any): Promise<void> {
         (score.beatLeaderData.pp || 0) < (feed.filters?.minBeatLeaderPP || 0) ||
         (score.scoreSaberData?.leaderboard.stars || 0) <
           (feed.filters?.scoreSaberStars || 0) ||
-        (score.beatLeaderData.difficulty.stars || 0) <
+        (score.beatLeaderData.leaderboard.difficulty.stars || 0) <
           (feed.filters?.beatLeaderStars || 0) ||
         score.beatLeaderData.rank >
           (feed.filters?.lowestRank || -Number.MAX_SAFE_INTEGER) ||
