@@ -160,8 +160,7 @@ module.exports = {
           interaction.options.getInteger("lowest_rank") ||
           existingFeed.filters.lowestRank;
         existingFeed.filters.fullCombo =
-          interaction.options.getBoolean("full_combo") ||
-          existingFeed.filters.fullCombo;
+          interaction.options.getBoolean("full_combo");
         existingFeed.filters.minAccuracy =
           interaction.options.getNumber("min_accuracy") ||
           existingFeed.filters.minAccuracy;
