@@ -27,6 +27,13 @@ module.exports = {
               { name: "open", value: "open" }
             )
         )
+        .addStringOption((option) =>
+          option
+            .setName("display_type")
+            .setDescription("Select how scores are displayed")
+            .setRequired(true)
+            .addChoices({ name: "embed", value: "embed" })
+        )
     )
     .addSubcommand((subcommand) =>
       subcommand
