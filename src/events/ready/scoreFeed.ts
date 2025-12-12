@@ -40,7 +40,7 @@ async function outputScore(client: Client, score: any): Promise<void> {
           (feed.filters?.beatLeaderStars || 0) ||
         score.beatLeaderData.rank >
           (feed.filters?.lowestRank || Number.MAX_SAFE_INTEGER) ||
-        score.beatLeaderData.accuracy <
+        score.beatLeaderData.accuracy * 100 <
           (feed.filters?.minAccuracy || -Number.MAX_SAFE_INTEGER) ||
         score.beatLeaderData.fullCombo !=
           (feed.filters?.fullCombo || score.beatLeaderData.fullCombo) ||
