@@ -136,9 +136,7 @@ module.exports = {
           .setTitle(beatLeader.name)
           .setThumbnail(beatLeader.avatar)
           .setDescription(linkText)
-          .setColor(
-            (await fac.getColorAsync(beatLeader.avatar)).hex as ColorResolvable,
-          )
+          .setColor(interaction.user.accentColor as ColorResolvable)
           .addFields({
             name: "Scores",
             value: scores.length.toString(),
