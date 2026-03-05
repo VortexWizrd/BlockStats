@@ -1,11 +1,16 @@
 import {
   ChatInputCommandInteraction,
+  ColorResolvable,
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 import Player from "../../models/Player";
 import BeatLeaderAPI from "../../api/BeatLeaderAPI";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
+import Score from "../../models/Score";
+import { FastAverageColor } from "fast-average-color";
+
+const fac = new FastAverageColor();
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -105,37 +110,40 @@ module.exports = {
       }
 
       case "show": {
+        await interaction.deferReply();
+
         const player = await Player.findOne({ discordId: interaction.user.id });
 
         if (!player)
-          return interaction.reply({
+          return interaction.editReply({
             content:
               "Please make a profile using /profile link before using this command!",
-            ephemeral: true,
           });
 
         const beatLeader = await BeatLeaderAPI.getUserFromDiscord(
           interaction.user.id,
         );
         if (!beatLeader)
-          return interaction.reply({
+          return interaction.editReply({
             content: "Error: BeatLeader not found.",
-            ephemeral: true,
           });
 
-        const linkText = `[[BeatLeader](https://beatleader.com/u/${player.beatLeaderId}) | [Discord](https://discord.com/users/${player.discordId})${player.scoreSaberId ? `| [ScoreSaber](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
+        const scores = await Score.find({ discordId: interaction.user.id });
+
+        const linkText = `[[BeatLeader](https://beatleader.com/u/${player.beatLeaderId}) | [Discord](https://discord.com/users/${player.discordId})${player.scoreSaberId ? ` | [ScoreSaber](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
 
         const embed = new EmbedBuilder()
           .setTitle(beatLeader.name)
           .setThumbnail(beatLeader.avatar)
           .setDescription(linkText)
+          .setColor(fac.getColor(beatLeader.avatar).hex as ColorResolvable)
           .addFields({
             name: "Scores",
-            value: player.scoreIds.length.toString(),
+            value: scores.length.toString(),
             inline: true,
           });
 
-        return interaction.reply({
+        return interaction.editReply({
           embeds: [embed],
         });
       }
