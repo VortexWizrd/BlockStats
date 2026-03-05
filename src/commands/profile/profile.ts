@@ -105,9 +105,38 @@ module.exports = {
       }
 
       case "show": {
+        const player = await Player.findOne({ discordId: interaction.user.id });
+
+        if (!player)
+          return interaction.reply({
+            content:
+              "Please make a profile using /profile link before using this command!",
+            ephemeral: true,
+          });
+
+        const beatLeader = await BeatLeaderAPI.getUserFromDiscord(
+          interaction.user.id,
+        );
+        if (!beatLeader)
+          return interaction.reply({
+            content: "Error: BeatLeader not found.",
+            ephemeral: true,
+          });
+
+        const linkText = `[[BeatLeader](https://beatleader.com/u/${player.beatLeaderId}) | [Discord](https://discord.com/users/${player.discordId})${player.scoreSaberId ? `| [ScoreSaber](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
+
+        const embed = new EmbedBuilder()
+          .setTitle(beatLeader.name)
+          .setThumbnail(beatLeader.avatar)
+          .setDescription(linkText)
+          .addFields({
+            name: "Scores",
+            value: player.scoreIds.length.toString(),
+            inline: true,
+          });
+
         return interaction.reply({
-          content: "Not implemented",
-          ephemeral: true,
+          embeds: [embed],
         });
       }
 
