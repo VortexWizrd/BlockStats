@@ -137,7 +137,7 @@ module.exports = {
           .setThumbnail(beatLeader.avatar)
           .setDescription(linkText)
           .setColor(
-            (interaction.user.accentColor as ColorResolvable) ?? "Default",
+            interaction.user.accentColor?.toString(16) as ColorResolvable,
           )
           .addFields({
             name: "Scores",
