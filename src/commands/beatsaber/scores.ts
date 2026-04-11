@@ -106,7 +106,7 @@ module.exports = {
                 break;
             }
 
-            case "dislike": {
+            case "dislikes": {
                 sortTitle = "Most Disliked";
 
                 scores = scores.sort(
@@ -196,15 +196,11 @@ module.exports = {
                 if (sort === "likes") {
                     sortValue =
                         scores[i].upVoteIds.length +
-                        " " +
-                        (scores[i].upVoteIds.length === 1 ? "like" : "likes");
+                        " 👍";
                 } else if (sort === "dislikes") {
                     sortValue =
                         scores[i].downVoteIds.length +
-                        " " +
-                        (scores[i].downVoteIds.length === 1
-                            ? "dislike"
-                            : "dislikes");
+                        " 👎";
                 } else if (
                     sort === "highest-ratio" ||
                     sort === "lowest-ratio"
