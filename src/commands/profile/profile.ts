@@ -130,7 +130,7 @@ module.exports = {
 
         const scores = await Score.find({ discordId: interaction.user.id });
 
-        const linkText = `[[BeatLeader](https://beatleader.com/u/${player.beatLeaderId}) | [Discord](https://discord.com/users/${player.discordId})${player.scoreSaberId ? ` | [ScoreSaber](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
+        const linkText = `[[ <:beatleader:1492695343345832102> BeatLeader ](https://beatleader.com/u/${player.beatLeaderId}) | [ <:discord:1492695870343221323> Discord ](https://discord.com/users/${player.discordId})${player.scoreSaberId ? ` | [ <:scoresaber:1492695389634035823> ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
 
         const embed = new EmbedBuilder()
           .setTitle(beatLeader.name)
