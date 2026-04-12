@@ -17,6 +17,12 @@ const playerSchema = new Schema({
         required: true,
         default: [],
     },
+    settings: {
+        scoreCommentEvent: {
+            type: Boolean,
+            default: false
+        }
+    }
 });
 
 export default model("Player", playerSchema);

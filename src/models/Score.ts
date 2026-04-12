@@ -47,6 +47,38 @@ const scoreSchema = new Schema({
         required: true,
         default: [],
     },
+    comments: {
+        type: [
+            {
+                messageId: {
+                    type: String,
+                    required: true,
+                },
+                channelId: {
+                    type: String,
+                    required: false,
+                },
+                guildId: {
+                    type: String,
+                    required: false,
+                },
+                userId: {
+                    type: String,
+                    required: false,
+                },
+                upVoteIds: {
+                    type: [String],
+                    required: true,
+                    default: [],
+                },
+                downVoteIds: {
+                    type: [String],
+                    required: true,
+                    default: [],
+                },
+            },
+        ]
+    }
 });
 
 export default model("Score", scoreSchema);
