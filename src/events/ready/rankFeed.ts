@@ -37,6 +37,7 @@ module.exports = {
               return;
             }
             if (player.blRank == blPlayerData.rank) { return; }
+            console.log(player.blRank + " " + blPlayerData.rank);
             let embed = new EmbedBuilder()
             if (blPlayerData.rank < player.blRank) {
             embed
