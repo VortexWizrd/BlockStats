@@ -144,7 +144,7 @@ module.exports = {
           },
           {
             name: "BL Rank",
-            value: player.blRank.toString(),
+            value: player.blRank?.toString() ?? "?",
             inline: true,
           }
         );

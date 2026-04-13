@@ -25,8 +25,6 @@ const playerSchema = new Schema({
     },
     blRank: {
         type: Number,
-        required: true,
-        default: -1
     },
     ssRank: {
         type: Number,
