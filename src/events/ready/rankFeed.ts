@@ -118,41 +118,11 @@ module.exports = {
           }
           if (blPlayerData.rank < player.blRank) {
             console.log("rank up! " + (player.blRank - blPlayerData.rank) + " " + player.blRank + " " + blPlayerData.rank);
-            player.blRank = blPlayerData.rank;
-            player.save().catch(e => console.log(e));
           } else if (blPlayerData.rank > player.blRank) {
             console.log("rank down! " + (player.blRank - blPlayerData.rank) + " " + player.blRank + " " + blPlayerData.rank);
           }
-      }
-    });
-
-    ScoreSaberAPI.addListener("score", async (message) => {
-      const scoreData = message;
-
-      const player = await Player.findOne({
-        scoreSaberId: scoreData.score.leaderboardPlayerInfo.id,
-      });
-
-      if (!player) return;
-
-      const score = await Score.findOne({
-        discordId: player.discordId,
-        "beatLeaderData.leaderboard.song.hash":
-          scoreData.leaderboard.songHash.toLowerCase(),
-        "beatLeaderData.baseScore": scoreData.score.baseScore,
-        scoreSaberData: { $in: [undefined, null] },
-      });
-
-      if (score) {
-        score.scoreSaberData = scoreData;
-        score.save().catch((err) => console.log(err));
-        await outputScore(client, score);
-      } else {
-        const newScore = new Score({
-          discordId: player.discordId,
-          scoreSaberData: scoreData,
-        });
-        newScore.save().catch((err) => console.log(err));
+          player.blRank = blPlayerData.rank;
+          player.save().catch(e => console.log(e));
       }
     });
   },
