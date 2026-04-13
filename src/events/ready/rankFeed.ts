@@ -103,9 +103,12 @@ module.exports = {
 
       const players = await Player.find();
 
+      console.log("got players");
+
       for (const player of players) {
           const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
           if (!blPlayerData) { return; }
+          console.log(player.blRank);
           if (!player.blRank) {
             player.blRank = blPlayerData.rank;
             player.save().catch(e => console.log(e));
