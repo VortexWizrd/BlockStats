@@ -118,7 +118,7 @@ module.exports = {
 
         let player = await Player.findOne({ discordId: interaction.user.id });
         if (interaction.options.get("id")) {
-          player = await Player.findOne({ beatLeaderId: interaction.options.get("id")})
+          player = await Player.findOne({ beatLeaderId: interaction.options.getString("id")})
           if (!player) {
             return interaction.editReply({
             content:
