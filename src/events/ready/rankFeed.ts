@@ -43,9 +43,9 @@ module.exports = {
             if (blPlayerData.rank < player.blRank) {
             embed
             .setAuthor({
-                name: scoreData.player.name,
-                iconURL: scoreData.player.avatar,
-                url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`,
+                name: blPlayerData.name,
+                iconURL: blPlayerData.avatar,
+                url: `https://beatleader.com/u/${blPlayerData.id}`,
             })
             .setTitle(`Climbed **${player.blRank - blPlayerData.rank} rank${player.blRank - blPlayerData.rank == 1 ? "" : "s"}** on BeatLeader!`)
             .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
@@ -61,8 +61,7 @@ module.exports = {
             .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
             .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
             }
-            player.blRank = blPlayerData.rank;
-            player.save().catch(e => console.log(e));
+            
 
             const rankFeeds = await RankFeed.find({
               beatleaderIds: { $in: [scoreData.playerId] },
@@ -80,9 +79,11 @@ module.exports = {
                 }
               }
             }
+            player.blRank = blPlayerData.rank;
+            player.save().catch(e => console.log(e));
             console.log(
               `[${new Date().toLocaleTimeString()}] Updated BeatLeader rank for ${
-                scoreData.player.name
+                blPlayerData.name
               }`
             );
 
