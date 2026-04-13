@@ -45,7 +45,7 @@ module.exports = {
                 iconURL: scoreData.player.avatar,
                 url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`,
             })
-            .setTitle(`Climbed **${player.blRank - blPlayerData.rank} rank${player.blRank - blPlayerData.rank == 1 ? "s" : ""}** on BeatLeader!`)
+            .setTitle(`Climbed **${player.blRank - blPlayerData.rank} rank${player.blRank - blPlayerData.rank == 1 ? "" : "s"}** on BeatLeader!`)
             .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
             .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
             } else if (blPlayerData.rank > player.blRank) {
@@ -55,7 +55,7 @@ module.exports = {
                 iconURL: scoreData.player.avatar,
                 url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`,
             })
-            .setTitle(`Lost **${blPlayerData.rank - player.blRank} rank${player.blRank - blPlayerData.rank == 1 ? "s" : ""}** on BeatLeader`)
+            .setTitle(`Lost **${blPlayerData.rank - player.blRank} rank${blPlayerData.rank - player.blRank == 1 ? "" : "s"}** on BeatLeader`)
             .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
             .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
             }
