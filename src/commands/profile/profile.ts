@@ -148,18 +148,13 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setTitle(beatLeader.name)
           .setThumbnail(beatLeader.avatar)
-          .setDescription(linkText)
+          .setDescription(`${linkText}\n# #${player.blRank} <:beatleader:1492695343345832102> ${player.ssRank ? `| #${player.ssRank} <:scoresaber:1492695389634035823>` : ""}`)
           .setColor("Default")
           .addFields({
             name: "Scores",
             value: scores.length.toString(),
             inline: true,
           },
-          {
-            name: "BL Rank",
-            value: player.blRank?.toString() ?? "?",
-            inline: true,
-          }
         );
 
         return interaction.editReply({
