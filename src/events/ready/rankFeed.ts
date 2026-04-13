@@ -1,9 +1,10 @@
-import { Client, Events, MessageCreateOptions, TextChannel } from "discord.js";
+import { Client, EmbedBuilder, Events, MessageCreateOptions, TextChannel } from "discord.js";
 import ScoreFeed from "../../models/ScoreFeed";
 import Score from "../../models/Score";
 import Player from "../../models/Player";
 import ScoreDisplay from "../../utils/getScoreDisplay";
 import BeatLeaderAPI from "../../api/BeatLeaderAPI";
+import RankFeed from "../../models/RankFeed";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
 
 async function outputScore(client: Client, score: any): Promise<void> {
@@ -103,14 +104,10 @@ module.exports = {
 
       const players = await Player.find();
 
-      console.log("got players");
-
       for (const player of players) {
-          try {
-              
+          try {  
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
           if (!blPlayerData) { return; }
-          console.log(player.blRank);
           if (!player.blRank) {
             player.blRank = blPlayerData.rank;
             player.save().catch(e => console.log(e));
@@ -121,16 +118,57 @@ module.exports = {
             player.save().catch(e => console.log(e));
             return;
           }
+          let embed = new EmbedBuilder()
           if (blPlayerData.rank < player.blRank) {
-            console.log("rank up! " + (player.blRank - blPlayerData.rank) + " " + player.blRank + " " + blPlayerData.rank);
+            embed
+            .setAuthor({
+                name: scoreData.player.name,
+                iconURL: scoreData.player.avatar,
+                url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`,
+            })
+            .setTitle(`Climbed **${player.blRank - blPlayerData.rank} rank${player.blRank - blPlayerData.rank == 1 ? "s" : ""}** on BeatLeader!`)
+            .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
+            .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
           } else if (blPlayerData.rank > player.blRank) {
-            console.log("rank down! " + (player.blRank - blPlayerData.rank) + " " + player.blRank + " " + blPlayerData.rank);
+            embed
+            .setAuthor({
+                name: scoreData.player.name,
+                iconURL: scoreData.player.avatar,
+                url: `https://beatleader.com/u/${this.score.beatLeaderData.player.id}`,
+            })
+            .setTitle(`Lost **${blPlayerData.rank - player.blRank} rank${player.blRank - blPlayerData.rank == 1 ? "s" : ""}** on BeatLeader`)
+            .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
+            .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
           }
           player.blRank = blPlayerData.rank;
           player.save().catch(e => console.log(e));
+
+          const rankFeeds = await ScoreFeed.find({
+              beatleaderIds: { $in: [scoreData.playerId] },
+            });
+            for (const feed of rankFeeds) {
+              if (feed.channelId && feed.guildId) {
+                const channel = await client.channels.fetch(feed.channelId || "");
+                if (channel && channel instanceof TextChannel) {
+                  const message = await channel.send({embeds: [embed]});
+        }
+      } else if (feed.userId) {
+        const user = await client.users.fetch(feed.userId || "");
+        if (user) {
+          const message = await user.send({embeds: [embed]});
+        }
+      }
+    }
+    console.log(
+      `[${new Date().toLocaleTimeString()}] Updated BeatLeader rank for ${
+        scoreData.player.name
+      }`
+    );
+
           } catch (err) {
             console.log(err);
           }
+          
           
       }
     });
