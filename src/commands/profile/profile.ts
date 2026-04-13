@@ -141,7 +141,13 @@ module.exports = {
             name: "Scores",
             value: scores.length.toString(),
             inline: true,
-          });
+          },
+          {
+            name: "BL Rank",
+            value: player.blRank.toString(),
+            inline: true,
+          }
+        );
 
         return interaction.editReply({
           embeds: [embed],
