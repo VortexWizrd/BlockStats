@@ -22,7 +22,15 @@ const playerSchema = new Schema({
             type: Boolean,
             default: false
         }
-    }
+    },
+    blRank: {
+        type: Number,
+        required: true,
+        default: -1
+    },
+    ssRank: {
+        type: Number,
+    },
 });
 
 export default model("Player", playerSchema);
