@@ -30,7 +30,11 @@ module.exports = {
         ),
     )
     .addSubcommand((cmd) =>
-      cmd.setName("show").setDescription("Display a BlockStats profile"),
+      cmd.setName("show").setDescription("Display a BlockStats profile")
+      .addStringOption((option) =>
+            option.setName("id").setDescription("BeatLeader ID").setRequired(false))
+      .addStringOption((option) =>
+            option.setName("name").setDescription("BeatLeader name").setRequired(false))
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
@@ -112,7 +116,16 @@ module.exports = {
       case "show": {
         await interaction.deferReply();
 
-        const player = await Player.findOne({ discordId: interaction.user.id });
+        let player = await Player.findOne({ discordId: interaction.user.id });
+        if (interaction.options.get("id")) {
+          player = await Player.findOne({ beatLeaderId: interaction.options.get("id")})
+          if (!player) {
+            return interaction.editReply({
+            content:
+              "Player not found",
+          });
+          }
+        }
 
         if (!player)
           return interaction.editReply({
@@ -121,14 +134,14 @@ module.exports = {
           });
 
         const beatLeader = await BeatLeaderAPI.getUserFromDiscord(
-          interaction.user.id,
+          player.discordId,
         );
         if (!beatLeader)
           return interaction.editReply({
             content: "Error: BeatLeader not found.",
           });
 
-        const scores = await Score.find({ discordId: interaction.user.id });
+        const scores = await Score.find({ discordId: player.discordId });
 
         const linkText = `[[ <:beatleader:1492695343345832102> BeatLeader ](https://beatleader.com/u/${player.beatLeaderId}) | [ <:discord:1492695870343221323> Discord ](https://discord.com/users/${player.discordId})${player.scoreSaberId ? ` | [ <:scoresaber:1492695389634035823> ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
 
