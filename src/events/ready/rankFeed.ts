@@ -24,9 +24,7 @@ module.exports = {
 
       for (const player of players) {
           try {
-            console.log(player.blRank)
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
-            console.log(blPlayerData.rank)
             if (!blPlayerData) { return; }
             if (!player.blRank) {
               player.blRank = blPlayerData.rank;
@@ -38,7 +36,7 @@ module.exports = {
               player.save().catch(e => console.log(e));
               return;
             }
-            console.log(player.blRank + " " + blPlayerData.rank);
+            if (player.blRank == blPlayerData.rank) { return; }
             let embed = new EmbedBuilder()
             if (blPlayerData.rank < player.blRank) {
             embed
