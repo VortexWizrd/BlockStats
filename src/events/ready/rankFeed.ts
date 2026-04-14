@@ -23,18 +23,18 @@ module.exports = {
       for (const player of players) {
           try {
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
-            if (!blPlayerData) { return; }
+            if (!blPlayerData) { continue; }
             if (!player.blRank) {
               player.blRank = blPlayerData.rank;
               player.save().catch(e => console.log(e));
-              return;
+              continue;
             }
             if (player.blRank == -1) {
               player.blRank = blPlayerData.rank;
               player.save().catch(e => console.log(e));
-              return;
+              continue;
             }
-            if (player.blRank == blPlayerData.rank) { return; }
+            if (player.blRank == blPlayerData.rank) { continue; }
             let embed = new EmbedBuilder()
             if (blPlayerData.rank < player.blRank) {
             embed
@@ -102,23 +102,21 @@ module.exports = {
 
       for (const player of players) {
         if (player.scoreSaberId) {
-          console.log(player.scoreSaberId);
           try {
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
             const ssPlayerData = await ScoreSaberAPI.getUserFromId(player.scoreSaberId);
-            console.log(blPlayerData.rank + " " + ssPlayerData.rank);
-            if (!ssPlayerData || !blPlayerData) { return; }
+            if (!ssPlayerData || !blPlayerData) { continue; }
             if (!player.ssRank) {
               player.ssRank = ssPlayerData.rank;
               player.save().catch(e => console.log(e));
-              return;
+              continue;
             }
             if (player.ssRank == -1 || player.ssRank == 0) {
               player.ssRank = ssPlayerData.rank;
               player.save().catch(e => console.log(e));
-              return;
+              continue;
             }
-            if (player.ssRank == ssPlayerData.rank) { return; }
+            if (player.ssRank == ssPlayerData.rank) { continue; }
             let embed = new EmbedBuilder()
             if (ssPlayerData.rank < player.ssRank) {
             embed
