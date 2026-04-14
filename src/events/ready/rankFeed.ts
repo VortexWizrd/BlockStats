@@ -98,22 +98,22 @@ module.exports = {
 
       if (scoreData.pp <= 0) { return; }
 
-      console.log("Updating scoresaber ranks")
-
       const players = await Player.find();
 
       for (const player of players) {
         if (player.scoreSaberId) {
+          console.log(player.scoreSaberId);
           try {
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
             const ssPlayerData = await ScoreSaberAPI.getUserFromId(player.scoreSaberId);
+            console.log(blPlayerData.rank + " " + ssPlayerData.rank);
             if (!ssPlayerData || !blPlayerData) { return; }
             if (!player.ssRank) {
               player.ssRank = ssPlayerData.rank;
               player.save().catch(e => console.log(e));
               return;
             }
-            if (player.ssRank == -1) {
+            if (player.ssRank == -1 || player.ssRank == 0) {
               player.ssRank = ssPlayerData.rank;
               player.save().catch(e => console.log(e));
               return;
