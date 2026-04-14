@@ -98,6 +98,8 @@ module.exports = {
 
       if (scoreData.pp <= 0) { return; }
 
+      console.log("Updating scoresaber ranks")
+
       const players = await Player.find();
 
       for (const player of players) {
