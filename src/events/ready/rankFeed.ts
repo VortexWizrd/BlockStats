@@ -101,7 +101,7 @@ module.exports = {
       const players = await Player.find();
 
       for (const player of players) {
-        if (!player.scoreSaberId) continue;
+        if (player.scoreSaberId) {
           try {
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
             const ssPlayerData = await ScoreSaberAPI.getUserFromId(player.scoreSaberId);
@@ -170,8 +170,7 @@ module.exports = {
           } catch (err) {
             console.log(err);
           }
-          
-          
+        }   
       }
     });
   },
