@@ -90,7 +90,7 @@ module.exports = {
       if (scoreData.pp <= 0) { return; }
 
       ssCount++;
-      if (Date.now() - lastSSUpdate < 10000 && ssCount < 10) { return; }
+      if (Date.now() - lastSSUpdate < 10000 && ssCount < 5) { return; }
 
       const players = await Player.find();
 
