@@ -13,10 +13,19 @@ module.exports = {
     once: false,
   },
   execute(client: Client): void {
+
+    let lastBLUpdate = Date.now();
+    let blCount = 0;
+    let lastSSUpdate = Date.now();
+    let ssCount = 0;
+
     BeatLeaderAPI.addListener("score", async (message) => {
       const scoreData = message;
 
       if (scoreData.leaderboard.difficulty.status !== 3) { return; }
+
+      blCount++;
+      if (Date.now() - lastBLUpdate < 10000 || blCount < 10) { return; }
 
       const players = await Player.find();
 
@@ -91,12 +100,18 @@ module.exports = {
           
           
       }
+
+      blCount = 0;
+      lastBLUpdate = Date.now();
     });
 
     ScoreSaberAPI.addListener("score", async (message) => {
       const scoreData = message;
 
       if (scoreData.pp <= 0) { return; }
+
+      ssCount++;
+      if (Date.now() - lastSSUpdate < 10000 || ssCount < 10) { return; }
 
       const players = await Player.find();
 
@@ -172,6 +187,9 @@ module.exports = {
           }
         }   
       }
+
+      ssCount = 0;
+      lastSSUpdate = Date.now();
     });
   },
 };
