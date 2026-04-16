@@ -6,6 +6,7 @@ import ScoreDisplay from "../../utils/getScoreDisplay";
 import BeatLeaderAPI from "../../api/BeatLeaderAPI";
 import RankFeed from "../../models/RankFeed";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
+import RankDisplay from "../../utils/getRankDisplay";
 
 module.exports = {
   data: {
@@ -44,32 +45,16 @@ module.exports = {
               continue;
             }
             if (player.blRank == blPlayerData.rank) { continue; }
-            let embed = new EmbedBuilder()
-            if (blPlayerData.rank < player.blRank) {
-            embed
-            .setAuthor({
-                name: blPlayerData.name,
-                iconURL: blPlayerData.avatar,
-                url: `https://beatleader.com/u/${blPlayerData.id}`,
-            })
-            .setTitle(`Climbed **${player.blRank - blPlayerData.rank} rank${player.blRank - blPlayerData.rank == 1 ? "" : "s"}** on BeatLeader!`)
-            .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
-            .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
-            .setColor(0xEC018E)
-            .setTimestamp()
-            } else if (blPlayerData.rank > player.blRank) {
-            embed
-            .setAuthor({
-                name: blPlayerData.name,
-                iconURL: blPlayerData.avatar,
-                url: `https://beatleader.com/u/${blPlayerData.id}`,
-            })
-            .setTitle(`Lost **${blPlayerData.rank - player.blRank} rank${blPlayerData.rank - player.blRank == 1 ? "" : "s"}** on BeatLeader`)
-            .setThumbnail(`https://beatleader.com/assets/logo-small.png`)
-            .setDescription(`# #${player.blRank} -> #${blPlayerData.rank}`)
-            .setColor(0xEC018E)
-            .setTimestamp()
-            }
+
+            const embed = (new RankDisplay(blPlayerData, 0, player.blRank, blPlayerData.rank)).getEmbed();
+            player.blRank = blPlayerData.rank;
+            player.save().catch(e => console.log(e));
+            console.log(
+              `[${new Date().toLocaleTimeString()}] Updated BeatLeader rank for ${
+                blPlayerData.name
+              }`
+            );
+
             const rankFeeds = await RankFeed.find({
               beatleaderIds: { $in: [player.beatLeaderId] },
             });
@@ -86,13 +71,7 @@ module.exports = {
                 }
               }
             }
-            player.blRank = blPlayerData.rank;
-            player.save().catch(e => console.log(e));
-            console.log(
-              `[${new Date().toLocaleTimeString()}] Updated BeatLeader rank for ${
-                blPlayerData.name
-              }`
-            );
+            
 
           } catch (err) {
             console.log(err);
@@ -132,32 +111,16 @@ module.exports = {
               continue;
             }
             if (player.ssRank == ssPlayerData.rank) { continue; }
-            let embed = new EmbedBuilder()
-            if (ssPlayerData.rank < player.ssRank) {
-            embed
-            .setAuthor({
-                name: blPlayerData.name,
-                iconURL: blPlayerData.avatar,
-                url: `https://beatleader.com/u/${blPlayerData.id}`,
-            })
-            .setTitle(`Climbed **${player.ssRank - ssPlayerData.rank} rank${player.ssRank - ssPlayerData.rank == 1 ? "" : "s"}** on ScoreSaber!`)
-            .setThumbnail(`https://bsaber.com/uploads/communities/scoresaber-logo-reuben-afriendlypug-.png`)
-            .setDescription(`# #${player.ssRank} -> #${ssPlayerData.rank}`)
-            .setColor(0xFFDE18)
-            .setTimestamp()
-            } else if (ssPlayerData.rank > player.ssRank) {
-            embed
-            .setAuthor({
-                name: blPlayerData.name,
-                iconURL: blPlayerData.avatar,
-                url: `https://beatleader.com/u/${blPlayerData.id}`,
-            })
-            .setTitle(`Lost **${ssPlayerData.rank - player.ssRank} rank${ssPlayerData.rank - player.ssRank == 1 ? "" : "s"}** on ScoreSaber`)
-            .setThumbnail(`https://bsaber.com/uploads/communities/scoresaber-logo-reuben-afriendlypug-.png`)
-            .setDescription(`# #${player.ssRank} -> #${ssPlayerData.rank}`)
-            .setColor(0xFFDE18)
-            .setTimestamp()
-            }
+
+            const embed = (new RankDisplay(blPlayerData, 1, player.ssRank, ssPlayerData.rank)).getEmbed();
+            player.ssRank = ssPlayerData.rank;
+            player.save().catch(e => console.log(e));
+            console.log(
+              `[${new Date().toLocaleTimeString()}] Updated ScoreSaber rank for ${
+                blPlayerData.name
+              }`
+            );
+
             const rankFeeds = await RankFeed.find({
               beatleaderIds: { $in: [player.beatLeaderId] },
             });
@@ -174,14 +137,7 @@ module.exports = {
                 }
               }
             }
-            player.ssRank = ssPlayerData.rank;
-            player.save().catch(e => console.log(e));
-            console.log(
-              `[${new Date().toLocaleTimeString()}] Updated ScoreSaber rank for ${
-                blPlayerData.name
-              }`
-            );
-
+            
           } catch (err) {
             console.log(err);
           }
