@@ -25,7 +25,7 @@ module.exports = {
       if (scoreData.leaderboard.difficulty.status !== 3) { return; }
 
       blCount++;
-      if (Date.now() - lastBLUpdate < 10000 || blCount < 10) { return; }
+      if (Date.now() - lastBLUpdate < 10000 && blCount < 10) { return; }
 
       const players = await Player.find();
 
@@ -111,7 +111,7 @@ module.exports = {
       if (scoreData.pp <= 0) { return; }
 
       ssCount++;
-      if (Date.now() - lastSSUpdate < 10000 || ssCount < 10) { return; }
+      if (Date.now() - lastSSUpdate < 10000 && ssCount < 10) { return; }
 
       const players = await Player.find();
 
