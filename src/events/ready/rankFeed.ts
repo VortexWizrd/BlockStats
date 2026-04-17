@@ -15,21 +15,24 @@ module.exports = {
   },
   execute(client: Client): void {
 
+    // Cooldown setup
     let lastBLUpdate = Date.now();
     let blCount = 0;
     let lastSSUpdate = Date.now();
     let ssCount = 0;
 
+    // BeatLeader rank changes
     BeatLeaderAPI.addListener("score", async (message) => {
+
       const scoreData = message;
 
+      // Only update if criteria met
       if (scoreData.leaderboard.difficulty.status !== 3) { return; }
-
       blCount++;
       if (Date.now() - lastBLUpdate < 10000 && blCount < 10) { return; }
 
+      // Update all BeatLeader ranks
       const players = await Player.find();
-
       for (const player of players) {
           try {
             const blPlayerData = await BeatLeaderAPI.getUserFromDiscord(player.discordId);
@@ -84,16 +87,18 @@ module.exports = {
       lastBLUpdate = Date.now();
     });
 
+    // ScoreSaber rank changes
     ScoreSaberAPI.addListener("score", async (message) => {
+
       const scoreData = message;
 
+      // Only update if criteria met
       if (scoreData.pp <= 0) { return; }
-
       ssCount++;
       if (Date.now() - lastSSUpdate < 10000 && ssCount < 5) { return; }
 
+      // Update all ScoreSaber ranks
       const players = await Player.find();
-
       for (const player of players) {
         if (player.scoreSaberId) {
           try {
