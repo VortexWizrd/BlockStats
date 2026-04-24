@@ -172,7 +172,7 @@ module.exports = {
                     .setTitle(beatLeader.name)
                     .setThumbnail(beatLeader.avatar)
                     .setDescription(
-                        `${linkText}\n# #${player.blRank} <:beatleader:1492695343345832102> ${player.ssRank ? `| #${player.ssRank} <:scoresaber:1492695389634035823>` : ""}`,
+                        `${linkText}\n# #${player.blRankHistory[player.blRankHistory.length - 1]} <:beatleader:1492695343345832102> ${player.ssRankHistory ? `| #${player.ssRankHistory[player.ssRankHistory.length - 1]} <:scoresaber:1492695389634035823>` : ""}`,
                     )
                     .setColor("Default")
                     .addFields({

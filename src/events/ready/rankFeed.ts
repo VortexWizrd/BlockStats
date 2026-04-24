@@ -1,14 +1,5 @@
-import {
-    Client,
-    EmbedBuilder,
-    Events,
-    MessageCreateOptions,
-    TextChannel,
-} from "discord.js";
-import ScoreFeed from "../../models/ScoreFeed";
-import Score from "../../models/Score";
+import { Client, Events, TextChannel } from "discord.js";
 import Player from "../../models/Player";
-import ScoreDisplay from "../../utils/getScoreDisplay";
 import BeatLeaderAPI from "../../api/BeatLeaderAPI";
 import RankFeed from "../../models/RankFeed";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
@@ -20,22 +11,12 @@ module.exports = {
         once: false,
     },
     execute(client: Client): void {
-        // Cooldown setup
-        let lastBLUpdate = Date.now();
-        let blCount = 0;
-        let lastSSUpdate = Date.now();
-        let ssCount = 0;
-
         // BeatLeader rank changes
         BeatLeaderAPI.addListener("score", async (message) => {
             const scoreData = message;
 
             // Only update if criteria met
             if (scoreData.leaderboard.difficulty.status !== 3) {
-                return;
-            }
-            blCount++;
-            if (Date.now() - lastBLUpdate < 10000 && blCount < 10) {
                 return;
             }
 
@@ -49,36 +30,47 @@ module.exports = {
                     if (!blPlayerData) {
                         continue;
                     }
-                    if (Number.isNaN(blPlayerData.rank)) {
+                    if (
+                        Number.isNaN(blPlayerData.rank) ||
+                        !blPlayerData.rank ||
+                        blPlayerData.rank <= 0
+                    ) {
                         continue;
                     }
-                    if (!player.blRank) {
-                        player.blRank = blPlayerData.rank;
-                        player.save().catch((e) => console.log(e));
+                    if (player.blRankHistory.length == 0) {
+                        player.blRankHistory.push({
+                            timestamp: Date.now(),
+                            rank: blPlayerData.rank,
+                        });
+                        await player.save().catch((e) => console.log(e));
                         continue;
                     }
-                    if (player.blRank == -1) {
-                        player.blRank = blPlayerData.rank;
-                        player.save().catch((e) => console.log(e));
+                    if (
+                        player.blRankHistory[player.blRankHistory.length - 1]
+                            .rank == blPlayerData.rank
+                    ) {
                         continue;
                     }
-                    if (player.blRank == blPlayerData.rank) {
-                        continue;
-                    }
+                    player.blRankHistory.push({
+                        timestamp: Date.now(),
+                        rank: blPlayerData.rank,
+                    });
+                    await player.save().catch((e) => console.log(e));
 
-                    const embed = new RankDisplay(
-                        blPlayerData,
-                        0,
-                        player.blRank,
-                        blPlayerData.rank,
-                    ).getEmbed();
-                    player.blRank = blPlayerData.rank;
-                    player.save().catch((e) => console.log(e));
                     console.log(
                         `[${new Date().toLocaleTimeString()}] Updated BeatLeader rank for ${
                             blPlayerData.name
                         }`,
                     );
+
+                    const embed = new RankDisplay(
+                        blPlayerData,
+                        0,
+                        player.blRankHistory[player.blRankHistory.length - 2]
+                            .rank,
+                        player.blRankHistory[player.blRankHistory.length - 1]
+                            .rank,
+                    ).getEmbed();
 
                     const rankFeeds = await RankFeed.find({
                         beatleaderIds: { $in: [player.beatLeaderId] },
@@ -108,9 +100,6 @@ module.exports = {
                     console.log(err);
                 }
             }
-
-            blCount = 0;
-            lastBLUpdate = Date.now();
         });
 
         // ScoreSaber rank changes
@@ -119,10 +108,6 @@ module.exports = {
 
             // Only update if criteria met
             if (scoreData.pp <= 0) {
-                return;
-            }
-            ssCount++;
-            if (Date.now() - lastSSUpdate < 10000 && ssCount < 5) {
                 return;
             }
 
@@ -141,36 +126,51 @@ module.exports = {
                         if (!ssPlayerData || !blPlayerData) {
                             continue;
                         }
-                        if (Number.isNaN(ssPlayerData.rank)) {
+                        if (
+                            Number.isNaN(ssPlayerData.rank) ||
+                            !ssPlayerData.rank ||
+                            ssPlayerData.rank <= 0
+                        ) {
                             continue;
                         }
-                        if (!player.ssRank) {
-                            player.ssRank = ssPlayerData.rank;
-                            player.save().catch((e) => console.log(e));
+                        if (player.ssRankHistory.length == 0) {
+                            player.ssRankHistory.push({
+                                timestamp: Date.now(),
+                                rank: ssPlayerData.rank,
+                            });
+                            await player.save().catch((e) => console.log(e));
                             continue;
                         }
-                        if (player.ssRank == -1 || player.ssRank == 0) {
-                            player.ssRank = ssPlayerData.rank;
-                            player.save().catch((e) => console.log(e));
-                            continue;
-                        }
-                        if (player.ssRank == ssPlayerData.rank) {
+                        if (
+                            player.ssRankHistory[
+                                player.ssRankHistory.length - 1
+                            ].rank == ssPlayerData.rank
+                        ) {
                             continue;
                         }
 
-                        const embed = new RankDisplay(
-                            blPlayerData,
-                            1,
-                            player.ssRank,
-                            ssPlayerData.rank,
-                        ).getEmbed();
-                        player.ssRank = ssPlayerData.rank;
-                        player.save().catch((e) => console.log(e));
+                        player.ssRankHistory.push({
+                            timestamp: Date.now(),
+                            rank: ssPlayerData.rank,
+                        });
+                        await player.save().catch((e) => console.log(e));
+
                         console.log(
                             `[${new Date().toLocaleTimeString()}] Updated ScoreSaber rank for ${
                                 blPlayerData.name
                             }`,
                         );
+
+                        const embed = new RankDisplay(
+                            blPlayerData,
+                            0,
+                            player.ssRankHistory[
+                                player.ssRankHistory.length - 2
+                            ].rank,
+                            player.ssRankHistory[
+                                player.ssRankHistory.length - 1
+                            ].rank,
+                        ).getEmbed();
 
                         const rankFeeds = await RankFeed.find({
                             beatleaderIds: { $in: [player.beatLeaderId] },
@@ -201,9 +201,6 @@ module.exports = {
                     }
                 }
             }
-
-            ssCount = 0;
-            lastSSUpdate = Date.now();
         });
     },
 };

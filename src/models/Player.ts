@@ -20,14 +20,38 @@ const playerSchema = new Schema({
     settings: {
         scoreCommentEvent: {
             type: Boolean,
-            default: false
-        }
+            default: false,
+        },
     },
-    blRank: {
-        type: Number,
+    blRankHistory: {
+        type: [
+            {
+                timestamp: {
+                    type: Date,
+                    required: true,
+                },
+                rank: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
+        required: true,
+        default: [],
     },
-    ssRank: {
-        type: Number,
+    ssRankHistory: {
+        type: [
+            {
+                timestamp: {
+                    type: Date,
+                    required: true,
+                },
+                rank: {
+                    type: Number,
+                    required: true,
+                },
+            },
+        ],
     },
 });
 
