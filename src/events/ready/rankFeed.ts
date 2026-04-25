@@ -163,7 +163,7 @@ module.exports = {
 
                         const embed = new RankDisplay(
                             blPlayerData,
-                            0,
+                            1,
                             player.ssRankHistory[
                                 player.ssRankHistory.length - 2
                             ].rank,
