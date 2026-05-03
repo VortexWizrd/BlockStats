@@ -5,20 +5,27 @@ import RankFeed from "../../models/RankFeed";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
 import RankDisplay from "../../utils/getRankDisplay";
 
+
+
 module.exports = {
     data: {
         type: Events.ClientReady,
         once: false,
     },
     execute(client: Client): void {
+
+        let blUpdating = false;
+        let ssUpdating = true;
+
         // BeatLeader rank changes
         BeatLeaderAPI.addListener("score", async (message) => {
             const scoreData = message;
 
+            if (blUpdating) return;
+            blUpdating = true;
+
             // Only update if criteria met
-            if (scoreData.leaderboard.difficulty.status !== 3) {
-                return;
-            }
+            if (scoreData.leaderboard.difficulty.status !== 3) return;
 
             // Update all BeatLeader ranks
             const players = await Player.find();
@@ -100,11 +107,15 @@ module.exports = {
                     console.log(err);
                 }
             }
+            blUpdating = false;
         });
 
         // ScoreSaber rank changes
         ScoreSaberAPI.addListener("score", async (message) => {
             const scoreData = message;
+
+            if (ssUpdating) return;
+            ssUpdating = true;
 
             // Only update if criteria met
             if (scoreData.pp <= 0) {
@@ -201,6 +212,8 @@ module.exports = {
                     }
                 }
             }
+
+            ssUpdating = false;
         });
     },
 };
