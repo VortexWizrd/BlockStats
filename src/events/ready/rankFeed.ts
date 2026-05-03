@@ -15,7 +15,7 @@ module.exports = {
     execute(client: Client): void {
 
         let blUpdating = false;
-        let ssUpdating = true;
+        let ssUpdating = false;
 
         // BeatLeader rank changes
         BeatLeaderAPI.addListener("score", async (message) => {
