@@ -22,10 +22,11 @@ module.exports = {
             const scoreData = message;
 
             if (blUpdating) return;
-            blUpdating = true;
 
             // Only update if criteria met
             if (scoreData.leaderboard.difficulty.status !== 3) return;
+            
+            blUpdating = true;
 
             // Update all BeatLeader ranks
             const players = await Player.find();
@@ -115,12 +116,13 @@ module.exports = {
             const scoreData = message;
 
             if (ssUpdating) return;
-            ssUpdating = true;
 
             // Only update if criteria met
             if (scoreData.pp <= 0) {
                 return;
             }
+
+            ssUpdating = true;
 
             // Update all ScoreSaber ranks
             const players = await Player.find();
