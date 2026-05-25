@@ -27,75 +27,88 @@ export default class ScoreDisplay {
             .setTitle(
                 `New score on **${this.score.beatLeaderData.leaderboard.song.name} ` +
                     `${
-                        this.score.beatLeaderData.leaderboard.song.subName
-                            ? `${this.score.beatLeaderData.leaderboard.song.subName} `
-                            : ""
+                        this.score.beatLeaderData.leaderboard.song.subName ?
+                            `${this.score.beatLeaderData.leaderboard.song.subName} `
+                        :   ""
                     }` +
                     `[` +
                     `${
-                        this.score.beatLeaderData.leaderboard.difficulty
-                            .difficultyName === "ExpertPlus"
-                            ? "Expert+"
-                            : this.score.beatLeaderData.leaderboard.difficulty
-                                  .difficultyName
+                        (
+                            this.score.beatLeaderData.leaderboard.difficulty
+                                .difficultyName === "ExpertPlus"
+                        ) ?
+                            "Expert+"
+                        :   this.score.beatLeaderData.leaderboard.difficulty
+                                .difficultyName
                     }` +
                     `${
-                        this.score.beatLeaderData.leaderboard.difficulty
-                            .modeName === "Standard"
-                            ? ""
-                            : this.score.beatLeaderData.leaderboard.difficulty
-                                  .modeName
+                        (
+                            this.score.beatLeaderData.leaderboard.difficulty
+                                .modeName === "Standard"
+                        ) ?
+                            ""
+                        :   this.score.beatLeaderData.leaderboard.difficulty
+                                .modeName
                     }` +
                     `${
-                        this.score.scoreSaberData &&
-                        this.score.scoreSaberData.leaderboard.stars > 0
-                            ? ` | ${this.score.scoreSaberData.leaderboard.stars.toFixed(
-                                  2
-                              )}★ SS`
-                            : ""
+                        (
+                            this.score.scoreSaberData &&
+                            this.score.scoreSaberData.leaderboard.stars > 0
+                        ) ?
+                            ` | ${this.score.scoreSaberData.leaderboard.stars.toFixed(
+                                2,
+                            )}★ SS`
+                        :   ""
                     }` +
                     `${
-                        this.score.beatLeaderData.leaderboard.difficulty.stars >
-                        0
-                            ? ` | ${this.score.beatLeaderData.leaderboard.difficulty.stars.toFixed(
-                                  2
-                              )}★ BL`
-                            : ""
+                        (
+                            this.score.beatLeaderData.leaderboard.difficulty
+                                .stars > 0
+                        ) ?
+                            ` | ${this.score.beatLeaderData.leaderboard.difficulty.stars.toFixed(
+                                2,
+                            )}★ BL`
+                        :   ""
                     }` +
-                    `]**`
+                    `]**`,
             )
             .setURL(
-                `https://replay.beatleader.com/?link=${this.score.beatLeaderData.replay}`
+                `https://replay.beatleader.com/?link=${this.score.beatLeaderData.replay}`,
             )
             .setColor(getAccuracyColor(this.score.beatLeaderData.accuracy))
             .setThumbnail(this.score.beatLeaderData.leaderboard.song.coverImage)
             .setDescription(
                 `# \u200B#${this.score.beatLeaderData.rank} • ` +
                     `${(this.score.beatLeaderData.accuracy * 100).toFixed(
-                        2
+                        2,
                     )}%  • ` +
                     `${
-                        this.score.beatLeaderData.fullCombo
-                            ? "FC"
-                            : `${
-                                  this.score.beatLeaderData.missedNotes +
-                                  this.score.beatLeaderData.badCuts
-                              } ` +
-                              `${
-                                  this.score.beatLeaderData.missedNotes +
-                                      this.score.beatLeaderData.badCuts ===
-                                  1
-                                      ? "Miss"
-                                      : "Misses"
-                              }`
-                    }`
+                        this.score.beatLeaderData.fullCombo ?
+                            "FC"
+                        :   `${
+                                this.score.beatLeaderData.missedNotes +
+                                this.score.beatLeaderData.badCuts
+                            } ` +
+                            `${
+                                (
+                                    this.score.beatLeaderData.missedNotes +
+                                        this.score.beatLeaderData.badCuts ===
+                                    1
+                                ) ?
+                                    "Miss"
+                                :   "Misses"
+                            }`
+                    }`,
             )
             .setTimestamp(Number(this.score.beatLeaderData.timeset) * 1000);
 
         if (this.score.beatLeaderData.pp) {
             embed.addFields({
-                name: "BeatLeader pp",
-                value: this.score.beatLeaderData.pp.toFixed(2) + "pp",
+                name:
+                    "<:beatleader:1492695343345832102> " +
+                    this.score.beatLeaderData.pp.toFixed(2) +
+                    "pp",
+                value: " ",
                 inline: true,
             });
         }
@@ -103,8 +116,11 @@ export default class ScoreDisplay {
         if (this.score.scoreSaberData) {
             if (this.score.scoreSaberData.score.pp > 0) {
                 embed.addFields({
-                    name: "ScoreSaber pp",
-                    value: this.score.scoreSaberData.score.pp.toFixed(2) + "pp",
+                    name:
+                        "<:scoresaber:1492695389634035823> " +
+                        this.score.scoreSaberData.score.pp.toFixed(2) +
+                        "pp",
+                    value: " ",
                     inline: true,
                 });
             }
@@ -112,8 +128,8 @@ export default class ScoreDisplay {
 
         if (this.score.beatLeaderData.modifiers) {
             embed.addFields({
-                name: "Modifiers",
-                value: this.score.beatLeaderData.modifiers,
+                name: this.score.beatLeaderData.modifiers,
+                value: " ",
                 inline: true,
             });
         }
@@ -126,11 +142,11 @@ export default class ScoreDisplay {
                     symbol = "+";
                 }
                 embed.addFields({
-                    name: "Gain",
-                    value: `${symbol}${(change * 100).toFixed(2)}% (from ${(
+                    name: `📈 ${symbol}${(change * 100).toFixed(2)}% (from ${(
                         (this.score.beatLeaderData.accuracy - change) *
                         100
                     ).toFixed(2)}%)`,
+                    value: " ",
                     inline: true,
                 });
             }
@@ -156,7 +172,7 @@ export default class ScoreDisplay {
 
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             like,
-            dislike
+            dislike,
         );
 
         return row;
