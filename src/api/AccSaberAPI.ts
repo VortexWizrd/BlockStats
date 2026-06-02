@@ -18,7 +18,7 @@ class AccSaberAPI extends EventEmitter {
                 `https://api.accsaber.com/ranked-maps`,
                 {}
             );
-            this._RankedMaps = (await response.json() as any)[0];
+            this._RankedMaps = await response.json();
             console.log(this._RankedMaps);
         } catch (err) {
             console.log("Failed to get AccSaber ranked maps: ", err);
@@ -26,7 +26,6 @@ class AccSaberAPI extends EventEmitter {
     }
 
     public getComplexity(mapHash: string): number {
-        console.log(this._RankedMaps);
         try {
             for (const map of this._RankedMaps) {
                 if (map.songHash == mapHash) {
