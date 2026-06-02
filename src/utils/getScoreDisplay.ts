@@ -126,6 +126,17 @@ export default class ScoreDisplay {
             }
         }
 
+        if (this.score.accSaberAP) {
+            embed.addFields({
+                name:
+                    "<:accsaber:1511190711431593994> " +
+                    this.score.accSaberAP.toFixed(2) +
+                    "ap",
+                value: " ",
+                inline: true,
+            });
+        }
+
         if (this.score.beatLeaderData.modifiers) {
             embed.addFields({
                 name: this.score.beatLeaderData.modifiers,
