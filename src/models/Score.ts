@@ -13,6 +13,9 @@ const scoreSchema = new Schema({
     scoreSaberData: {
         type: Object,
     },
+    accSaberAP: {
+        type: Number
+    },
     upVoteIds: {
         type: [String],
         required: true,

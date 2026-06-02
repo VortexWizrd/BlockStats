@@ -5,6 +5,7 @@ import Player from "../../models/Player";
 import ScoreDisplay from "../../utils/getScoreDisplay";
 import BeatLeaderAPI from "../../api/BeatLeaderAPI";
 import ScoreSaberAPI from "../../api/ScoreSaberAPI";
+import AccSaberAPI from "../../api/AccSaberAPI";
 
 async function outputScore(client: Client, score: any): Promise<void> {
   try {
@@ -110,6 +111,10 @@ module.exports = {
           const newScore = new Score({
             beatLeaderData: scoreData,
           });
+          const accSaberComplexity = AccSaberAPI.getComplexity(scoreData.leaderboard.song.hash);
+          if (accSaberComplexity != 0) {
+            newScore.accSaberAP = AccSaberAPI.getAP(accSaberComplexity, scoreData.accuracy);
+          }
           newScore.save().catch((err) => console.log(err));
           await outputScore(client, newScore);
         }
@@ -128,6 +133,10 @@ module.exports = {
           score.beatLeaderStatistic = await BeatLeaderAPI.getScoreStatistic(
             scoreData.id
           );
+          const accSaberComplexity = AccSaberAPI.getComplexity(scoreData.leaderboard.song.hash);
+          if (accSaberComplexity != 0) {
+            score.accSaberAP = AccSaberAPI.getAP(accSaberComplexity, scoreData.accuracy);
+          }
           score.save().catch((err) => console.log(err));
           await outputScore(client, score);
         } else {
@@ -138,6 +147,10 @@ module.exports = {
               scoreData.id
             ),
           });
+          const accSaberComplexity = AccSaberAPI.getComplexity(scoreData.leaderboard.song.hash);
+          if (accSaberComplexity != 0) {
+            newScore.accSaberAP = AccSaberAPI.getAP(accSaberComplexity, scoreData.accuracy);
+          }
           newScore.save().catch((err) => console.log(err));
         }
       } else {
