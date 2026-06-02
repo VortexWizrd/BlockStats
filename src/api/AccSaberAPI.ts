@@ -25,6 +25,7 @@ class AccSaberAPI extends EventEmitter {
     }
 
     public getComplexity(mapHash: string): number {
+        console.log(this._RankedMaps);
         try {
             for (const map of this._RankedMaps) {
                 if (map.songHash == mapHash) {
