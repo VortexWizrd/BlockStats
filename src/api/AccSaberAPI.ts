@@ -18,7 +18,8 @@ class AccSaberAPI extends EventEmitter {
                 `https://api.accsaber.com/ranked-maps`,
                 {}
             );
-            this._RankedMaps = (response.json() as any)[0];
+            this._RankedMaps = (await response.json() as any)[0];
+            console.log(this._RankedMaps);
         } catch (err) {
             console.log("Failed to get AccSaber ranked maps: ", err);
         }
