@@ -36,7 +36,7 @@ class WebSocketServerService {
               score.songHash == blConvertedScore.songHash &&
               score.songDifficulty == blConvertedScore.songDifficulty &&
               score.songCharacteristic == blConvertedScore.songCharacteristic &&
-              score.score == blConvertedScore.score
+              Math.abs(score.accuracy - blConvertedScore.accuracy) < 0.0002
             ) {
               this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
               score.blLeaderboardId = blConvertedScore.blLeaderboardId;
@@ -63,7 +63,7 @@ class WebSocketServerService {
               score.songHash == ssConvertedScore.songHash &&
               score.songDifficulty == ssConvertedScore.songDifficulty &&
               score.songCharacteristic == ssConvertedScore.songCharacteristic &&
-              score.score == ssConvertedScore.score
+              Math.abs(score.accuracy - ssConvertedScore.accuracy) < 0.0002
             ) {
               this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
               score.ssLeaderboardId = ssConvertedScore.ssLeaderboardId;
@@ -91,7 +91,7 @@ class WebSocketServerService {
   private async tempStoreScore(score: Score) {
     this.scoreStorage.push(score);
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => setTimeout(resolve, 10000));
 
     const index = this.scoreStorage.indexOf(score);
     if (index !== -1) {
