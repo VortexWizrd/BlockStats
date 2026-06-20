@@ -165,7 +165,9 @@ export default class Score implements IScore {
         ),
         blScore.accuracy,
       ),
-      modifiers: [],
+      modifiers: blScore.modifiers.split(",").includes("")
+        ? []
+        : blScore.modifiers.split(","),
       blLeaderboardId: blScore.leaderboardId,
       blScoreId: blScore.id,
       ssLeaderboardId: null,
@@ -224,7 +226,9 @@ export default class Score implements IScore {
         ),
         ssScore.score.accuracy,
       ),
-      modifiers: [],
+      modifiers: ssScore.score.modifiers.split(",").includes("")
+        ? []
+        : ssScore.score.modifiers.split(","),
       blLeaderboardId: null,
       blScoreId: null,
       ssLeaderboardId: ssScore.leaderboard.id,

@@ -22,7 +22,11 @@ export default class ScoreDisplay {
       .setTitle(
         `New score on **${score.songName}** [${score.songCharacteristic === "Standard" ? "" : score.songCharacteristic + " "}${score.songDifficulty}]`,
       )
-      .setURL(`https://beatleader.com/score/${score.blScoreId}`)
+      .setURL(
+        score.blScoreId
+          ? `https://beatleader.com/score/${score.blScoreId}`
+          : `https://watch.scoresaber.com/?ssScoreId=${score.ssScoreId}`,
+      )
       .setThumbnail(score.songCover)
       .setDescription(
         `# \u200B#${score.blRank ?? score.ssRank} • ${(score.accuracy * 100).toFixed(2)}% • ${
@@ -35,6 +39,15 @@ export default class ScoreDisplay {
       .setColor(this.getAccuracyColor(score.accuracy))
       .setTimestamp();
 
+    if (score.ppSS) {
+      embed.addFields({
+        name:
+          "<:scoresaber:1492695389634035823> " + score.ppSS.toFixed(2) + "pp",
+        value: " ",
+        inline: true,
+      });
+    }
+
     if (score.ppBL) {
       embed.addFields({
         name:
@@ -44,17 +57,18 @@ export default class ScoreDisplay {
       });
     }
 
-    if (score.ppSS) {
+    if (score.ap) {
       embed.addFields({
-        name:
-          "<:scoresaber:1492695389634035823> " + score.ppSS.toFixed(2) + "pp",
+        name: "<:accsaber:1511190711431593994> " + score.ap.toFixed(2) + "ap",
         value: " ",
         inline: true,
       });
     }
-    if (score.ap) {
+
+    if (score.modifiers && score.modifiers.length != 0) {
+      console.log(score.modifiers);
       embed.addFields({
-        name: "<:accsaber:1511190711431593994> " + score.ap.toFixed(2) + "ap",
+        name: score.modifiers.join(" "),
         value: " ",
         inline: true,
       });
