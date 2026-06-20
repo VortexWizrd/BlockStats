@@ -1,26 +1,24 @@
-import { Client, Events, GatewayIntentBits } from "discord.js";
-import eventHandler from "./handlers/eventHandler";
-import mongoose from "mongoose";
-import cleanDatabase from "./utils/cleanDatabase";
-require("dotenv").config();
+import express, { type Request, type Response } from "express";
+import { startDiscord } from "./discord/index.js";
+import { runMigrations } from "./db/migrate.js";
+import beatleaderApiService from "./service/external/beatleader-api.service.js";
+import websocketserverService from "./service/websocket/websocketserver.service.js";
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-    ],
+const app = express();
+const port = 8000;
+
+app.get("/", (req: Request, res: Response) => {
+  res.json({ message: "Hello World" });
 });
 
-(async () => {
-    try {
-        await mongoose.connect(String(process.env.MONGODB_URI));
-        console.log("Connected to MongoDB");
-        eventHandler(client);
-    } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
-    }
-})();
+app.listen(port, () => {
+  console.log("Server listening on port " + port);
+});
 
-client.login(process.env.CLIENT_TOKEN);
+await runMigrations();
+
+startDiscord();
+
+beatleaderApiService.addListener("score", async (data: any) => {
+  console.log(data.player.name);
+});
