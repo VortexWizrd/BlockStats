@@ -3,13 +3,8 @@ import {
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
+  TextChannel,
 } from "discord.js";
-import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
-import { db } from "../../../db/index.js";
-import { playersTable } from "../../../db/schema.js";
-import { eq } from "drizzle-orm";
-import { PlayerService } from "../../../service/player.service.js";
-import { PlayersRepository } from "../../../repositories/players.repository.js";
 import { ScoreFeedsRepository } from "../../../repositories/scorefeeds.repository.js";
 import ScoreFeed from "../../../common/scorefeed.js";
 import { ScoreFeedService } from "../../../service/scorefeed.service.js";
@@ -31,6 +26,12 @@ export default {
               { name: "global", value: "global" },
             )
             .setRequired(true),
+        )
+        .addRoleOption((option) =>
+          option
+            .setName("manager-role")
+            .setDescription("Set role for others to manage the feed")
+            .setRequired(false),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
@@ -70,6 +71,44 @@ export default {
           await ScoreFeedService.createScoreFeed(newFeed);
 
           return interaction.reply("Score feed created!");
+        } else {
+          if (
+            !interaction.channel ||
+            !(interaction.channel instanceof TextChannel)
+          )
+            return interaction.reply({
+              content: "You must be in a text channel to use this command!",
+              flags: MessageFlags.Ephemeral,
+            });
+          const existingFeed = await ScoreFeedsRepository.findByChannelId(
+            interaction.channel.id,
+          );
+
+          if (existingFeed)
+            return interaction.reply({
+              content: "Score feed already exists for this channel!",
+              flags: MessageFlags.Ephemeral,
+            });
+
+          const newFeed = new ScoreFeed({
+            id: undefined,
+            type: interaction.options.getString("type") ?? "global",
+            channelType: "guild",
+            displayType: "embed",
+            userId: null,
+            guildId: interaction.guild.id,
+            channelId: interaction.channel.id,
+            playerIds: [],
+            hasFilters: false,
+            ssRanked: null,
+            blRanked: null,
+            asRanked: null,
+            managerRoleId:
+              interaction.options.getRole("manager-role")?.id ?? null,
+            minRank: null,
+          });
+
+          await ScoreFeedService.createScoreFeed(newFeed);
         }
     }
   },

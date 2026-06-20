@@ -24,15 +24,12 @@ export default {
             await user.send({ embeds: [embed] });
           }
         } else if (feed.channelType === "guild") {
+          const channel = await client.channels.fetch(feed.channelId ?? "");
+          if (channel && channel instanceof TextChannel) {
+            channel.send({ embeds: [embed] });
+          }
         }
       }
-
-      const channel = (await client.channels.fetch(
-        "1492560145941790881",
-      )) as TextChannel;
-      if (!channel) return;
-
-      channel.send({ embeds: [embed] });
     });
   },
 };
