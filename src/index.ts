@@ -1,8 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
 import { runMigrations } from "./db/migrate.js";
-import beatleaderApiService from "./service/external/beatleader-api.service.js";
-import websocketserverService from "./service/websocket/websocketserver.service.js";
 
 const app = express();
 const port = 8000;
@@ -18,7 +16,3 @@ app.listen(port, () => {
 await runMigrations();
 
 startDiscord();
-
-beatleaderApiService.addListener("score", async (data: any) => {
-  console.log(data.player.name);
-});

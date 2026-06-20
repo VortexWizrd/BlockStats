@@ -15,7 +15,6 @@ class AccSaberAPI extends EventEmitter {
     try {
       const response = await fetch(`https://api.accsaber.com/ranked-maps`, {});
       this._RankedMaps = await response.json();
-      console.log(this._RankedMaps);
     } catch (err) {
       console.log("Failed to get AccSaber ranked maps: ", err);
     }
