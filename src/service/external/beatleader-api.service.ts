@@ -30,7 +30,7 @@ class BeatLeaderApiService extends EventEmitter {
         console.log(
           "[BeatLeader] No updates in the last 60 seconds, reconnecting...",
         );
-        this._socket.terminate();
+        this._socket.close();
       }
     }, 30000);
   }

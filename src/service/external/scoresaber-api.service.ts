@@ -33,7 +33,7 @@ class ScoreSaberApiService extends EventEmitter {
         console.log(
           "[ScoreSaber] No updates in the last 60 seconds, reconnecting...",
         );
-        this._socket.terminate();
+        this._socket.close();
       }
     }, 30000);
   }
