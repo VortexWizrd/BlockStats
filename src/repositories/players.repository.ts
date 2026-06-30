@@ -52,9 +52,14 @@ export class PlayersRepository {
     return row;
   }
 
-  public static async insert(row: PlayerRow): Promise<void> {
-    await db.insert(playersTable).values(row).onConflictDoNothing({
-      target: playersTable.id,
-    });
+  public static async insert(row: PlayerRow): Promise<PlayerRow | undefined> {
+    const [player] = await db
+      .insert(playersTable)
+      .values(row)
+      .onConflictDoNothing({
+        target: playersTable.id,
+      })
+      .returning();
+    return player;
   }
 }

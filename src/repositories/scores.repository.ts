@@ -1,7 +1,8 @@
 import { db } from "../db/index.js";
-import { playersTable, scoresTable, type ScoreRow } from "../db/schema.js";
+import { playersTable, scoresTable } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
+type ScoreRow = typeof scoresTable.$inferInsert;
 export class ScoresRepository {
   public static async findById(id: number): Promise<ScoreRow | undefined> {
     const [row] = await db
@@ -21,9 +22,14 @@ export class ScoresRepository {
     return row;
   }
 
-  public static async insert(row: ScoreRow): Promise<void> {
-    await db.insert(scoresTable).values(row).onConflictDoNothing({
-      target: scoresTable.id,
-    });
+  public static async insert(row: ScoreRow): Promise<ScoreRow | undefined> {
+    const [score] = await db
+      .insert(scoresTable)
+      .values(row)
+      .onConflictDoNothing({
+        target: scoresTable.id,
+      })
+      .returning();
+    return score;
   }
 }

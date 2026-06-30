@@ -40,9 +40,16 @@ export class ScoreFeedsRepository {
     return rows;
   }
 
-  public static async insert(row: ScoreFeedRow): Promise<void> {
-    await db.insert(scoreFeedsTable).values(row).onConflictDoNothing({
-      target: scoreFeedsTable.id,
-    });
+  public static async insert(
+    row: ScoreFeedRow,
+  ): Promise<ScoreFeedRow | undefined> {
+    const [scoreFeed] = await db
+      .insert(scoreFeedsTable)
+      .values(row)
+      .onConflictDoNothing({
+        target: scoreFeedsTable.id,
+      })
+      .returning();
+    return scoreFeed;
   }
 }
