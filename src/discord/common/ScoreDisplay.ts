@@ -42,7 +42,10 @@ export default class ScoreDisplay {
     if (score.ppSS) {
       embed.addFields({
         name:
-          "<:scoresaber:1492695389634035823> " + score.ppSS.toFixed(2) + "pp",
+          "<:scoresaber:1492695389634035823> " +
+          score.ppSS.toFixed(2) +
+          "pp" +
+          (score.provider.includes("ScoreSaber") ? "" : "*"),
         value: " ",
         inline: true,
       });

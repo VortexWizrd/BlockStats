@@ -36,6 +36,8 @@ class WebSocketServerService {
               score.songHash == blConvertedScore.songHash &&
               score.songDifficulty == blConvertedScore.songDifficulty &&
               score.songCharacteristic == blConvertedScore.songCharacteristic &&
+              score.blScoreId == null &&
+              !score.provider.includes("BeatLeader") &&
               Math.abs(score.accuracy - blConvertedScore.accuracy) < 0.0002
             ) {
               this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
@@ -44,6 +46,7 @@ class WebSocketServerService {
               score.blScoreId = blConvertedScore.blScoreId;
               score.blStarRating = blConvertedScore.blStarRating;
               score.ppBL = blConvertedScore.ppBL;
+              score.provider = ["ScoreSaber", "BeatLeader"];
               this.sendScore(score);
               return;
             }
@@ -63,6 +66,8 @@ class WebSocketServerService {
               score.songHash == ssConvertedScore.songHash &&
               score.songDifficulty == ssConvertedScore.songDifficulty &&
               score.songCharacteristic == ssConvertedScore.songCharacteristic &&
+              score.ssScoreId == null &&
+              !score.provider.includes("ScoreSaber") &&
               Math.abs(score.accuracy - ssConvertedScore.accuracy) < 0.0002
             ) {
               this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
@@ -71,6 +76,7 @@ class WebSocketServerService {
               score.ssScoreId = ssConvertedScore.ssScoreId;
               score.ssStarRating = ssConvertedScore.ssStarRating;
               score.ppSS = ssConvertedScore.ppSS;
+              score.provider = ["BeatLeader", "ScoreSaber"];
               this.sendScore(score);
               return;
             }

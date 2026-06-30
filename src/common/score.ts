@@ -1,5 +1,6 @@
 import accsaberApiService from "../service/external/accsaber-api.service.js";
 import beatleaderApiService from "../service/external/beatleader-api.service.js";
+import scoresaberApiService from "../service/external/scoresaber-api.service.js";
 import { PlayerService } from "../service/player.service.js";
 
 export interface IScore {
@@ -7,7 +8,7 @@ export interface IScore {
 
   playerId: string;
 
-  provider: string;
+  provider: string[];
 
   playerName: string;
   playerAvatar: string;
@@ -50,7 +51,7 @@ export interface IScore {
 export default class Score implements IScore {
   id: number;
   playerId: string;
-  provider: string;
+  provider: string[];
   songHash: string;
   songDifficulty: string;
   songCharacteristic: string;
@@ -132,10 +133,15 @@ export default class Score implements IScore {
     const player = await PlayerService.getPlayerFromBeatLeader(
       blScore.player.id,
     );
+    const scoreSaberLeaderboard =
+      await scoresaberApiService.getV1LeaderboardFromHash(
+        blScore.leaderboard.song.hash.toUpperCase(),
+        blScore.leaderboard.difficulty.value,
+      );
     return new Score({
       id: -1,
       playerId: player?.id ?? "",
-      provider: "BeatLeader",
+      provider: ["BeatLeader"],
       playerName: player?.name ?? blScore.player.name,
       playerAvatar: player?.avatar ?? blScore.player.avatar,
       songName: blScore.leaderboard.song.name,
@@ -157,7 +163,13 @@ export default class Score implements IScore {
       bombHits: blScore.bombHits,
       wallHits: blScore.wallHits,
       ppBL: blScore.pp,
-      ppSS: 0,
+      ppSS: scoreSaberLeaderboard.maxPP
+        ? scoresaberApiService.getPP(
+            scoreSaberLeaderboard.maxPP,
+            blScore.accuracy,
+            blScore.failed,
+          )
+        : 0,
       ap: accsaberApiService.getAP(
         accsaberApiService.getComplexity(
           blScore.leaderboard.song.hash,
@@ -170,14 +182,14 @@ export default class Score implements IScore {
         : blScore.modifiers.split(","),
       blLeaderboardId: blScore.leaderboardId,
       blScoreId: blScore.id,
-      ssLeaderboardId: null,
+      ssLeaderboardId: scoreSaberLeaderboard?.id ?? null,
       ssScoreId: null,
       outdated: false,
       timestamp: new Date(),
       blRank: blScore.rank,
-      ssRank: 1,
+      ssRank: null,
       blStarRating: blScore.leaderboard.difficulty.stars ?? 0,
-      ssStarRating: null,
+      ssStarRating: scoreSaberLeaderboard?.stars ?? null,
       asRating: accsaberApiService.getComplexity(
         blScore.leaderboard.song.hash,
         blScore.leaderboard.difficulty.difficultyName,
@@ -195,7 +207,7 @@ export default class Score implements IScore {
     return new Score({
       id: -1,
       playerId: player?.id ?? "",
-      provider: "ScoreSaber",
+      provider: ["ScoreSaber"],
       playerName: player?.name ?? ssScore.score.leaderboardPlayerInfo.name,
       playerAvatar:
         player?.avatar ?? ssScore.score.leaderboardPlayerInfo.profilePicture,

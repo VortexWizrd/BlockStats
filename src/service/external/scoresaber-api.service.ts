@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { WebSocket } from "ws";
+import { SSPPCalulator } from "../../common/ppcalculator.js";
 
 class ScoreSaberApiService extends EventEmitter {
   private _socket = new WebSocket("wss://scoresaber.com/ws");
@@ -67,6 +68,83 @@ class ScoreSaberApiService extends EventEmitter {
       (await this.getUserFromId(linkedIds.oculusPCId)) ??
       null
     );
+  }
+
+  public async getLeaderboard(leaderboardId: string): Promise<any> {
+    try {
+      const response = await fetch(
+        `https://scoresaber.com/api/v2/leaderboards/${leaderboardId}`,
+      );
+      if (response.status == 404) return null;
+      return response.json();
+    } catch (error) {
+      console.log("Error getting ScoreSaber leaderboard: " + error);
+      return;
+    }
+  }
+
+  public async getV1Leaderboard(leaderboardId: string): Promise<any> {
+    try {
+      const response = await fetch(
+        `https://scoresaber.com/api/v1/leaderboard/by-id${leaderboardId}/info`,
+      );
+      if (response.status == 404) return;
+      return response.json();
+    } catch (error) {
+      console.log("Error getting ScoreSaber v1 leaderboard: " + error);
+      return;
+    }
+  }
+
+  public async getV1LeaderboardFromHash(
+    hash: string,
+    difficulty: number,
+  ): Promise<any> {
+    try {
+      const response = await fetch(
+        `https://scoresaber.com/api/v1/leaderboard/by-hash/${hash}/info?difficulty=${difficulty}`,
+      );
+      if (response.status == 404) return;
+      return response.json();
+    } catch (error) {
+      console.log("Error getting ScoreSaber v1 leaderboard: " + error);
+      return;
+    }
+  }
+  public async getRawPP(leaderboardId: string): Promise<number> {
+    const leaderboard = await this.getV1Leaderboard(leaderboardId);
+    if (!leaderboard) return 0;
+
+    return leaderboard.maxPP;
+  }
+
+  public getPP(maxPP: number, accuracy: number, failed: false) {
+    return SSPPCalulator.getPP(maxPP, accuracy, failed);
+  }
+
+  public async getPPFromLeaderboard(
+    leaderboardId: string,
+    accuracy: number,
+    failed: boolean,
+  ) {
+    const leaderboard = await this.getV1Leaderboard(leaderboardId);
+    if (!leaderboard) return 0;
+    if (!leaderboard.maxPP) return 0;
+
+    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
+  }
+
+  public async getPPFromHash(
+    hash: string,
+    difficulty: number,
+    accuracy: number,
+    failed: boolean,
+  ) {
+    const leaderboard = await this.getV1LeaderboardFromHash(hash, difficulty);
+    if (!leaderboard) return 0;
+    if (!leaderboard.maxPP) return 0;
+
+    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
   }
 
   private reconnectWebSocket() {
