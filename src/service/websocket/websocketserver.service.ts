@@ -13,7 +13,7 @@ class WebSocketServerService {
   private scoreStorage: Score[] = [];
 
   private blRankedSubmissions = 0;
-  private ssrankedSubmissions = 0;
+  private ssRankedSubmissions = 0;
 
   constructor() {
     this.server.on("connection", (ws) => {
@@ -89,6 +89,34 @@ class WebSocketServerService {
       });
 
       scoresaberApiService.addListener("score", async (data) => {
+        // Rank feed
+        // update every 5 ranked submissions (may change if better alternative)
+        if (this.ssRankedSubmissions >= 5) {
+          this.ssRankedSubmissions = 0;
+          for (const player of await PlayerService.getAllPlayers()) {
+            if (!player.scoreSaberId) continue;
+            const updatedPlayer = await PlayerService.updateSSRank(player);
+            if (!updatedPlayer) continue;
+            const rankUpdate = {
+              playerName: player.name,
+              playerAvatar: player.avatar,
+              playerUrl: `https://scoresaber.com/u/${player.scoreSaberAlias ?? player.scoreSaberId ?? "undefined"}`,
+              leaderboard: "ScoreSaber",
+              oldRank:
+                player.ssRankHistory[player.ssRankHistory.length - 2]?.rank ??
+                0,
+              newRank:
+                player.ssRankHistory[player.ssRankHistory.length - 1]?.rank ??
+                0,
+              timestamp: Date.now(),
+            };
+            this.sendRankUpdate(rankUpdate);
+          }
+        } else {
+          this.ssRankedSubmissions++;
+        }
+
+        // Score feed
         try {
           const ssConvertedScore = await Score.fromScoreSaber(data);
           if (this.scoreStorage.includes(ssConvertedScore)) return;

@@ -49,7 +49,21 @@ export class PlayersRepository extends Repository {
     const [player] = await db
       .update(playersTable)
       .set({
-        blRankHistory: sql`COALESCE(${playersTable.blRankHistory}, '[]::jsonb') || ${JSON.stringify([ranktimestamp])}::jsonb`,
+        blRankHistory: sql`COALESCE(${playersTable.blRankHistory}, '[]'::jsonb) || ${JSON.stringify([ranktimestamp])}::jsonb`,
+      })
+      .where(eq(playersTable.id, id))
+      .returning();
+    return player;
+  }
+
+  public static async updateSSRank(
+    id: string,
+    ranktimestamp: RankTimestamp,
+  ): Promise<typeof this.row | undefined> {
+    const [player] = await db
+      .update(playersTable)
+      .set({
+        ssRankHistory: sql`COALESCE(${playersTable.ssRankHistory}, '[]'::jsonb) || ${JSON.stringify([ranktimestamp])}::jsonb`,
       })
       .where(eq(playersTable.id, id))
       .returning();

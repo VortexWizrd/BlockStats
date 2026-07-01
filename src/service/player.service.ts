@@ -20,13 +20,9 @@ export class PlayerService {
         await beatleaderApiService.getUserFromDiscord(discordId);
       if (!beatLeaderData) return;
 
-      console.log(beatLeaderData);
-
       const scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
         beatLeaderData.linkedIds,
       );
-
-      console.log(scoreSaberData);
 
       const playerInsert: PlayerRow = {
         id: discordId,
@@ -52,11 +48,11 @@ export class PlayerService {
             rank: beatLeaderData.rank,
           },
         ],
-        ssRankHistory: scoreSaberData
+        ssRankHistory: scoreSaberData?.stats?.rank
           ? [
               {
                 timestamp: Date.now(),
-                rank: scoreSaberData.rank,
+                rank: scoreSaberData.stats?.rank,
               },
             ]
           : null,
@@ -67,13 +63,6 @@ export class PlayerService {
         name: beatLeaderData.name,
         avatar: beatLeaderData.avatar,
       };
-
-      if (scoreSaberData) {
-        (playerInsert.ssRankHistory as RankHistory).push({
-          timestamp: Date.now(),
-          rank: scoreSaberData.stats.rank,
-        });
-      }
 
       await PlayersRepository.insert(playerInsert).then(() => {
         return playerInsert as Player;
@@ -160,6 +149,33 @@ export class PlayerService {
         return (await PlayersRepository.updateBLRank(player.id, {
           timestamp: Date.now(),
           rank: blUser.rank,
+        })) as Player;
+      }
+    }
+    return undefined;
+  }
+
+  public static async updateSSRank(
+    player: Player,
+  ): Promise<Player | undefined> {
+    const ssUser = await scoresaberApiService.getUserFromId(
+      player.scoreSaberId ?? "-1",
+    );
+    if (!ssUser) return;
+
+    if (!player.ssRankHistory || player.ssRankHistory.length <= 0) {
+      return (await PlayersRepository.updateSSRank(player.id, {
+        timestamp: Date.now(),
+        rank: ssUser.stats.rank,
+      })) as Player;
+    } else {
+      if (
+        player.ssRankHistory[player.ssRankHistory.length - 1]?.rank !=
+        ssUser.stats.rank
+      ) {
+        return (await PlayersRepository.updateSSRank(player.id, {
+          timestamp: Date.now(),
+          rank: ssUser.stats.rank,
         })) as Player;
       }
     }
