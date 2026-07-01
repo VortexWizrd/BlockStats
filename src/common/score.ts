@@ -163,7 +163,7 @@ export default class Score implements IScore {
       bombHits: blScore.bombHits,
       wallHits: blScore.wallHits,
       ppBL: blScore.pp,
-      ppSS: scoreSaberLeaderboard.maxPP
+      ppSS: scoreSaberLeaderboard?.maxPP
         ? scoresaberApiService.getPP(
             scoreSaberLeaderboard.maxPP,
             blScore.accuracy,
