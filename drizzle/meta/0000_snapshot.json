@@ -1,5 +1,5 @@
 {
-  "id": "38737228-ccc4-4b79-9153-c9cf5d35bbee",
+  "id": "6fb03f3e-65f7-4c9e-9615-7b9579f11d71",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -526,6 +526,12 @@
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
+        },
+        "messageIds": {
+          "name": "messageIds",
+          "type": "varchar(32)[]",
+          "primaryKey": false,
+          "notNull": false
         },
         "upVoteIds": {
           "name": "upVoteIds",

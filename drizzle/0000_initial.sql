@@ -86,6 +86,7 @@ CREATE TABLE "scores" (
 	"ssRank" integer,
 	"outdated" boolean NOT NULL,
 	"timestamp" timestamp NOT NULL,
+	"messageIds" varchar(32)[],
 	"upVoteIds" varchar(32)[] NOT NULL,
 	"downVoteIds" varchar(32)[] NOT NULL
 );

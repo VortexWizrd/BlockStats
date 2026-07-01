@@ -3,6 +3,7 @@ import Score from "../../common/score.js";
 import beatleaderApiService from "../external/beatleader-api.service.js";
 import scoresaberApiService from "../external/scoresaber-api.service.js";
 import { PlayerService } from "../player.service.js";
+import { ScoreService } from "../score.service.js";
 
 class WebSocketServerService {
   private server = new WebSocketServer({
@@ -174,6 +175,22 @@ class WebSocketServerService {
     const index = this.scoreStorage.indexOf(score);
     if (index !== -1) {
       this.scoreStorage.splice(index, 1);
+
+      let player;
+      if (score.provider[0] == "BeatLeader") {
+        player = await PlayerService.getPlayerFromBeatLeader(score.playerId);
+      } else if (score.provider[0] == "ScoreSaber") {
+        player = await PlayerService.getPlayerFromScoreSaber(score.playerId);
+      }
+
+      if (player) {
+        score.playerId = player.id;
+        const updatedScore = await ScoreService.createScore(score);
+        if (updatedScore !== undefined) {
+          this.sendScore(updatedScore);
+        }
+      }
+
       this.sendScore(score);
     }
   }

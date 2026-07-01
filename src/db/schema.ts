@@ -91,6 +91,8 @@ export const scoresTable = pgTable("scores", {
   outdated: boolean().notNull(),
   timestamp: timestamp().notNull(),
 
+  // Discord data
+  messageIds: varchar({ length: 32 }).array(),
   upVoteIds: varchar({ length: 32 }).array().notNull(),
   downVoteIds: varchar({ length: 32 }).array().notNull(),
 });

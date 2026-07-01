@@ -33,6 +33,7 @@ export interface IScore {
   ppSS: number;
   ap: number;
   modifiers: string[];
+  improvement: number | null;
 
   blLeaderboardId: number | null;
   blScoreId: number | null;
@@ -46,6 +47,10 @@ export interface IScore {
   timestamp: Date;
   blRank: number | null;
   ssRank: number | null;
+
+  messageIds: string[] | null;
+  upVoteIds: string[];
+  downVoteIds: string[];
 }
 
 export default class Score implements IScore {
@@ -81,6 +86,10 @@ export default class Score implements IScore {
   songAuthor: string;
   songCover: string;
   mapAuthor: string;
+  improvement: number | null;
+  messageIds: string[] | null;
+  upVoteIds: string[];
+  downVoteIds: string[];
   constructor(data: IScore) {
     this.id = data.id;
 
@@ -98,6 +107,7 @@ export default class Score implements IScore {
     this.songHash = data.songHash;
     this.songDifficulty = data.songDifficulty;
     this.songCharacteristic = data.songCharacteristic;
+    this.improvement = data.improvement;
 
     this.score = data.score;
     this.accuracy = data.accuracy;
@@ -124,6 +134,10 @@ export default class Score implements IScore {
     this.blStarRating = data.blStarRating;
     this.ssStarRating = data.ssStarRating;
     this.asRating = data.asRating;
+
+    this.messageIds = data.messageIds;
+    this.upVoteIds = data.upVoteIds;
+    this.downVoteIds = data.downVoteIds;
   }
   blStarRating: number | null;
   ssStarRating: number | null;
@@ -150,6 +164,7 @@ export default class Score implements IScore {
       mapAuthor: blScore.leaderboard.song.mapper,
       songCover: blScore.leaderboard.song.coverImage,
       songHash: blScore.leaderboard.song.hash,
+      improvement: null,
       songDifficulty:
         blScore.leaderboard.difficulty.difficultyName === "ExpertPlus"
           ? "Expert+"
@@ -194,6 +209,9 @@ export default class Score implements IScore {
         blScore.leaderboard.song.hash,
         blScore.leaderboard.difficulty.difficultyName,
       ),
+      messageIds: null,
+      upVoteIds: [],
+      downVoteIds: [],
     });
   }
 
@@ -255,6 +273,10 @@ export default class Score implements IScore {
         ssScore.leaderboard.songHash.toLowerCase(),
         difficulty,
       ),
+      improvement: null,
+      messageIds: null,
+      upVoteIds: [],
+      downVoteIds: [],
     });
   }
 }
