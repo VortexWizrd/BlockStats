@@ -27,14 +27,17 @@ export default {
         {
           name: "Score Feeds",
           value: (await ScoreFeedService.count()).toString(),
+          inline: true,
         },
         {
           name: "Rank Feeds",
           value: (await RankFeedService.count()).toString(),
+          inline: true,
         },
         {
           name: "Last BL Socket Update",
           value: beatleaderApiService.lastSocketUpdate.toUTCString(),
+          inline: true,
         },
         {
           name: "Last SS Socket Update",
