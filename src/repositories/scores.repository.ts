@@ -1,5 +1,5 @@
 import { db } from "../db/index.js";
-import { playersTable, scoresTable } from "../db/schema.js";
+import { scoresTable } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
 

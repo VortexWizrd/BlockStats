@@ -1,4 +1,3 @@
-import { db } from "../db/index.js";
 import { rankFeedsTable } from "../db/schema.js";
 import { Repository } from "./baserepository.js";
 

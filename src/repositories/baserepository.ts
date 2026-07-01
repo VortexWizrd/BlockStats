@@ -1,7 +1,6 @@
 import type { PgTableWithColumns } from "drizzle-orm/pg-core";
 import { db } from "../db/index.js";
-import type { PlayerRow } from "../db/schema.js";
-import { and, eq, sql, Table } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 export abstract class Repository {
   public static readonly table: PgTableWithColumns<any>;

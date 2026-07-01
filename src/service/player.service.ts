@@ -1,4 +1,4 @@
-import type { RankHistory, RankTimestamp } from "../common/player.js";
+import type { RankHistory } from "../common/player.js";
 import type Player from "../common/player.js";
 import type { PlayerRow } from "../db/schema.js";
 import { PlayersRepository } from "../repositories/players.repository.js";

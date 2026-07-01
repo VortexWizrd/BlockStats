@@ -1,5 +1,4 @@
 import EventEmitter from "events";
-import { WebSocket } from "ws";
 
 class HitBloqApiService extends EventEmitter {
   constructor() {

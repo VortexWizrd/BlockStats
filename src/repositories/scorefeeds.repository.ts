@@ -1,6 +1,4 @@
-import { db } from "../db/index.js";
 import { scoreFeedsTable } from "../db/schema.js";
-import { eq } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
 
 export class ScoreFeedsRepository extends Repository {
