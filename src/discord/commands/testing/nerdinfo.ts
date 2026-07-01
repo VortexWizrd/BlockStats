@@ -10,7 +10,7 @@ import beatleaderApiService from "../../../service/external/beatleader-api.servi
 import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 import websocketclientService from "../../../service/websocket/websocketclient.service.js";
 
-module.exports = {
+export default {
   data: new SlashCommandBuilder()
     .setName("nerdinfo")
     .setDescription("Get debugging information"),
