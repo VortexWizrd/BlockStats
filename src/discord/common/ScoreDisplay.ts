@@ -39,23 +39,27 @@ export default class ScoreDisplay {
       .setColor(this.getAccuracyColor(score.accuracy))
       .setTimestamp();
 
-    if (score.ppSS) {
+    if (score.ssStarRating) {
       embed.addFields({
         name:
           "<:scoresaber:1492695389634035823> " +
-          score.ppSS.toFixed(2) +
+          (score.ppSS ?? 0).toFixed(2) +
           "pp" +
-          (score.provider.includes("ScoreSaber") ? "" : "*"),
+          (score.provider.includes("ScoreSaber") ? "" : "*") +
+          ` [${score.ssStarRating.toFixed(2)}★]   `,
         value: " ",
         inline: true,
       });
     }
 
-    if (score.ppBL) {
+    if (score.blStarRating) {
       embed.addFields({
         name:
-          "<:beatleader:1492695343345832102> " + score.ppBL.toFixed(2) + "pp",
-        value: " ",
+          "<:beatleader:1492695343345832102> " +
+          (score.ppBL ?? 0).toFixed(2) +
+          "pp" +
+          ` [${score.blStarRating.toFixed(2)}★]   `,
+        value: "",
         inline: true,
       });
     }
@@ -69,7 +73,6 @@ export default class ScoreDisplay {
     }
 
     if (score.modifiers && score.modifiers.length != 0) {
-      console.log(score.modifiers);
       embed.addFields({
         name: score.modifiers.join(" "),
         value: " ",
