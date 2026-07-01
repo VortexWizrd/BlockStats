@@ -66,7 +66,7 @@ export default class Player {
 }
 
 export type RankTimestamp = {
-  timestamp: number;
+  timestamp: Date;
   rank: number;
 };
 

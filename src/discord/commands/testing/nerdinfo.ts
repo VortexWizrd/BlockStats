@@ -9,6 +9,7 @@ import { RankFeedService } from "../../../service/rankfeed.service.js";
 import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
 import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 import websocketclientService from "../../../service/websocket/websocketclient.service.js";
+import { ScoreService } from "../../../service/score.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -32,6 +33,11 @@ export default {
         {
           name: "Rank Feeds",
           value: (await RankFeedService.count()).toString(),
+          inline: true,
+        },
+        {
+          name: "Scores",
+          value: (await ScoreService.count()).toString(),
           inline: true,
         },
         {

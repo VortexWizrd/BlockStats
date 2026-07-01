@@ -74,14 +74,14 @@ export const scoresTable = pgTable("scores", {
   badCuts: integer().notNull(),
   bombHits: integer(),
   wallHits: integer(),
-  ppBL: integer().notNull().default(0),
-  ppSS: integer().notNull().default(0),
-  ap: integer().notNull().default(0),
+  ppBL: doublePrecision().notNull().default(0),
+  ppSS: doublePrecision().notNull().default(0),
+  ap: doublePrecision().notNull().default(0),
   modifiers: varchar({ length: 32 }).array(),
   improvement: doublePrecision(),
 
   // Leaderboard data
-  blLeaderboardId: integer(),
+  blLeaderboardId: varchar({ length: 32 }),
   blScoreId: integer(),
   blRank: integer(),
   ssLeaderboardId: integer(),
@@ -92,7 +92,7 @@ export const scoresTable = pgTable("scores", {
   timestamp: timestamp().notNull(),
 
   // Discord data
-  messageIds: varchar({ length: 32 }).array(),
+  messages: jsonb(),
   upVoteIds: varchar({ length: 32 }).array().notNull(),
   downVoteIds: varchar({ length: 32 }).array().notNull(),
 });

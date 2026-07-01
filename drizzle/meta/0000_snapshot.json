@@ -1,5 +1,5 @@
 {
-  "id": "6fb03f3e-65f7-4c9e-9615-7b9579f11d71",
+  "id": "6c1313d6-1512-46b1-b3e1-52cfadacc7f8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -448,21 +448,21 @@
         },
         "ppBL": {
           "name": "ppBL",
-          "type": "integer",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
         "ppSS": {
           "name": "ppSS",
-          "type": "integer",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
         "ap": {
           "name": "ap",
-          "type": "integer",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true,
           "default": 0
@@ -481,7 +481,7 @@
         },
         "blLeaderboardId": {
           "name": "blLeaderboardId",
-          "type": "integer",
+          "type": "varchar(32)",
           "primaryKey": false,
           "notNull": false
         },
@@ -527,9 +527,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "messageIds": {
-          "name": "messageIds",
-          "type": "varchar(32)[]",
+        "messages": {
+          "name": "messages",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },

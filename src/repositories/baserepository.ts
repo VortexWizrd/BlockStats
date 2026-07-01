@@ -30,6 +30,14 @@ export abstract class Repository {
     return ((await this.find(data)) ?? [])[0];
   }
 
+  public static async update(
+    id: string | number,
+    data: Object,
+  ): Promise<typeof this.row | undefined> {
+    const conditions = [];
+    return await db.update(this.table).set(data).where(eq(this.table.id, id));
+  }
+
   public static async insert(
     row: typeof this.row,
   ): Promise<typeof this.row | undefined> {

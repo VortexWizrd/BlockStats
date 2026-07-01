@@ -58,6 +58,19 @@ class BeatLeaderApiService extends EventEmitter {
     }
   }
 
+  public async getUser(beatLeaderId: string | number): Promise<any> {
+    try {
+      const response = await fetch(
+        `https://api.beatleader.com/player/${beatLeaderId}`,
+        {},
+      );
+      return response.json();
+    } catch (error) {
+      console.log("Error fetching BeatLeader user: " + error);
+      return;
+    }
+  }
+
   public async getScoreStatistic(scoreId: string | number): Promise<any> {
     try {
       const response = await fetch(

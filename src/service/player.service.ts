@@ -21,15 +21,17 @@ export class PlayerService {
       if (!beatLeaderData) return;
 
       const scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
-        beatLeaderData.linkedIds,
+        beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
       );
 
       const playerInsert: PlayerRow = {
         id: discordId,
 
-        steamId: (beatLeaderData.linkedIds.steamId as string) ?? null,
-        oculusId: (beatLeaderData.linkedIds.oculusPCId as string) ?? null,
-        questId: Number(beatLeaderData.linkedIds.questId) ?? null,
+        steamId: (beatLeaderData.linkedIds?.steamId as string) ?? null,
+        oculusId: (beatLeaderData.linkedIds?.oculusPCId as string) ?? null,
+        questId: beatLeaderData.linkedIds?.questId
+          ? Number(beatLeaderData.linkedIds?.questId)
+          : null,
         alias: beatLeaderData.alias ?? null,
         beatLeaderId: beatLeaderData.id,
 
@@ -44,14 +46,14 @@ export class PlayerService {
 
         blRankHistory: [
           {
-            timestamp: Date.now(),
+            timestamp: new Date(),
             rank: beatLeaderData.rank,
           },
         ],
         ssRankHistory: scoreSaberData?.stats?.rank
           ? [
               {
-                timestamp: Date.now(),
+                timestamp: new Date(),
                 rank: scoreSaberData.stats?.rank,
               },
             ]
@@ -138,7 +140,7 @@ export class PlayerService {
 
     if (!player.blRankHistory || player.blRankHistory.length <= 0) {
       return (await PlayersRepository.updateBLRank(player.id, {
-        timestamp: Date.now(),
+        timestamp: new Date(),
         rank: blUser.rank,
       })) as Player;
     } else {
@@ -147,7 +149,7 @@ export class PlayerService {
         blUser.rank
       ) {
         return (await PlayersRepository.updateBLRank(player.id, {
-          timestamp: Date.now(),
+          timestamp: new Date(),
           rank: blUser.rank,
         })) as Player;
       }
@@ -165,7 +167,7 @@ export class PlayerService {
 
     if (!player.ssRankHistory || player.ssRankHistory.length <= 0) {
       return (await PlayersRepository.updateSSRank(player.id, {
-        timestamp: Date.now(),
+        timestamp: new Date(),
         rank: ssUser.stats.rank,
       })) as Player;
     } else {
@@ -174,7 +176,7 @@ export class PlayerService {
         ssUser.stats.rank
       ) {
         return (await PlayersRepository.updateSSRank(player.id, {
-          timestamp: Date.now(),
+          timestamp: new Date(),
           rank: ssUser.stats.rank,
         })) as Player;
       }

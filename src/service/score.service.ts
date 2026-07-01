@@ -11,7 +11,9 @@ export class ScoreService {
         id: undefined,
       };
 
-      const scoreInsert = await ScoresRepository.insert(score as ScoreInsert);
+      const scoreInsert = await ScoresRepository.insert(
+        newScore as ScoreInsert,
+      );
       return scoreInsert as Score;
     } catch (err) {
       console.log("Error creating score: ", err);

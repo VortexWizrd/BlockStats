@@ -35,7 +35,7 @@ export interface IScore {
   modifiers: string[];
   improvement: number | null;
 
-  blLeaderboardId: number | null;
+  blLeaderboardId: string | null;
   blScoreId: number | null;
   blStarRating: number | null;
   ssLeaderboardId: number | null;
@@ -48,7 +48,7 @@ export interface IScore {
   blRank: number | null;
   ssRank: number | null;
 
-  messageIds: string[] | null;
+  messages: any[] | null;
   upVoteIds: string[];
   downVoteIds: string[];
 }
@@ -71,7 +71,7 @@ export default class Score implements IScore {
   ppSS: number;
   ap: number;
   modifiers: string[];
-  blLeaderboardId: number | null;
+  blLeaderboardId: string | null;
   blScoreId: number | null;
   ssLeaderboardId: number | null;
   ssScoreId: number | null;
@@ -87,7 +87,7 @@ export default class Score implements IScore {
   songCover: string;
   mapAuthor: string;
   improvement: number | null;
-  messageIds: string[] | null;
+  messages: any[] | null;
   upVoteIds: string[];
   downVoteIds: string[];
   constructor(data: IScore) {
@@ -135,7 +135,7 @@ export default class Score implements IScore {
     this.ssStarRating = data.ssStarRating;
     this.asRating = data.asRating;
 
-    this.messageIds = data.messageIds;
+    this.messages = data.messages;
     this.upVoteIds = data.upVoteIds;
     this.downVoteIds = data.downVoteIds;
   }
@@ -200,7 +200,7 @@ export default class Score implements IScore {
       ssLeaderboardId: scoreSaberLeaderboard?.id ?? null,
       ssScoreId: null,
       outdated: false,
-      timestamp: new Date(),
+      timestamp: new Date(blScore.timepost * 1000),
       blRank: blScore.rank,
       ssRank: null,
       blStarRating: blScore.leaderboard.difficulty.stars ?? 0,
@@ -209,7 +209,7 @@ export default class Score implements IScore {
         blScore.leaderboard.song.hash,
         blScore.leaderboard.difficulty.difficultyName,
       ),
-      messageIds: null,
+      messages: [],
       upVoteIds: [],
       downVoteIds: [],
     });
@@ -264,7 +264,7 @@ export default class Score implements IScore {
       ssLeaderboardId: ssScore.leaderboard.id,
       ssScoreId: ssScore.score.id,
       outdated: false,
-      timestamp: new Date(),
+      timestamp: new Date(ssScore.score.timeSet),
       blRank: null,
       ssRank: ssScore.score.rank,
       blStarRating: null,
@@ -274,7 +274,7 @@ export default class Score implements IScore {
         difficulty,
       ),
       improvement: null,
-      messageIds: null,
+      messages: [],
       upVoteIds: [],
       downVoteIds: [],
     });

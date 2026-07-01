@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
-import { runMigrations } from "./db/migrate.js";
+import { migrateFromMongo, runMigrations } from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 
 const app = express();
@@ -15,5 +15,6 @@ app.listen(port, () => {
 });
 
 await runMigrations();
+//await migrateFromMongo();
 
 startDiscord();
