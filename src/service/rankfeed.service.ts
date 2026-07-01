@@ -24,6 +24,10 @@ export class RankFeedService {
     }
   }
 
+  public static async count(): Promise<number> {
+    return await RankFeedsRepository.countRows();
+  }
+
   public static async getGlobalRankFeeds() {
     return (await RankFeedsRepository.findManyByGlobalType()) as RankFeed[];
   }

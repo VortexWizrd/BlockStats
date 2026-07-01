@@ -25,6 +25,10 @@ export class ScoreFeedService {
     }
   }
 
+  public static async count(): Promise<number> {
+    return await ScoreFeedsRepository.countRows();
+  }
+
   public static async getGlobalScoreFeeds() {
     return (await ScoreFeedsRepository.findManyByGlobalType()) as ScoreFeed[];
   }

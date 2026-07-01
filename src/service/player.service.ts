@@ -97,6 +97,10 @@ export class PlayerService {
     }
   }
 
+  public static async count(): Promise<number> {
+    return await PlayersRepository.countRows();
+  }
+
   public static async getPlayerFromBeatLeader(
     beatLeaderId: string,
   ): Promise<Player | undefined> {

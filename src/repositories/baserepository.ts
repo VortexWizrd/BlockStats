@@ -1,10 +1,15 @@
 import type { PgTableWithColumns } from "drizzle-orm/pg-core";
 import { db } from "../db/index.js";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 
 export abstract class Repository {
   public static readonly table: PgTableWithColumns<any>;
   public static readonly row: any;
+
+  public static async countRows(): Promise<number> {
+    const [data] = await db.select({ count: count() }).from(this.table);
+    return data?.count ?? 0;
+  }
 
   public static async find(
     data: { name: string; value: any }[],
