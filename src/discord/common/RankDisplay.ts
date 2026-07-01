@@ -61,7 +61,7 @@ export default class RankDisplay {
         `${rankUpdateType} **${rankDifference} rank${rankDifference == 1 ? "" : "s"}** on ${data.leaderboard}!`,
       )
       .setThumbnail(leaderboardIcon)
-      .setDescription(`# #${data.oldRank} -> #${data.newRank}`)
+      .setDescription(`# \u200B#${data.oldRank} -> #${data.newRank}`)
       .setColor(leaderboardColor)
       .setTimestamp();
 
