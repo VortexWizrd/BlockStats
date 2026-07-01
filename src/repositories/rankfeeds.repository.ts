@@ -1,10 +1,9 @@
 import { db } from "../db/index.js";
-import { scoreFeedsTable } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { rankFeedsTable } from "../db/schema.js";
 import { Repository } from "./baserepository.js";
 
-export class ScoreFeedsRepository extends Repository {
-  public static readonly table = scoreFeedsTable;
+export class RankFeedsRepository extends Repository {
+  public static readonly table = rankFeedsTable;
   public static readonly row = this.table.$inferInsert;
 
   public static async findById(

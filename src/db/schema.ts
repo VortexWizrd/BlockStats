@@ -9,12 +9,14 @@ import {
   timestamp,
   text,
 } from "drizzle-orm/pg-core";
+import { type RankHistory } from "../common/player.js";
 
 export const playersTable = pgTable("players", {
   // Primary ID (Discord)
   id: varchar({ length: 32 }).primaryKey().notNull(),
 
   // Connected Accounts
+  beatLeaderId: varchar({ length: 32 }),
   steamId: varchar({ length: 32 }),
   oculusId: varchar({ length: 32 }),
   questId: integer(),
@@ -32,10 +34,10 @@ export const playersTable = pgTable("players", {
   avatar: text().notNull().default(""),
 
   // Rank history
-  blRankHistory: jsonb().notNull(),
-  ssRankHistory: jsonb().notNull(),
-  asRankHistory: jsonb().notNull(),
-  overallRankHistory: jsonb().notNull(),
+  blRankHistory: jsonb().$type<RankHistory>(),
+  ssRankHistory: jsonb().$type<RankHistory>(),
+  asRankHistory: jsonb().$type<RankHistory>(),
+  overallRankHistory: jsonb().$type<RankHistory>(),
 
   totalScores: integer().notNull().default(0),
 });
@@ -48,7 +50,7 @@ export const scoresTable = pgTable("scores", {
   playerId: varchar({ length: 32 }).notNull(),
 
   // Primary score data source
-  provider: varchar({ length: 32 }).notNull(),
+  provider: varchar({ length: 32 }).array().notNull(),
 
   // Player basic information
   playerName: text().notNull().default(""),
@@ -76,6 +78,7 @@ export const scoresTable = pgTable("scores", {
   ppSS: integer().notNull().default(0),
   ap: integer().notNull().default(0),
   modifiers: varchar({ length: 32 }).array(),
+  improvement: doublePrecision(),
 
   // Leaderboard data
   blLeaderboardId: integer(),
@@ -87,6 +90,9 @@ export const scoresTable = pgTable("scores", {
 
   outdated: boolean().notNull(),
   timestamp: timestamp().notNull(),
+
+  upVoteIds: varchar({ length: 32 }).array().notNull(),
+  downVoteIds: varchar({ length: 32 }).array().notNull(),
 });
 
 export const scoreFeedsTable = pgTable("scorefeeds", {
@@ -111,6 +117,29 @@ export const scoreFeedsTable = pgTable("scorefeeds", {
   minRank: integer(),
 });
 
+export const rankFeedsTable = pgTable("rankfeeds", {
+  id: serial().primaryKey().notNull(),
+
+  type: varchar({ length: 32 }).notNull(),
+  channelType: varchar({ length: 32 }).notNull(),
+  displayType: varchar({ length: 32 }).notNull(),
+
+  userId: varchar({ length: 32 }),
+  channelId: varchar({ length: 32 }),
+  guildId: varchar({ length: 32 }),
+
+  managerRoleId: varchar({ length: 32 }),
+
+  playerIds: varchar({ length: 32 }).array().notNull(),
+
+  hasFilters: boolean().notNull(),
+  ssRanked: boolean(),
+  blRanked: boolean(),
+  asRanked: boolean(),
+  minRank: integer(),
+});
+
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
+export type RankFeedRow = typeof rankFeedsTable.$inferSelect;

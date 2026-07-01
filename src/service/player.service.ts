@@ -1,4 +1,4 @@
-import type { RankHistory } from "../common/player.js";
+import type { RankHistory, RankTimestamp } from "../common/player.js";
 import type Player from "../common/player.js";
 import type { PlayerRow } from "../db/schema.js";
 import { PlayersRepository } from "../repositories/players.repository.js";
@@ -35,6 +35,7 @@ export class PlayerService {
         oculusId: (beatLeaderData.linkedIds.oculusPCId as string) ?? null,
         questId: Number(beatLeaderData.linkedIds.questId) ?? null,
         alias: beatLeaderData.alias ?? null,
+        beatLeaderId: beatLeaderData.id,
 
         scoreSaberId: scoreSaberData.id ?? null,
         scoreSaberAlias: scoreSaberData.vanity ?? null,
@@ -51,9 +52,16 @@ export class PlayerService {
             rank: beatLeaderData.rank,
           },
         ],
-        ssRankHistory: [],
-        asRankHistory: [],
-        overallRankHistory: [],
+        ssRankHistory: scoreSaberData
+          ? [
+              {
+                timestamp: Date.now(),
+                rank: scoreSaberData.rank,
+              },
+            ]
+          : null,
+        asRankHistory: null,
+        overallRankHistory: null,
 
         totalScores: 0,
         name: beatLeaderData.name,
@@ -118,5 +126,39 @@ export class PlayerService {
     } catch (err) {
       console.log("Error getting player from BeatLeader ID: ", err);
     }
+  }
+
+  public static async getAllPlayers(): Promise<Player[]> {
+    try {
+      return (await PlayersRepository.getAll()) as Player[];
+    } catch (err) {
+      console.log("Error getting all players: ", err);
+      return [];
+    }
+  }
+
+  public static async updateBLRank(
+    player: Player,
+  ): Promise<Player | undefined> {
+    const blUser = await beatleaderApiService.getUserFromDiscord(player.id);
+    if (!blUser) return;
+
+    if (!player.blRankHistory || player.blRankHistory.length <= 0) {
+      return (await PlayersRepository.updateBLRank(player.id, {
+        timestamp: Date.now(),
+        rank: blUser.rank,
+      })) as Player;
+    } else {
+      if (
+        player.blRankHistory[player.blRankHistory.length - 1]?.rank !=
+        blUser.rank
+      ) {
+        return (await PlayersRepository.updateBLRank(player.id, {
+          timestamp: Date.now(),
+          rank: blUser.rank,
+        })) as Player;
+      }
+    }
+    return undefined;
   }
 }

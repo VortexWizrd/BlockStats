@@ -10,7 +10,8 @@ class WebSocketClientService extends EventEmitter {
 
     // Listen to score uploads on websocket
     this._socket.addEventListener("message", (message: any) => {
-      this.emit("score", JSON.parse(message.data));
+      const data = JSON.parse(message.data);
+      this.emit(data.type, data.data);
       this._lastSocketUpdate = new Date();
     });
 

@@ -1,5 +1,6 @@
 CREATE TABLE "players" (
 	"id" varchar(32) PRIMARY KEY NOT NULL,
+	"beatLeaderId" varchar(32),
 	"steamId" varchar(32),
 	"oculusId" varchar(32),
 	"questId" integer,
@@ -10,11 +11,28 @@ CREATE TABLE "players" (
 	"hitBloqId" integer,
 	"name" text NOT NULL,
 	"avatar" text DEFAULT '' NOT NULL,
-	"blRankHistory" jsonb NOT NULL,
-	"ssRankHistory" jsonb NOT NULL,
-	"asRankHistory" jsonb NOT NULL,
-	"overallRankHistory" jsonb NOT NULL,
+	"blRankHistory" jsonb,
+	"ssRankHistory" jsonb,
+	"asRankHistory" jsonb,
+	"overallRankHistory" jsonb,
 	"totalScores" integer DEFAULT 0 NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "rankfeeds" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"type" varchar(32) NOT NULL,
+	"channelType" varchar(32) NOT NULL,
+	"displayType" varchar(32) NOT NULL,
+	"userId" varchar(32),
+	"channelId" varchar(32),
+	"guildId" varchar(32),
+	"managerRoleId" varchar(32),
+	"playerIds" varchar(32)[] NOT NULL,
+	"hasFilters" boolean NOT NULL,
+	"ssRanked" boolean,
+	"blRanked" boolean,
+	"asRanked" boolean,
+	"minRank" integer
 );
 --> statement-breakpoint
 CREATE TABLE "scorefeeds" (
@@ -37,7 +55,7 @@ CREATE TABLE "scorefeeds" (
 CREATE TABLE "scores" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"playerId" varchar(32) NOT NULL,
-	"provider" varchar(32) NOT NULL,
+	"provider" varchar(32)[] NOT NULL,
 	"playerName" text DEFAULT '' NOT NULL,
 	"playerAvatar" text DEFAULT '' NOT NULL,
 	"songName" text DEFAULT '' NOT NULL,
@@ -59,6 +77,7 @@ CREATE TABLE "scores" (
 	"ppSS" integer DEFAULT 0 NOT NULL,
 	"ap" integer DEFAULT 0 NOT NULL,
 	"modifiers" varchar(32)[],
+	"improvement" double precision,
 	"blLeaderboardId" integer,
 	"blScoreId" integer,
 	"blRank" integer,
@@ -66,5 +85,7 @@ CREATE TABLE "scores" (
 	"ssScoreId" integer,
 	"ssRank" integer,
 	"outdated" boolean NOT NULL,
-	"timestamp" timestamp NOT NULL
+	"timestamp" timestamp NOT NULL,
+	"upVoteIds" varchar(32)[] NOT NULL,
+	"downVoteIds" varchar(32)[] NOT NULL
 );

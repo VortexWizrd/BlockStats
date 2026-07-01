@@ -2,6 +2,8 @@ import { WebSocketServer, WebSocket } from "ws";
 import Score from "../../common/score.js";
 import beatleaderApiService from "../external/beatleader-api.service.js";
 import scoresaberApiService from "../external/scoresaber-api.service.js";
+import { PlayerService } from "../player.service.js";
+import { timestamp } from "drizzle-orm/gel-core";
 
 class WebSocketServerService {
   private server = new WebSocketServer({
@@ -10,6 +12,9 @@ class WebSocketServerService {
 
   private ws: WebSocket | undefined;
   private scoreStorage: Score[] = [];
+
+  private blRankedSubmissions = 0;
+  private ssrankedSubmissions = 0;
 
   constructor() {
     this.server.on("connection", (ws) => {
@@ -29,6 +34,33 @@ class WebSocketServerService {
 
       beatleaderApiService.addListener("score", async (data) => {
         try {
+          // Rank feed
+          // update every 5 ranked submissions (may change if better alternative)
+          if (this.blRankedSubmissions >= 5) {
+            this.blRankedSubmissions = 0;
+            for (const player of await PlayerService.getAllPlayers()) {
+              const updatedPlayer = await PlayerService.updateBLRank(player);
+              if (!updatedPlayer) continue;
+              const rankUpdate = {
+                playerName: player.name,
+                playerAvatar: player.avatar,
+                playerUrl: `https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId ?? "undefined"}`,
+                leaderboard: "BeatLeader",
+                oldRank:
+                  player.blRankHistory[player.blRankHistory.length - 2]?.rank ??
+                  0,
+                newRank:
+                  player.blRankHistory[player.blRankHistory.length - 1]?.rank ??
+                  0,
+                timestamp: Date.now(),
+              };
+              this.sendRankUpdate(rankUpdate);
+            }
+          } else {
+            this.blRankedSubmissions++;
+          }
+
+          // Score feed
           const blConvertedScore = await Score.fromBeatLeader(data);
           if (this.scoreStorage.includes(blConvertedScore)) return;
           for (const score of this.scoreStorage) {
@@ -90,8 +122,21 @@ class WebSocketServerService {
   }
 
   public sendScore(score: Score) {
+    const wrapper = {
+      type: "score",
+      data: score,
+    };
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
-    this.ws.send(JSON.stringify(score));
+    this.ws.send(JSON.stringify(wrapper));
+  }
+
+  public sendRankUpdate(rankUpdate: any) {
+    const wrapper = {
+      type: "rank",
+      data: rankUpdate,
+    };
+    if (this.ws === undefined) throw new Error("WebSocket not initialized");
+    this.ws.send(JSON.stringify(wrapper));
   }
 
   private async tempStoreScore(score: Score) {

@@ -8,6 +8,7 @@ export default class Player {
   oculusId: string | null;
   questId: number | null;
   alias: string | null;
+  beatLeaderId: string | null;
 
   scoreSaberId: string | null;
   scoreSaberAlias: string | null;
@@ -28,6 +29,7 @@ export default class Player {
     steamId: string | null;
     oculusId: string | null;
     questId: number | null;
+    beatLeaderId: string | null;
     alias: string | null;
     scoreSaberId: string | null;
     scoreSaberAlias: string | null;
@@ -47,6 +49,7 @@ export default class Player {
     this.oculusId = data.oculusId;
     this.questId = data.questId;
     this.alias = data.alias;
+    this.beatLeaderId = data.beatLeaderId;
 
     this.scoreSaberId = data.scoreSaberId;
     this.scoreSaberAlias = data.scoreSaberAlias;

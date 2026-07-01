@@ -1,5 +1,5 @@
 {
-  "id": "41c5d8a1-68bf-4fe2-bbfb-15782665a3ea",
+  "id": "38737228-ccc4-4b79-9153-c9cf5d35bbee",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -13,6 +13,12 @@
           "type": "varchar(32)",
           "primaryKey": true,
           "notNull": true
+        },
+        "beatLeaderId": {
+          "name": "beatLeaderId",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
         },
         "steamId": {
           "name": "steamId",
@@ -79,25 +85,25 @@
           "name": "blRankHistory",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "ssRankHistory": {
           "name": "ssRankHistory",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "asRankHistory": {
           "name": "asRankHistory",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "overallRankHistory": {
           "name": "overallRankHistory",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "totalScores": {
           "name": "totalScores",
@@ -105,6 +111,103 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.rankfeeds": {
+      "name": "rankfeeds",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "channelType": {
+          "name": "channelType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "displayType": {
+          "name": "displayType",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "channelId": {
+          "name": "channelId",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guildId": {
+          "name": "guildId",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "managerRoleId": {
+          "name": "managerRoleId",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "playerIds": {
+          "name": "playerIds",
+          "type": "varchar(32)[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hasFilters": {
+          "name": "hasFilters",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ssRanked": {
+          "name": "ssRanked",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "blRanked": {
+          "name": "blRanked",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "asRanked": {
+          "name": "asRanked",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "minRank": {
+          "name": "minRank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -230,7 +333,7 @@
         },
         "provider": {
           "name": "provider",
-          "type": "varchar(32)",
+          "type": "varchar(32)[]",
           "primaryKey": false,
           "notNull": true
         },
@@ -370,6 +473,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "improvement": {
+          "name": "improvement",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
         "blLeaderboardId": {
           "name": "blLeaderboardId",
           "type": "integer",
@@ -415,6 +524,18 @@
         "timestamp": {
           "name": "timestamp",
           "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "upVoteIds": {
+          "name": "upVoteIds",
+          "type": "varchar(32)[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "downVoteIds": {
+          "name": "downVoteIds",
+          "type": "varchar(32)[]",
           "primaryKey": false,
           "notNull": true
         }
