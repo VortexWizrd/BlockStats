@@ -139,6 +139,7 @@ export class PlayerService {
   ): Promise<Player | undefined> {
     const blUser = await beatleaderApiService.getUserFromDiscord(player.id);
     if (!blUser) return;
+    if (blUser.rank <= 0) return;
 
     if (!player.blRankHistory || player.blRankHistory.length <= 0) {
       return (await PlayersRepository.updateBLRank(player.id, {
@@ -166,6 +167,7 @@ export class PlayerService {
       player.scoreSaberId ?? "-1",
     );
     if (!ssUser) return;
+    if (ssUser.stats.rank <= 0) return;
 
     if (!player.ssRankHistory || player.ssRankHistory.length <= 0) {
       return (await PlayersRepository.updateSSRank(player.id, {

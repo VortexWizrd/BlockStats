@@ -44,6 +44,7 @@ class WebSocketServerService {
               const rankUpdate = {
                 playerName: player.name,
                 playerAvatar: player.avatar,
+                playerId: player.id,
                 playerUrl: `https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId ?? "undefined"}`,
                 leaderboard: "BeatLeader",
                 oldRank:
@@ -101,6 +102,7 @@ class WebSocketServerService {
             const rankUpdate = {
               playerName: player.name,
               playerAvatar: player.avatar,
+              playerId: player.id,
               playerUrl: `https://scoresaber.com/u/${player.scoreSaberAlias ?? player.scoreSaberId ?? "undefined"}`,
               leaderboard: "ScoreSaber",
               oldRank:
