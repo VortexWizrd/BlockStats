@@ -76,6 +76,6 @@ export class RankFeedsRepository extends Repository {
       .set({
         playerIds: sql`array_replace(${this.table.playerIds}, ${oldId}, ${newId})`,
       })
-      .where(sql`${this.table.playerIds} @> ARRAY[${oldId}]::text[]`);
+      .where(sql`${oldId} = ANY(${this.table.playerIds})`);
   }
 }
