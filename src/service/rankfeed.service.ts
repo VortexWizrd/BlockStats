@@ -47,4 +47,9 @@ export class RankFeedService {
   public static async removePlayerId(id: number, playerId: string) {
     await RankFeedsRepository.removePlayerId(id, playerId);
   }
+
+  public static async replaceIds(oldId: string, newId: string) {
+    if (oldId == "") return;
+    await RankFeedsRepository.replaceIds(oldId, newId);
+  }
 }

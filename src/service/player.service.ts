@@ -5,6 +5,8 @@ import { PlayersRepository } from "../repositories/players.repository.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import hitbloqApiService from "./external/hitbloq-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
+import { RankFeedService } from "./rankfeed.service.js";
+import { ScoreFeedService } from "./scorefeed.service.js";
 
 export class PlayerService {
   public static async createPlayer(
@@ -182,5 +184,39 @@ export class PlayerService {
       }
     }
     return undefined;
+  }
+
+  public static async updatePlayerLinks(id: string) {
+    const player = await this.getPlayer(id);
+
+    if (!player) return;
+
+    await RankFeedService.replaceIds(player.beatLeaderId ?? "", player.id);
+    await RankFeedService.replaceIds(player.steamId ?? "", player.id);
+    await RankFeedService.replaceIds(player.oculusId ?? "", player.id);
+    await RankFeedService.replaceIds(
+      player.questId?.toString() ?? "",
+      player.id,
+    );
+    await RankFeedService.replaceIds(player.alias ?? "", player.id);
+    await RankFeedService.replaceIds(player.scoreSaberId ?? "", player.id);
+
+    await ScoreFeedService.replaceIds(player.beatLeaderId ?? "", player.id);
+    await ScoreFeedService.replaceIds(player.steamId ?? "", player.id);
+    await ScoreFeedService.replaceIds(player.oculusId ?? "", player.id);
+    await ScoreFeedService.replaceIds(
+      player.questId?.toString() ?? "",
+      player.id,
+    );
+    await ScoreFeedService.replaceIds(player.alias ?? "", player.id);
+    await ScoreFeedService.replaceIds(player.scoreSaberId ?? "", player.id);
+  }
+
+  public static async updateAllPlayerLinks() {
+    const players = await this.getAllPlayers();
+
+    for (const player of players) {
+      PlayerService.updatePlayerLinks(player.id);
+    }
   }
 }

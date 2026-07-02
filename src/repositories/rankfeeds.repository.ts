@@ -69,4 +69,10 @@ export class RankFeedsRepository extends Repository {
       })
       .where(eq(this.table.id, id));
   }
+
+  public static async replaceIds(oldId: string, newId: string) {
+    await db.update(this.table).set({
+      linkedIds: sql`array_replace(${this.table.linkedIds}, '${oldId}', '${newId}')`,
+    });
+  }
 }

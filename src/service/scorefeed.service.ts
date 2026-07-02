@@ -48,4 +48,9 @@ export class ScoreFeedService {
   public static async removePlayerId(id: number, playerId: string) {
     await ScoreFeedsRepository.removePlayerId(id, playerId);
   }
+
+  public static async replaceIds(oldId: string, newId: string) {
+    if (oldId == "") return;
+    await ScoreFeedsRepository.replaceIds(oldId, newId);
+  }
 }
