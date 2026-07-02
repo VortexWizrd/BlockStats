@@ -72,7 +72,7 @@ export class RankFeedsRepository extends Repository {
 
   public static async replaceIds(oldId: string, newId: string) {
     await db.update(this.table).set({
-      linkedIds: sql`array_replace(${this.table.linkedIds}, '${oldId}', '${newId}')`,
+      playerIds: sql`array_replace(${this.table.playerIds}, '${oldId}', '${newId}')`,
     });
   }
 }
