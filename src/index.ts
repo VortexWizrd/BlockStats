@@ -16,7 +16,7 @@ app.listen(port, () => {
 });
 
 await runMigrations();
-await migrateFromMongo();
+// await migrateFromMongo();
 
 startDiscord();
 
