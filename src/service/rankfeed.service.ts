@@ -52,4 +52,12 @@ export class RankFeedService {
     if (oldId == "") return;
     await RankFeedsRepository.replaceIds(oldId, newId);
   }
+
+  public static async deleteFromChannel(id: string) {
+    await RankFeedsRepository.delete([{ name: "channelId", value: id }]);
+  }
+
+  public static async deleteFromUser(id: string) {
+    await RankFeedsRepository.delete([{ name: "userId", value: id }]);
+  }
 }

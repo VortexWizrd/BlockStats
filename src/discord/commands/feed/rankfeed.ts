@@ -43,6 +43,9 @@ export default {
         ),
     )
     .addSubcommand((cmd) =>
+      cmd.setName("delete").setDescription("Deletes all rank feeds in channel"),
+    )
+    .addSubcommand((cmd) =>
       cmd
         .setName("link")
         .setDescription("Add a player to the rank feed")
@@ -151,6 +154,49 @@ export default {
             flags: MessageFlags.Ephemeral,
           });
         }
+      }
+
+      case "delete": {
+        if (!interaction.guild) {
+          const existingFeed = await RankFeedsRepository.findByUserId(
+            interaction.user.id,
+          );
+
+          if (!existingFeed) {
+            return await interaction.reply({
+              content: "There are no rank feeds in this channel!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+
+          await RankFeedService.deleteFromUser(interaction.user.id);
+
+          return await interaction.reply({
+            content: `Rank feeds deleted!`,
+            flags: MessageFlags.Ephemeral,
+          });
+        } else {
+          if (
+            !interaction.channel ||
+            !(interaction.channel instanceof TextChannel)
+          )
+            return interaction.reply({
+              content: "You must be in a text channel to use this command!",
+              flags: MessageFlags.Ephemeral,
+            });
+          const existingFeed = await RankFeedsRepository.findByChannelId(
+            interaction.channel.id,
+          );
+
+          if (!existingFeed)
+            return interaction.reply({
+              content: "There are no rank feeds in this channel!",
+              flags: MessageFlags.Ephemeral,
+            });
+
+          await RankFeedService.deleteFromChannel(interaction.channel.id);
+        }
+        break;
       }
 
       case "link": {

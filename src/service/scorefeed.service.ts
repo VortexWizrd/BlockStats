@@ -53,4 +53,12 @@ export class ScoreFeedService {
     if (oldId == "") return;
     await ScoreFeedsRepository.replaceIds(oldId, newId);
   }
+
+  public static async deleteFromChannel(id: string) {
+    await ScoreFeedsRepository.delete([{ name: "channelId", value: id }]);
+  }
+
+  public static async deleteFromUser(id: string) {
+    await ScoreFeedsRepository.delete([{ name: "userId", value: id }]);
+  }
 }

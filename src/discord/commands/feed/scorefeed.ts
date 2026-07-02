@@ -40,6 +40,11 @@ export default {
     )
     .addSubcommand((cmd) =>
       cmd
+        .setName("delete")
+        .setDescription("Deletes all score feeds in channel"),
+    )
+    .addSubcommand((cmd) =>
+      cmd
         .setName("link")
         .setDescription("Add a player to the rank feed")
         .addStringOption((option) =>
@@ -146,6 +151,49 @@ export default {
             content: `New \`${newFeed.type}\` score feed created!`,
             flags: MessageFlags.Ephemeral,
           });
+        }
+        break;
+      }
+
+      case "delete": {
+        if (!interaction.guild) {
+          const existingFeed = await ScoreFeedsRepository.findByUserId(
+            interaction.user.id,
+          );
+
+          if (!existingFeed) {
+            return await interaction.reply({
+              content: "There are no score feeds in this channel!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+
+          await ScoreFeedService.deleteFromUser(interaction.user.id);
+
+          return await interaction.reply({
+            content: `Score feeds deleted!`,
+            flags: MessageFlags.Ephemeral,
+          });
+        } else {
+          if (
+            !interaction.channel ||
+            !(interaction.channel instanceof TextChannel)
+          )
+            return interaction.reply({
+              content: "You must be in a text channel to use this command!",
+              flags: MessageFlags.Ephemeral,
+            });
+          const existingFeed = await ScoreFeedsRepository.findByChannelId(
+            interaction.channel.id,
+          );
+
+          if (!existingFeed)
+            return interaction.reply({
+              content: "There are no score feeds in this channel!",
+              flags: MessageFlags.Ephemeral,
+            });
+
+          await ScoreFeedService.deleteFromChannel(interaction.channel.id);
         }
         break;
       }
