@@ -1,5 +1,6 @@
 import {
   ChatInputCommandInteraction,
+  EmbedBuilder,
   GuildMember,
   MessageFlags,
   PermissionFlagsBits,
@@ -63,6 +64,9 @@ export default {
             .setDescription("Discord user")
             .setRequired(false),
         ),
+    )
+    .addSubcommand((cmd) =>
+      cmd.setName("info").setDescription("Display feed information"),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
@@ -260,6 +264,59 @@ export default {
             }
           }
         }
+      }
+
+      case "info": {
+        const existingFeed = await RankFeedsRepository.findOne([
+          {
+            name: "channelId",
+            value: interaction.channel?.id.toString(),
+          },
+        ]);
+
+        if (!existingFeed)
+          return await interaction.reply({
+            content: "You must be in a rank feed channel to run this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+
+        const embed = new EmbedBuilder();
+        if (interaction.guild) {
+          embed
+            .setTitle(
+              `${interaction.guild.name} Rank Feed [${existingFeed.id}]`,
+            )
+            .setThumbnail(interaction.guild.iconURL());
+        } else {
+          embed
+            .setTitle(
+              `${interaction.user.displayName}'s Rank Feed [${existingFeed.id}]`,
+            )
+            .setThumbnail(interaction.user.displayAvatarURL());
+        }
+
+        let linkedIdsString = "";
+        for (let i = 0; i < existingFeed.playerIds.length; i++) {
+          if (i > 0) {
+            linkedIdsString = linkedIdsString.concat("\n");
+          }
+          if (i == 10) {
+            linkedIdsString = linkedIdsString.concat(
+              `...${existingFeed.playerIds.length - 10} more`,
+            );
+          }
+          linkedIdsString = linkedIdsString.concat(
+            `${i + 1}. ${existingFeed.playerIds[i]}`,
+          );
+        }
+        if (linkedIdsString == "") {
+          linkedIdsString = "None";
+        }
+        embed.setDescription(`### Linked IDs\n\`\`\`${linkedIdsString}\`\`\``);
+        embed.addFields({
+          name: "Type",
+          value: existingFeed.type,
+        });
       }
     }
   },

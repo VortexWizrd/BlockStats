@@ -37,6 +37,32 @@ export default {
             .setDescription("Set role for others to manage the feed")
             .setRequired(false),
         ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("link")
+        .setDescription("Add a player to the rank feed")
+        .addStringOption((option) =>
+          option
+            .setName("beatleaderid")
+            .setDescription("BeatLeader profile id")
+            .setRequired(false),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("scoresaberid")
+            .setDescription("ScoreSaber profile id")
+            .setRequired(false),
+        )
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription("Discord user")
+            .setRequired(false),
+        ),
+    )
+    .addSubcommand((cmd) =>
+      cmd.setName("info").setDescription("Display feed information"),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
@@ -122,6 +148,59 @@ export default {
           });
         }
         break;
+      }
+
+      case "info": {
+        const existingFeed = await ScoreFeedsRepository.findOne([
+          {
+            name: "channelId",
+            value: interaction.channel?.id.toString(),
+          },
+        ]);
+
+        if (!existingFeed)
+          return await interaction.reply({
+            content: "You must be in a score feed channel to run this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+
+        const embed = new EmbedBuilder();
+        if (interaction.guild) {
+          embed
+            .setTitle(
+              `${interaction.guild.name} Score Feed [${existingFeed.id}]`,
+            )
+            .setThumbnail(interaction.guild.iconURL());
+        } else {
+          embed
+            .setTitle(
+              `${interaction.user.displayName}'s Score Feed [${existingFeed.id}]`,
+            )
+            .setThumbnail(interaction.user.displayAvatarURL());
+        }
+
+        let linkedIdsString = "";
+        for (let i = 0; i < existingFeed.playerIds.length; i++) {
+          if (i > 0) {
+            linkedIdsString = linkedIdsString.concat("\n");
+          }
+          if (i == 10) {
+            linkedIdsString = linkedIdsString.concat(
+              `...${existingFeed.playerIds.length - 10} more`,
+            );
+          }
+          linkedIdsString = linkedIdsString.concat(
+            `${i + 1}. ${existingFeed.playerIds[i]}`,
+          );
+        }
+        if (linkedIdsString == "") {
+          linkedIdsString = "None";
+        }
+        embed.setDescription(`### Linked IDs\n\`\`\`${linkedIdsString}\`\`\``);
+        embed.addFields({
+          name: "Type",
+          value: existingFeed.type,
+        });
       }
     }
   },
