@@ -32,4 +32,20 @@ export class ScoreFeedService {
   public static async getGlobalScoreFeeds() {
     return (await ScoreFeedsRepository.findManyByGlobalType()) as ScoreFeed[];
   }
+
+  public static async getBlockStatsGlobalScoreFeeds() {
+    return (await ScoreFeedsRepository.findManyByBlockStatsGlobalType()) as ScoreFeed[];
+  }
+
+  public static async getConnectedScoreFeeds(id: string) {
+    return (await ScoreFeedsRepository.findConnected(id)) as ScoreFeed[];
+  }
+
+  public static async addPlayerId(id: number, playerId: string) {
+    await ScoreFeedsRepository.appendPlayerId(id, playerId);
+  }
+
+  public static async removePlayerId(id: number, playerId: string) {
+    await ScoreFeedsRepository.removePlayerId(id, playerId);
+  }
 }

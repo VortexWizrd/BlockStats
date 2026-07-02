@@ -44,4 +44,17 @@ export abstract class Repository {
     const [newRow] = await db.insert(this.table).values(row).returning();
     return newRow;
   }
+
+  public static async delete(
+    data: { name: string; value: any }[],
+  ): Promise<typeof this.row | undefined> {
+    const conditions = [];
+    for (const condition of data) {
+      conditions.push(eq(this.table[condition.name], condition.value));
+    }
+    return await db
+      .delete(this.table)
+      .where(and(...conditions))
+      .returning();
+  }
 }

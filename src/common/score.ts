@@ -48,7 +48,6 @@ export interface IScore {
   blRank: number | null;
   ssRank: number | null;
 
-  messages: any[] | null;
   upVoteIds: string[];
   downVoteIds: string[];
 }
@@ -87,7 +86,6 @@ export default class Score implements IScore {
   songCover: string;
   mapAuthor: string;
   improvement: number | null;
-  messages: any[] | null;
   upVoteIds: string[];
   downVoteIds: string[];
   constructor(data: IScore) {
@@ -135,7 +133,6 @@ export default class Score implements IScore {
     this.ssStarRating = data.ssStarRating;
     this.asRating = data.asRating;
 
-    this.messages = data.messages;
     this.upVoteIds = data.upVoteIds;
     this.downVoteIds = data.downVoteIds;
   }
@@ -209,7 +206,6 @@ export default class Score implements IScore {
         blScore.leaderboard.song.hash,
         blScore.leaderboard.difficulty.difficultyName,
       ),
-      messages: [],
       upVoteIds: [],
       downVoteIds: [],
     });
@@ -274,7 +270,6 @@ export default class Score implements IScore {
         difficulty,
       ),
       improvement: null,
-      messages: [],
       upVoteIds: [],
       downVoteIds: [],
     });

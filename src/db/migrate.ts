@@ -66,16 +66,36 @@ export async function migrateFromMongo(): Promise<void> {
       if (score.beatLeaderData) {
         if (!score.discordId) continue;
         const migratedScore = await Score.fromBeatLeader(score.beatLeaderData);
+        let newUpVoteIds = [];
+        let newDownVoteIds = [];
+        for (const id of score.upVoteIds) {
+          const playerId = (await PlayerService.getPlayerFromBeatLeader(id))
+            ?.id;
+          if (playerId) newUpVoteIds.push(playerId);
+        }
+        for (const id of score.downVoteIds) {
+          const playerId = (await PlayerService.getPlayerFromBeatLeader(id))
+            ?.id;
+          if (playerId) newDownVoteIds.push(playerId);
+        }
         migratedScore.playerId = score.discordId;
-        migratedScore.upVoteIds = score.upVoteIds;
-        migratedScore.downVoteIds = score.downVoteIds;
-        migratedScore.messages = score.messages.map((message) => ({
-          messageId: message.messageId,
-          channelId: message.channelId ?? null,
-          guildId: message.guildId ?? null,
-          userId: message.userId ?? null,
-        }));
-        console.log(await ScoreService.createScore(migratedScore));
+        migratedScore.upVoteIds = newUpVoteIds ?? [];
+        migratedScore.downVoteIds = newDownVoteIds ?? [];
+        const newScore = await ScoreService.createScore(migratedScore);
+        console.log(newScore);
+        if (newScore == undefined) continue;
+        for (const message of score.messages) {
+          console.log(
+            await ScoreService.addDiscordMessage({
+              id: newScore.id,
+              messageId: message.messageId,
+              type: message.userId ? "user" : "guild",
+              channelId: message.channelId ?? null,
+              userId: message.userId ?? null,
+              guildId: message.guildId ?? null,
+            }),
+          );
+        }
         await new Promise((resolve) => setTimeout(resolve, 100));
       } else if (score.scoreSaberData) {
         if (!score.discordId) continue;

@@ -9,6 +9,22 @@ class ScoreSaberApiService extends EventEmitter {
   constructor() {
     super();
 
+    this.createListeners();
+
+    // Wait for potential socket disconnects
+    setInterval(() => {
+      const now = new Date();
+
+      if (now.getTime() - this._lastSocketUpdate.getTime() > 60000) {
+        console.log(
+          "[ScoreSaber] No updates in the last 60 seconds, reconnecting...",
+        );
+        this._socket.close();
+      }
+    }, 30000);
+  }
+
+  private createListeners() {
     // Listen to score uploads on websocket
     this._socket.addEventListener("message", (message: any) => {
       if (message.data == "Connected to the ScoreSaber WSS") return;
@@ -25,18 +41,6 @@ class ScoreSaberApiService extends EventEmitter {
     this._socket.addEventListener("error", () => {
       this.reconnectWebSocket();
     });
-
-    // Wait for potential socket disconnects
-    setInterval(() => {
-      const now = new Date();
-
-      if (now.getTime() - this._lastSocketUpdate.getTime() > 60000) {
-        console.log(
-          "[ScoreSaber] No updates in the last 60 seconds, reconnecting...",
-        );
-        this._socket.close();
-      }
-    }, 30000);
   }
 
   /** Get the last recorded ScoreSaber socket update time */
@@ -150,6 +154,7 @@ class ScoreSaberApiService extends EventEmitter {
   private reconnectWebSocket() {
     setTimeout(() => {
       this._socket = new WebSocket("wss://scoresaber.com/ws");
+      this.createListeners();
     }, 5000);
   }
 }

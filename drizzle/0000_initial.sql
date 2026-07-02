@@ -19,7 +19,7 @@ CREATE TABLE "players" (
 );
 --> statement-breakpoint
 CREATE TABLE "rankfeeds" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "rankfeeds_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"type" varchar(32) NOT NULL,
 	"channelType" varchar(32) NOT NULL,
 	"displayType" varchar(32) NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE "rankfeeds" (
 );
 --> statement-breakpoint
 CREATE TABLE "scorefeeds" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "scorefeeds_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"type" varchar(32) NOT NULL,
 	"channelType" varchar(32) NOT NULL,
 	"displayType" varchar(32) NOT NULL,
@@ -52,8 +52,17 @@ CREATE TABLE "scorefeeds" (
 	"minRank" integer
 );
 --> statement-breakpoint
+CREATE TABLE "scoremessages" (
+	"id" integer NOT NULL,
+	"type" varchar(32) NOT NULL,
+	"messageId" varchar(32) PRIMARY KEY NOT NULL,
+	"userId" varchar(32),
+	"channelId" varchar(32),
+	"guildId" varchar(32)
+);
+--> statement-breakpoint
 CREATE TABLE "scores" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "scores_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
 	"playerId" varchar(32) NOT NULL,
 	"provider" varchar(32)[] NOT NULL,
 	"playerName" text DEFAULT '' NOT NULL,
@@ -80,9 +89,11 @@ CREATE TABLE "scores" (
 	"improvement" double precision,
 	"blLeaderboardId" varchar(32),
 	"blScoreId" integer,
+	"blStarRating" double precision,
 	"blRank" integer,
 	"ssLeaderboardId" integer,
 	"ssScoreId" integer,
+	"ssStarRating" double precision,
 	"ssRank" integer,
 	"outdated" boolean NOT NULL,
 	"timestamp" timestamp NOT NULL,

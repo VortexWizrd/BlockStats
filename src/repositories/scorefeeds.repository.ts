@@ -1,5 +1,7 @@
+import { arrayContains, eq, sql } from "drizzle-orm";
 import { scoreFeedsTable } from "../db/schema.js";
 import { Repository } from "./baserepository.js";
+import { db } from "../db/index.js";
 
 export class ScoreFeedsRepository extends Repository {
   public static readonly table = scoreFeedsTable;
@@ -27,5 +29,44 @@ export class ScoreFeedsRepository extends Repository {
     (typeof this.row)[] | undefined
   > {
     return await this.find([{ name: "type", value: "global" }]);
+  }
+
+  public static async findConnected(
+    id: string,
+  ): Promise<(typeof this.row)[] | undefined> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(arrayContains(this.table.playerIds, [id]));
+  }
+
+  public static async findManyByBlockStatsGlobalType(): Promise<
+    (typeof this.row)[] | undefined
+  > {
+    return await this.find([{ name: "type", value: "blockstats_global" }]);
+  }
+
+  public static async appendPlayerId(
+    id: number,
+    playerId: string,
+  ): Promise<void> {
+    await db
+      .update(this.table)
+      .set({
+        playerIds: sql`array_append(${this.table.playerIds}, ${playerId})`,
+      })
+      .where(eq(this.table.id, id));
+  }
+
+  public static async removePlayerId(
+    id: number,
+    playerId: string,
+  ): Promise<void> {
+    await db
+      .update(this.table)
+      .set({
+        playerIds: sql`array_remove(${this.table.playerIds}, ${playerId})`,
+      })
+      .where(eq(this.table.id, id));
   }
 }

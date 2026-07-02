@@ -44,7 +44,7 @@ export const playersTable = pgTable("players", {
 
 export const scoresTable = pgTable("scores", {
   // Primary ID
-  id: serial().primaryKey().notNull(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
 
   // Other identifiers
   playerId: varchar({ length: 32 }).notNull(),
@@ -83,9 +83,11 @@ export const scoresTable = pgTable("scores", {
   // Leaderboard data
   blLeaderboardId: varchar({ length: 32 }),
   blScoreId: integer(),
+  blStarRating: doublePrecision(),
   blRank: integer(),
   ssLeaderboardId: integer(),
   ssScoreId: integer(),
+  ssStarRating: doublePrecision(),
   ssRank: integer(),
 
   outdated: boolean().notNull(),
@@ -97,8 +99,17 @@ export const scoresTable = pgTable("scores", {
   downVoteIds: varchar({ length: 32 }).array().notNull(),
 });
 
+export const scoreMessagesTable = pgTable("scoremessages", {
+  id: integer().notNull(),
+  type: varchar({ length: 32 }).notNull(),
+  messageId: varchar({ length: 32 }).primaryKey().notNull(),
+  userId: varchar({ length: 32 }),
+  channelId: varchar({ length: 32 }),
+  guildId: varchar({ length: 32 }),
+});
+
 export const scoreFeedsTable = pgTable("scorefeeds", {
-  id: serial().primaryKey().notNull(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
 
   type: varchar({ length: 32 }).notNull(),
   channelType: varchar({ length: 32 }).notNull(),
@@ -120,7 +131,7 @@ export const scoreFeedsTable = pgTable("scorefeeds", {
 });
 
 export const rankFeedsTable = pgTable("rankfeeds", {
-  id: serial().primaryKey().notNull(),
+  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
 
   type: varchar({ length: 32 }).notNull(),
   channelType: varchar({ length: 32 }).notNull(),
@@ -143,5 +154,6 @@ export const rankFeedsTable = pgTable("rankfeeds", {
 
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
+export type ScoreMessagesRow = typeof scoreMessagesTable.$inferInsert;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
 export type RankFeedRow = typeof rankFeedsTable.$inferSelect;

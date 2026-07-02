@@ -1,12 +1,17 @@
 import {
   ChatInputCommandInteraction,
+  GuildMember,
   MessageFlags,
+  PermissionFlagsBits,
   SlashCommandBuilder,
   TextChannel,
 } from "discord.js";
 import { RankFeedsRepository } from "../../../repositories/rankfeeds.repository.js";
 import RankFeed from "../../../common/rankfeed.js";
 import { RankFeedService } from "../../../service/rankfeed.service.js";
+import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
+import { PlayerService } from "../../../service/player.service.js";
+import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -22,7 +27,10 @@ export default {
             .setDescription("Rank feed type")
             .addChoices(
               { name: "default", value: "default" },
-              { name: "global", value: "global" },
+              {
+                name: "global (blockstats profiles only)",
+                value: "blockstats_global",
+              },
             )
             .setRequired(true),
         )
@@ -32,12 +40,35 @@ export default {
             .setDescription("Set role for others to manage the feed")
             .setRequired(false),
         ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("link")
+        .setDescription("Add a player to the rank feed")
+        .addStringOption((option) =>
+          option
+            .setName("beatleaderid")
+            .setDescription("BeatLeader profile id")
+            .setRequired(false),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("scoresaberid")
+            .setDescription("ScoreSaber profile id")
+            .setRequired(false),
+        )
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription("Discord user")
+            .setRequired(false),
+        ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
-      case "new":
+      case "new": {
         if (!interaction.guild) {
           const existingFeed = await RankFeedsRepository.findByUserId(
             interaction.user.id,
@@ -69,7 +100,10 @@ export default {
 
           await RankFeedService.createRankFeed(newFeed);
 
-          return interaction.reply("Rank feed created!");
+          return await interaction.reply({
+            content: `New \`${newFeed.type}\` rank feed created!`,
+            flags: MessageFlags.Ephemeral,
+          });
         } else {
           if (
             !interaction.channel ||
@@ -91,7 +125,7 @@ export default {
 
           const newFeed = new RankFeed({
             id: undefined,
-            type: interaction.options.getString("type") ?? "global",
+            type: interaction.options.getString("type") ?? "blockstats_global",
             channelType: "guild",
             displayType: "embed",
             userId: null,
@@ -108,7 +142,125 @@ export default {
           });
 
           await RankFeedService.createRankFeed(newFeed);
+          return await interaction.reply({
+            content: `New \`${newFeed.type}\` rank feed created!`,
+            flags: MessageFlags.Ephemeral,
+          });
         }
+      }
+
+      case "link": {
+        const existingFeed = await RankFeedsRepository.findOne([
+          {
+            name: "channelId",
+            value: interaction.channel?.id.toString(),
+          },
+        ]);
+
+        if (!existingFeed)
+          return await interaction.reply({
+            content: "You must be in a rank feed channel to run this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+
+        if (existingFeed.type !== "default")
+          return await interaction.reply({
+            content: "You can only link profiles to 'default' type rank feeds!",
+          });
+
+        if (interaction.guild) {
+          if (
+            !(
+              (interaction.member as GuildMember).permissions.has(
+                PermissionFlagsBits.Administrator,
+              ) ||
+              (interaction.member as GuildMember).roles.cache.has(
+                existingFeed.managerRoleId,
+              )
+            )
+          ) {
+            return await interaction.reply({
+              content:
+                "You do not have sufficient permissions to run this command!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        }
+
+        const discordId = interaction.options.getUser("user")?.id;
+        const beatLeaderId = interaction.options.getString("beatleaderid");
+        const scoreSaberId = interaction.options.getString("scoresaberid");
+
+        const ids = [discordId, beatLeaderId, scoreSaberId].filter(
+          (id) => !!id,
+        );
+
+        if (ids.length > 1) {
+          return await interaction.reply({
+            content: "Use only one ID when linking a profile!",
+            flags: MessageFlags.Ephemeral,
+          });
+        } else if (ids.length == 0) {
+          const player = await PlayerService.getPlayer(interaction.user.id);
+          if (player) {
+            RankFeedService.addPlayerId(existingFeed.id, player.id);
+            return await interaction.reply({
+              content: `Added BlockStats user **${player.name}** to the rank feed!`,
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            const blProfile = await beatleaderApiService.getUserFromDiscord(
+              interaction.user.id,
+            );
+            if (blProfile && blProfile.id) {
+              RankFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              return await interaction.reply({
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+            return await interaction.reply({
+              content: `Unable to find profile. Please use one of the ID options to link a profile`,
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        } else {
+          const player =
+            (await PlayerService.getPlayer(discordId ?? "")) ??
+            (await PlayerService.getPlayerFromBeatLeader(beatLeaderId ?? "")) ??
+            (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
+
+          if (player) {
+            RankFeedService.addPlayerId(existingFeed.id, player.id);
+            return await interaction.reply({
+              content: `Added BlockStats user **${player.name}** to the rank feed!`,
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            const blProfile =
+              (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
+              (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
+            if (blProfile && blProfile.id) {
+              RankFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              return await interaction.reply({
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            } else {
+              const ssProfile = await scoresaberApiService.getUserFromId(
+                scoreSaberId ?? "",
+              );
+              if (ssProfile && ssProfile.id) {
+                RankFeedService.addPlayerId(existingFeed.id, ssProfile.id);
+              }
+              return await interaction.reply({
+                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+          }
+        }
+      }
     }
   },
 };

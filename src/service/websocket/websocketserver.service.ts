@@ -181,11 +181,11 @@ class WebSocketServerService {
       if (player) {
         const updatedScore = await ScoreService.createScore(score);
         if (updatedScore !== undefined) {
-          this.sendScore(updatedScore);
+          return this.sendScore(updatedScore);
         }
-
-        this.sendScore(score);
       }
+
+      return this.sendScore(score);
     }
   }
 }

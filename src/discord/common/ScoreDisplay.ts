@@ -1,4 +1,9 @@
-import { EmbedBuilder } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from "discord.js";
 import type Score from "../../common/score.js";
 
 const colorPairs = [
@@ -81,6 +86,28 @@ export default class ScoreDisplay {
     }
 
     return embed;
+  }
+
+  public static getButtons(
+    likes: number,
+    dislikes: number,
+  ): ActionRowBuilder<ButtonBuilder> {
+    const like = new ButtonBuilder()
+      .setCustomId("score-like")
+      .setLabel("👍 Like • " + likes)
+      .setStyle(ButtonStyle.Success);
+
+    const dislike = new ButtonBuilder()
+      .setCustomId("score-dislike")
+      .setLabel("👎 Dislike • " + dislikes)
+      .setStyle(ButtonStyle.Danger);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      like,
+      dislike,
+    );
+
+    return row;
   }
 
   public static getAccuracyColor(accuracy: number) {

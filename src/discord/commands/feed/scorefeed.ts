@@ -24,6 +24,10 @@ export default {
             .addChoices(
               { name: "default", value: "default" },
               { name: "global", value: "global" },
+              {
+                name: "global (blockstats profiles only)",
+                value: "blockstats_global",
+              },
             )
             .setRequired(true),
         )
@@ -38,7 +42,7 @@ export default {
     const subCommand = interaction.options.getSubcommand();
 
     switch (subCommand) {
-      case "new":
+      case "new": {
         if (!interaction.guild) {
           const existingFeed = await ScoreFeedsRepository.findByUserId(
             interaction.user.id,
@@ -70,7 +74,10 @@ export default {
 
           await ScoreFeedService.createScoreFeed(newFeed);
 
-          return interaction.reply("Score feed created!");
+          return await interaction.reply({
+            content: `New \`${newFeed.type}\` score feed created!`,
+            flags: MessageFlags.Ephemeral,
+          });
         } else {
           if (
             !interaction.channel ||
@@ -109,7 +116,13 @@ export default {
           });
 
           await ScoreFeedService.createScoreFeed(newFeed);
+          return await interaction.reply({
+            content: `New \`${newFeed.type}\` score feed created!`,
+            flags: MessageFlags.Ephemeral,
+          });
         }
+        break;
+      }
     }
   },
 };

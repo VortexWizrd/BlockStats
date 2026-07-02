@@ -31,4 +31,20 @@ export class RankFeedService {
   public static async getGlobalRankFeeds() {
     return (await RankFeedsRepository.findManyByGlobalType()) as RankFeed[];
   }
+
+  public static async getBlockStatsGlobalRankFeeds() {
+    return (await RankFeedsRepository.findManyByBlockStatsGlobalType()) as RankFeed[];
+  }
+
+  public static async getConnectedRankFeeds(id: string) {
+    return (await RankFeedsRepository.findConnected(id)) as RankFeed[];
+  }
+
+  public static async addPlayerId(id: number, playerId: string) {
+    await RankFeedsRepository.appendPlayerId(id, playerId);
+  }
+
+  public static async removePlayerId(id: number, playerId: string) {
+    await RankFeedsRepository.removePlayerId(id, playerId);
+  }
 }
