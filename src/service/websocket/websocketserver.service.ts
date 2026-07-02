@@ -137,7 +137,7 @@ class WebSocketServerService {
               score.ssStarRating = ssConvertedScore.ssStarRating;
               score.ppSS = ssConvertedScore.ppSS;
               score.provider = ["BeatLeader", "ScoreSaber"];
-              this.sendScore(score);
+              await this.sendScore(score);
               return;
             }
           }
@@ -149,11 +149,20 @@ class WebSocketServerService {
     });
   }
 
-  public sendScore(score: Score) {
+  public async sendScore(score: Score): Promise<void> {
     const wrapper = {
       type: "score",
       data: score,
     };
+
+    const player = await PlayerService.getPlayer(score.playerId);
+    if (player) {
+      const updatedScore = await ScoreService.createScore(score);
+      if (updatedScore !== undefined) {
+        wrapper.data = updatedScore;
+      }
+    }
+
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
     this.ws.send(JSON.stringify(wrapper));
   }
@@ -175,15 +184,6 @@ class WebSocketServerService {
     const index = this.scoreStorage.indexOf(score);
     if (index !== -1) {
       this.scoreStorage.splice(index, 1);
-
-      const player = await PlayerService.getPlayer(score.playerId);
-
-      if (player) {
-        const updatedScore = await ScoreService.createScore(score);
-        if (updatedScore !== undefined) {
-          return this.sendScore(updatedScore);
-        }
-      }
 
       return this.sendScore(score);
     }
