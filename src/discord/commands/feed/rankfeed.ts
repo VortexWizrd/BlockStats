@@ -304,6 +304,7 @@ export default {
             linkedIdsString = linkedIdsString.concat(
               `...${existingFeed.playerIds.length - 10} more`,
             );
+            break;
           }
           linkedIdsString = linkedIdsString.concat(
             `${i + 1}. ${existingFeed.playerIds[i]}`,
