@@ -71,8 +71,11 @@ export class RankFeedsRepository extends Repository {
   }
 
   public static async replaceIds(oldId: string, newId: string) {
-    await db.update(this.table).set({
-      playerIds: sql`array_replace(${this.table.playerIds}, ${oldId}, ${newId})`,
-    });
+    await db
+      .update(this.table)
+      .set({
+        playerIds: sql`array_replace(${this.table.playerIds}, ${oldId}, ${newId})`,
+      })
+      .where(sql`${this.table.playerIds} @> ARRAY[${oldId}]::text[]`);
   }
 }
