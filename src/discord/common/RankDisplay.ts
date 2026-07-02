@@ -45,6 +45,7 @@ export default class RankDisplay {
     leaderboard: string;
     oldRank: number;
     newRank: number;
+    playerUrl: string;
   }): EmbedBuilder {
     const rankUpdateType = this.rankUpdateType(data.oldRank, data.newRank);
     const rankDifference = this.rankDifference(data.oldRank, data.newRank);
@@ -55,7 +56,7 @@ export default class RankDisplay {
       .setAuthor({
         name: data.playerName,
         iconURL: data.playerAvatar,
-        url: `https://beatleader.com/u/${data.playerId}`,
+        url: data.playerUrl,
       })
       .setTitle(
         `${rankUpdateType} **${rankDifference} rank${rankDifference == 1 ? "" : "s"}** on ${data.leaderboard}!`,
