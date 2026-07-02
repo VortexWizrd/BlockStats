@@ -201,6 +201,7 @@ export default {
           name: "Type",
           value: existingFeed.type,
         });
+        return interaction.reply({ embeds: [embed] });
       }
     }
   },
