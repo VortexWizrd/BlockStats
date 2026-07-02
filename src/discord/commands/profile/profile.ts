@@ -105,8 +105,6 @@ export default {
             `${linkText}\n# ${player.ssRankHistory[player.ssRankHistory.length - 1] ? `<:scoresaber:1492695389634035823> #${player.ssRankHistory[player.ssRankHistory.length - 1]?.rank} • ` : ""}${player.blRankHistory[player.blRankHistory.length - 1] ? `<:beatleader:1492695343345832102> #${player.blRankHistory[player.blRankHistory.length - 1]?.rank}` : ""}`,
           );
 
-        console.log(player);
-
         return interaction.editReply({
           embeds: [embed],
         });
