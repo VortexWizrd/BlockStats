@@ -69,6 +69,29 @@ export default {
         ),
     )
     .addSubcommand((cmd) =>
+      cmd
+        .setName("unlink")
+        .setDescription("Remove a player from the rank feed")
+        .addStringOption((option) =>
+          option
+            .setName("beatleaderid")
+            .setDescription("BeatLeader profile id")
+            .setRequired(false),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("scoresaberid")
+            .setDescription("ScoreSaber profile id")
+            .setRequired(false),
+        )
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription("Discord user")
+            .setRequired(false),
+        ),
+    )
+    .addSubcommand((cmd) =>
       cmd.setName("info").setDescription("Display feed information"),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
@@ -126,7 +149,7 @@ export default {
 
           if (existingFeed)
             return interaction.reply({
-              content: "Score feed already exists for this channel!",
+              content: "Rank feed already exists for this channel!",
               flags: MessageFlags.Ephemeral,
             });
 
@@ -311,6 +334,121 @@ export default {
           }
         }
       }
+
+      case "unlink": {
+        const existingFeed = await RankFeedsRepository.findOne([
+          {
+            name: "channelId",
+            value: interaction.channel?.id.toString(),
+          },
+        ]);
+
+        if (!existingFeed)
+          return await interaction.reply({
+            content: "You must be in a rank feed channel to run this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+
+        if (existingFeed.type !== "default")
+          return await interaction.reply({
+            content: "You can only unlink profiles in 'default' type rank feeds!",
+          });
+
+        if (interaction.guild) {
+          if (
+            !(
+              (interaction.member as GuildMember).permissions.has(
+                PermissionFlagsBits.Administrator,
+              ) ||
+              (interaction.member as GuildMember).roles.cache.has(
+                existingFeed.managerRoleId,
+              )
+            )
+          ) {
+            return await interaction.reply({
+              content:
+                "You do not have sufficient permissions to run this command!",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        }
+
+        const discordId = interaction.options.getUser("user")?.id;
+        const beatLeaderId = interaction.options.getString("beatleaderid");
+        const scoreSaberId = interaction.options.getString("scoresaberid");
+
+        const ids = [discordId, beatLeaderId, scoreSaberId].filter(
+          (id) => !!id,
+        );
+
+        if (ids.length > 1) {
+          return await interaction.reply({
+            content: "Use only one ID when unlinking a profile!",
+            flags: MessageFlags.Ephemeral,
+          });
+        } else if (ids.length == 0) {
+          const player = await PlayerService.getPlayer(interaction.user.id);
+          if (player) {
+            RankFeedService.removePlayerId(existingFeed.id, player.id);
+            return await interaction.reply({
+              content: `Removed BlockStats user **${player.name}** from the rank feed!`,
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            const blProfile = await beatleaderApiService.getUserFromDiscord(
+              interaction.user.id,
+            );
+            if (blProfile && blProfile.id) {
+              RankFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              return await interaction.reply({
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+            return await interaction.reply({
+              content: `Unable to find profile. Please use one of the ID options to unlink a profile`,
+              flags: MessageFlags.Ephemeral,
+            });
+          }
+        } else {
+          const player =
+            (await PlayerService.getPlayer(discordId ?? "")) ??
+            (await PlayerService.getPlayerFromBeatLeader(beatLeaderId ?? "")) ??
+            (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
+
+          if (player) {
+            RankFeedService.removePlayerId(existingFeed.id, player.id);
+            return await interaction.reply({
+              content: `Removed BlockStats user **${player.name}** to the rank feed!`,
+              flags: MessageFlags.Ephemeral,
+            });
+          } else {
+            const blProfile =
+              (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
+              (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
+            if (blProfile && blProfile.id) {
+              RankFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              return await interaction.reply({
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            } else {
+              const ssProfile = await scoresaberApiService.getUserFromId(
+                scoreSaberId ?? "",
+              );
+              if (ssProfile && ssProfile.id) {
+                RankFeedService.removePlayerId(existingFeed.id, ssProfile.id);
+              }
+              return await interaction.reply({
+                content: `Removed ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} from the rank feed!`,
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+          }
+        }
+        break;
+      }
+      
 
       case "info": {
         const existingFeed = await RankFeedsRepository.findOne([
