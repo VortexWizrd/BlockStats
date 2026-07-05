@@ -4,6 +4,8 @@ import {
   MessageFlags,
   SlashCommandBuilder,
   TextChannel,
+  GuildMember,
+  PermissionFlagsBits,
 } from "discord.js";
 import { ScoreFeedsRepository } from "../../../repositories/scorefeeds.repository.js";
 import ScoreFeed from "../../../common/scorefeed.js";
