@@ -42,17 +42,19 @@ class WebSocketServerService {
               const updatedPlayer = await PlayerService.updateBLRank(player);
               if (!updatedPlayer) continue;
               const rankUpdate = {
-                playerName: player.name,
-                playerAvatar: player.avatar,
-                playerId: player.id,
-                playerUrl: `https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId ?? "undefined"}`,
+                playerName: updatedPlayer.name,
+                playerAvatar: updatedPlayer.avatar,
+                playerId: updatedPlayer.id,
+                playerUrl: `https://beatleader.com/u/${updatedPlayer.alias ?? updatedPlayer.steamId ?? updatedPlayer.oculusId ?? updatedPlayer.questId ?? "undefined"}`,
                 leaderboard: "BeatLeader",
                 oldRank:
-                  player.blRankHistory[player.blRankHistory.length - 2]?.rank ??
-                  0,
+                  updatedPlayer.blRankHistory[
+                    updatedPlayer.blRankHistory.length - 2
+                  ]?.rank ?? 0,
                 newRank:
-                  player.blRankHistory[player.blRankHistory.length - 1]?.rank ??
-                  0,
+                  updatedPlayer.blRankHistory[
+                    updatedPlayer.blRankHistory.length - 1
+                  ]?.rank ?? 0,
                 timestamp: Date.now(),
               };
               this.sendRankUpdate(rankUpdate);
@@ -100,17 +102,19 @@ class WebSocketServerService {
             const updatedPlayer = await PlayerService.updateSSRank(player);
             if (!updatedPlayer) continue;
             const rankUpdate = {
-              playerName: player.name,
-              playerAvatar: player.avatar,
-              playerId: player.id,
-              playerUrl: `https://scoresaber.com/u/${player.scoreSaberAlias ?? player.scoreSaberId ?? "undefined"}`,
+              playerName: updatedPlayer.name,
+              playerAvatar: updatedPlayer.avatar,
+              playerId: updatedPlayer.id,
+              playerUrl: `https://scoresaber.com/u/${updatedPlayer.scoreSaberAlias ?? updatedPlayer.scoreSaberId ?? "undefined"}`,
               leaderboard: "ScoreSaber",
               oldRank:
-                player.ssRankHistory[player.ssRankHistory.length - 2]?.rank ??
-                0,
+                updatedPlayer.ssRankHistory[
+                  updatedPlayer.ssRankHistory.length - 2
+                ]?.rank ?? 0,
               newRank:
-                player.ssRankHistory[player.ssRankHistory.length - 1]?.rank ??
-                0,
+                updatedPlayer.ssRankHistory[
+                  updatedPlayer.ssRankHistory.length - 1
+                ]?.rank ?? 0,
               timestamp: Date.now(),
             };
             this.sendRankUpdate(rankUpdate);
