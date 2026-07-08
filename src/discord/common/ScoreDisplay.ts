@@ -34,7 +34,13 @@ export default class ScoreDisplay {
       )
       .setThumbnail(score.songCover)
       .setDescription(
-        `# \u200B#${score.blRank ?? score.ssRank} • ${(score.accuracy * 100).toFixed(2)}% • ${
+        `# \u200B${
+          score.blRank && score.blRank >= 1
+            ? `#${score.blRank} • `
+            : score.ssRank && score.ssRank >= 1
+              ? `#${score.ssRank} • `
+              : ""
+        }${(score.accuracy * 100).toFixed(2)}% • ${
           score.fullCombo
             ? "FC"
             : `${score.missedNotes + score.badCuts} ` +
