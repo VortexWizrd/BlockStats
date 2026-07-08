@@ -4,12 +4,13 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { PlayerService } from "../../../service/player.service.js";
-import { ScoreFeedService } from "../../../service/scorefeed.service.js";
-import { RankFeedService } from "../../../service/rankfeed.service.js";
+import { ScoreFeedService } from "../../../service/feeds/scorefeed.service.js";
+import { RankFeedService } from "../../../service/feeds/rankfeed.service.js";
 import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
 import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 import websocketclientService from "../../../service/websocket/websocketclient.service.js";
 import { ScoreService } from "../../../service/score.service.js";
+import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -33,6 +34,11 @@ export default {
         {
           name: "Rank Feeds",
           value: (await RankFeedService.count()).toString(),
+          inline: true,
+        },
+        {
+          name: "Snipe Feeds",
+          value: (await SnipeFeedService.count()).toString(),
           inline: true,
         },
         {

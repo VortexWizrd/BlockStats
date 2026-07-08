@@ -74,4 +74,16 @@ export class ScoreService {
       songCharacteristic,
     );
   }
+
+  public static async getCurrentScoresFromMap(
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+  ): Promise<Score[]> {
+    return (await ScoresRepository.getCurrentFromMap(
+      songHash,
+      songDifficulty,
+      songCharacteristic,
+    )) as Score[];
+  }
 }

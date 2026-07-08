@@ -1,31 +1,31 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
-  GuildMember,
   MessageFlags,
-  PermissionFlagsBits,
   SlashCommandBuilder,
   TextChannel,
+  GuildMember,
+  PermissionFlagsBits,
 } from "discord.js";
-import { RankFeedsRepository } from "../../../repositories/feeds/rankfeeds.repository.js";
-import RankFeed from "../../../common/feed/rankfeed.js";
-import { RankFeedService } from "../../../service/feeds/rankfeed.service.js";
-import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
+import { SnipeFeedsRepository } from "../../../repositories/feeds/snipefeeds.repository.js";
+import SnipeFeed from "../../../common/feed/snipefeed.js";
+import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
 import { PlayerService } from "../../../service/player.service.js";
+import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
 import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName("rankfeed")
-    .setDescription("Create/manage rank feeds")
+    .setName("snipefeed")
+    .setDescription("Create/manage snipe feeds")
     .addSubcommand((cmd) =>
       cmd
         .setName("new")
-        .setDescription("Create a new rank feed")
+        .setDescription("Create a new snipe feed")
         .addStringOption((option) =>
           option
             .setName("type")
-            .setDescription("Rank feed type")
+            .setDescription("Snipe feed type")
             .addChoices(
               { name: "default", value: "default" },
               {
@@ -43,12 +43,14 @@ export default {
         ),
     )
     .addSubcommand((cmd) =>
-      cmd.setName("delete").setDescription("Deletes all rank feeds in channel"),
+      cmd
+        .setName("delete")
+        .setDescription("Deletes all snipe feeds in channel"),
     )
     .addSubcommand((cmd) =>
       cmd
         .setName("link")
-        .setDescription("Add a player to the rank feed")
+        .setDescription("Add a player to the snipe feed")
         .addStringOption((option) =>
           option
             .setName("beatleaderid")
@@ -71,7 +73,7 @@ export default {
     .addSubcommand((cmd) =>
       cmd
         .setName("unlink")
-        .setDescription("Remove a player from the rank feed")
+        .setDescription("Remove a player from the snipe feed")
         .addStringOption((option) =>
           option
             .setName("beatleaderid")
@@ -100,20 +102,20 @@ export default {
     switch (subCommand) {
       case "new": {
         if (!interaction.guild) {
-          const existingFeed = await RankFeedsRepository.findByUserId(
+          const existingFeed = await SnipeFeedsRepository.findByUserId(
             interaction.user.id,
           );
 
           if (existingFeed) {
             return await interaction.reply({
-              content: "Personal rank feed already set up!",
+              content: "Personal snipe feed already set up!",
               flags: MessageFlags.Ephemeral,
             });
           }
 
-          const newFeed = new RankFeed({
+          const newFeed = new SnipeFeed({
             id: undefined,
-            type: interaction.options.getString("type") ?? "global",
+            type: interaction.options.getString("type") ?? "blockstats_global",
             channelType: "user",
             displayType: "embed",
             userId: interaction.user.id,
@@ -128,10 +130,10 @@ export default {
             minRank: null,
           });
 
-          await RankFeedService.createRankFeed(newFeed);
+          await SnipeFeedService.createSnipeFeed(newFeed);
 
           return await interaction.reply({
-            content: `New \`${newFeed.type}\` rank feed created!`,
+            content: `New \`${newFeed.type}\` snipe feed created!`,
             flags: MessageFlags.Ephemeral,
           });
         } else {
@@ -143,19 +145,19 @@ export default {
               content: "You must be in a text channel to use this command!",
               flags: MessageFlags.Ephemeral,
             });
-          const existingFeed = await RankFeedsRepository.findByChannelId(
+          const existingFeed = await SnipeFeedsRepository.findByChannelId(
             interaction.channel.id,
           );
 
           if (existingFeed)
             return interaction.reply({
-              content: "Rank feed already exists for this channel!",
+              content: "Snipe feed already exists for this channel!",
               flags: MessageFlags.Ephemeral,
             });
 
-          const newFeed = new RankFeed({
+          const newFeed = new SnipeFeed({
             id: undefined,
-            type: interaction.options.getString("type") ?? "blockstats_global",
+            type: interaction.options.getString("type") ?? "global",
             channelType: "guild",
             displayType: "embed",
             userId: null,
@@ -171,31 +173,32 @@ export default {
             minRank: null,
           });
 
-          await RankFeedService.createRankFeed(newFeed);
+          await SnipeFeedService.createSnipeFeed(newFeed);
           return await interaction.reply({
-            content: `New \`${newFeed.type}\` rank feed created!`,
+            content: `New \`${newFeed.type}\` snipe feed created!`,
             flags: MessageFlags.Ephemeral,
           });
         }
+        break;
       }
 
       case "delete": {
         if (!interaction.guild) {
-          const existingFeed = await RankFeedsRepository.findByUserId(
+          const existingFeed = await SnipeFeedsRepository.findByUserId(
             interaction.user.id,
           );
 
           if (!existingFeed) {
             return await interaction.reply({
-              content: "There are no rank feeds in this channel!",
+              content: "There are no snipe feeds in this channel!",
               flags: MessageFlags.Ephemeral,
             });
           }
 
-          await RankFeedService.deleteFromUser(interaction.user.id);
+          await SnipeFeedService.deleteFromUser(interaction.user.id);
 
           return await interaction.reply({
-            content: `Rank feeds deleted!`,
+            content: `Snipe feeds deleted!`,
             flags: MessageFlags.Ephemeral,
           });
         } else {
@@ -207,23 +210,23 @@ export default {
               content: "You must be in a text channel to use this command!",
               flags: MessageFlags.Ephemeral,
             });
-          const existingFeed = await RankFeedsRepository.findByChannelId(
+          const existingFeed = await SnipeFeedsRepository.findByChannelId(
             interaction.channel.id,
           );
 
           if (!existingFeed)
             return interaction.reply({
-              content: "There are no rank feeds in this channel!",
+              content: "There are no snipe feeds in this channel!",
               flags: MessageFlags.Ephemeral,
             });
 
-          await RankFeedService.deleteFromChannel(interaction.channel.id);
+          await SnipeFeedService.deleteFromChannel(interaction.channel.id);
         }
         break;
       }
 
       case "link": {
-        const existingFeed = await RankFeedsRepository.findOne([
+        const existingFeed = await SnipeFeedsRepository.findOne([
           {
             name: "channelId",
             value: interaction.channel?.id.toString(),
@@ -232,13 +235,14 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a rank feed channel to run this command!",
+            content: "You must be in a snipe feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
         if (existingFeed.type !== "default")
           return await interaction.reply({
-            content: "You can only link profiles to 'default' type rank feeds!",
+            content:
+              "You can only link profiles to 'default' type snipe feeds!",
           });
 
         if (interaction.guild) {
@@ -276,9 +280,9 @@ export default {
         } else if (ids.length == 0) {
           const player = await PlayerService.getPlayer(interaction.user.id);
           if (player) {
-            RankFeedService.addPlayerId(existingFeed.id, player.id);
+            SnipeFeedService.addPlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Added BlockStats user **${player.name}** to the rank feed!`,
+              content: `Added BlockStats user **${player.name}** to the snipe feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -286,9 +290,9 @@ export default {
               interaction.user.id,
             );
             if (blProfile && blProfile.id) {
-              RankFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              SnipeFeedService.addPlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the rank feed!`,
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -304,9 +308,9 @@ export default {
             (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
 
           if (player) {
-            RankFeedService.addPlayerId(existingFeed.id, player.id);
+            SnipeFeedService.addPlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Added BlockStats user **${player.name}** to the rank feed!`,
+              content: `Added BlockStats user **${player.name}** to the snipe feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -314,9 +318,9 @@ export default {
               (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
-              RankFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              SnipeFeedService.addPlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the rank feed!`,
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             } else {
@@ -324,10 +328,10 @@ export default {
                 scoreSaberId ?? "",
               );
               if (ssProfile && ssProfile.id) {
-                RankFeedService.addPlayerId(existingFeed.id, ssProfile.id);
+                SnipeFeedService.addPlayerId(existingFeed.id, ssProfile.id);
               }
               return await interaction.reply({
-                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the rank feed!`,
+                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -336,7 +340,7 @@ export default {
       }
 
       case "unlink": {
-        const existingFeed = await RankFeedsRepository.findOne([
+        const existingFeed = await SnipeFeedsRepository.findOne([
           {
             name: "channelId",
             value: interaction.channel?.id.toString(),
@@ -345,14 +349,14 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a rank feed channel to run this command!",
+            content: "You must be in a snipe feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
         if (existingFeed.type !== "default")
           return await interaction.reply({
             content:
-              "You can only unlink profiles in 'default' type rank feeds!",
+              "You can only unlink profiles in 'default' type snipe feeds!",
           });
 
         if (interaction.guild) {
@@ -390,9 +394,9 @@ export default {
         } else if (ids.length == 0) {
           const player = await PlayerService.getPlayer(interaction.user.id);
           if (player) {
-            RankFeedService.removePlayerId(existingFeed.id, player.id);
+            SnipeFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** from the rank feed!`,
+              content: `Removed BlockStats user **${player.name}** from the snipe feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -400,9 +404,9 @@ export default {
               interaction.user.id,
             );
             if (blProfile && blProfile.id) {
-              RankFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              SnipeFeedService.removePlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the rank feed!`,
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -418,9 +422,9 @@ export default {
             (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
 
           if (player) {
-            RankFeedService.removePlayerId(existingFeed.id, player.id);
+            SnipeFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** to the rank feed!`,
+              content: `Removed BlockStats user **${player.name}** to the snipe feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -428,9 +432,9 @@ export default {
               (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
-              RankFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              SnipeFeedService.removePlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the rank feed!`,
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             } else {
@@ -438,10 +442,10 @@ export default {
                 scoreSaberId ?? "",
               );
               if (ssProfile && ssProfile.id) {
-                RankFeedService.removePlayerId(existingFeed.id, ssProfile.id);
+                SnipeFeedService.removePlayerId(existingFeed.id, ssProfile.id);
               }
               return await interaction.reply({
-                content: `Removed ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} from the rank feed!`,
+                content: `Removed ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} from the snipe feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -451,7 +455,7 @@ export default {
       }
 
       case "info": {
-        const existingFeed = await RankFeedsRepository.findOne([
+        const existingFeed = await SnipeFeedsRepository.findOne([
           {
             name: "channelId",
             value: interaction.channel?.id.toString(),
@@ -460,7 +464,7 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a rank feed channel to run this command!",
+            content: "You must be in a snipe feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
@@ -468,13 +472,13 @@ export default {
         if (interaction.guild) {
           embed
             .setTitle(
-              `${interaction.guild.name} Rank Feed [${existingFeed.id}]`,
+              `${interaction.guild.name} Snipe Feed [${existingFeed.id}]`,
             )
             .setThumbnail(interaction.guild.iconURL());
         } else {
           embed
             .setTitle(
-              `${interaction.user.displayName}'s Rank Feed [${existingFeed.id}]`,
+              `${interaction.user.displayName}'s Snipe Feed [${existingFeed.id}]`,
             )
             .setThumbnail(interaction.user.displayAvatarURL());
         }
@@ -502,7 +506,6 @@ export default {
           name: "Type",
           value: existingFeed.type,
         });
-
         return interaction.reply({ embeds: [embed] });
       }
     }

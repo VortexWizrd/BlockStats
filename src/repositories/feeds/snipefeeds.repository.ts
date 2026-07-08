@@ -1,10 +1,10 @@
 import { arrayContains, eq, sql } from "drizzle-orm";
-import { scoreFeedsTable } from "../db/schema.js";
-import { Repository } from "./baserepository.js";
-import { db } from "../db/index.js";
+import { snipeFeedsTable } from "../../db/schema.js";
+import { Repository } from "../baserepository.js";
+import { db } from "../../db/index.js";
 
-export class ScoreFeedsRepository extends Repository {
-  public static readonly table = scoreFeedsTable;
+export class SnipeFeedsRepository extends Repository {
+  public static readonly table = snipeFeedsTable;
   public static readonly row = this.table.$inferInsert;
 
   public static async findById(

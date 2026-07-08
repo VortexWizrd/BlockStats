@@ -5,8 +5,8 @@ import { PlayersRepository } from "../repositories/players.repository.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import hitbloqApiService from "./external/hitbloq-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
-import { RankFeedService } from "./rankfeed.service.js";
-import { ScoreFeedService } from "./scorefeed.service.js";
+import { RankFeedService } from "./feeds/rankfeed.service.js";
+import { ScoreFeedService } from "./feeds/scorefeed.service.js";
 
 export class PlayerService {
   public static async createPlayer(

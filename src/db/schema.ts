@@ -152,8 +152,31 @@ export const rankFeedsTable = pgTable("rankfeeds", {
   minRank: integer(),
 });
 
+export const snipeFeedsTable = pgTable("snipefeeds", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
+
+  type: varchar({ length: 32 }).notNull(),
+  channelType: varchar({ length: 32 }).notNull(),
+  displayType: varchar({ length: 32 }).notNull(),
+
+  userId: varchar({ length: 32 }),
+  channelId: varchar({ length: 32 }),
+  guildId: varchar({ length: 32 }),
+
+  managerRoleId: varchar({ length: 32 }),
+
+  playerIds: varchar({ length: 32 }).array().notNull(),
+
+  hasFilters: boolean().notNull(),
+  ssRanked: boolean(),
+  blRanked: boolean(),
+  asRanked: boolean(),
+  minRank: integer(),
+});
+
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
 export type ScoreMessagesRow = typeof scoreMessagesTable.$inferInsert;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
 export type RankFeedRow = typeof rankFeedsTable.$inferSelect;
+export type SnipeFeedRow = typeof snipeFeedsTable.$inferSelect;

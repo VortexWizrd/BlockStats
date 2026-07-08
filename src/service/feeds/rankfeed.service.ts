@@ -1,7 +1,7 @@
-import type RankFeed from "../common/rankfeed.js";
-import type { rankFeedsTable } from "../db/schema.js";
-import { RankFeedsRepository } from "../repositories/rankfeeds.repository.js";
-import { ScoreFeedsRepository } from "../repositories/scorefeeds.repository.js";
+import type RankFeed from "../../common/feed/rankfeed.js";
+import type { rankFeedsTable } from "../../db/schema.js";
+import { RankFeedsRepository } from "../../repositories/feeds/rankfeeds.repository.js";
+import { ScoreFeedsRepository } from "../../repositories/feeds/scorefeeds.repository.js";
 
 type RankFeedInsert = typeof rankFeedsTable.$inferInsert;
 export class RankFeedService {

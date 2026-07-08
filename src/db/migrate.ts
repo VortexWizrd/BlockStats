@@ -12,10 +12,10 @@ import mScoreFeed from "./convert/ScoreFeed.js";
 import mRankFeed from "./convert/RankFeed.js";
 import Score from "../common/score.js";
 import { ScoreService } from "../service/score.service.js";
-import { ScoreFeedService } from "../service/scorefeed.service.js";
-import type ScoreFeed from "../common/scorefeed.js";
-import { RankFeedService } from "../service/rankfeed.service.js";
-import type RankFeed from "../common/rankfeed.js";
+import { ScoreFeedService } from "../service/feeds/scorefeed.service.js";
+import type ScoreFeed from "../common/feed/scorefeed.js";
+import { RankFeedService } from "../service/feeds/rankfeed.service.js";
+import type RankFeed from "../common/feed/rankfeed.js";
 dotenv.config();
 
 function resolveMigrationsFolder(): string {

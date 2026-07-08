@@ -1,6 +1,6 @@
 import { DMChannel, Events, GuildChannel } from "discord.js";
-import { RankFeedsRepository } from "../../../repositories/rankfeeds.repository.js";
-import { ScoreFeedsRepository } from "../../../repositories/scorefeeds.repository.js";
+import { RankFeedsRepository } from "../../../repositories/feeds/rankfeeds.repository.js";
+import { ScoreFeedsRepository } from "../../../repositories/feeds/scorefeeds.repository.js";
 
 export default {
   data: {

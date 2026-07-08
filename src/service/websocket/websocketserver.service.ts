@@ -161,6 +161,7 @@ class WebSocketServerService {
       data: score,
     };
     const player = await PlayerService.getPlayer(score.playerId);
+    // handle outdated markings
     if (player) {
       score.outdated = false;
       if (score.blRank && score.blRank == 0 && !score.ssRank) {
@@ -178,7 +179,25 @@ class WebSocketServerService {
         wrapper.data = updatedScore;
       }
     }
-
+    // handle snipes
+    for (const select of await ScoreService.getCurrentScoresFromMap(
+      score.songHash,
+      score.songDifficulty,
+      score.songCharacteristic,
+    )) {
+      if (
+        (select.blRank && select.blRank > 0) ||
+        (select.ssRank && select.ssRank > 0)
+      ) {
+        if (select.accuracy < score.accuracy) {
+          const data = {
+            score: score,
+            snipedScore: select,
+          };
+          this.sendSnipe(data);
+        }
+      }
+    }
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
     this.ws.send(JSON.stringify(wrapper));
   }
@@ -187,6 +206,15 @@ class WebSocketServerService {
     const wrapper = {
       type: "rank",
       data: rankUpdate,
+    };
+    if (this.ws === undefined) throw new Error("WebSocket not initialized");
+    this.ws.send(JSON.stringify(wrapper));
+  }
+
+  public sendSnipe(snipeUpdate: any) {
+    const wrapper = {
+      type: "snipe",
+      data: snipeUpdate,
     };
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
     this.ws.send(JSON.stringify(wrapper));

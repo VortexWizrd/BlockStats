@@ -1,6 +1,6 @@
-import type ScoreFeed from "../common/scorefeed.js";
-import type { scoreFeedsTable } from "../db/schema.js";
-import { ScoreFeedsRepository } from "../repositories/scorefeeds.repository.js";
+import type ScoreFeed from "../../common/feed/scorefeed.js";
+import type { scoreFeedsTable } from "../../db/schema.js";
+import { ScoreFeedsRepository } from "../../repositories/feeds/scorefeeds.repository.js";
 
 type ScoreFeedInsert = typeof scoreFeedsTable.$inferInsert;
 export class ScoreFeedService {
