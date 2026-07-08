@@ -160,9 +160,19 @@ class WebSocketServerService {
       type: "score",
       data: score,
     };
-
     const player = await PlayerService.getPlayer(score.playerId);
     if (player) {
+      score.outdated = false;
+      if (score.blRank && score.blRank == 0 && !score.ssRank) {
+        score.outdated = true;
+      } else {
+        await ScoreService.setOutdated(
+          player.id,
+          score.songHash,
+          score.songDifficulty,
+          score.songCharacteristic,
+        );
+      }
       const updatedScore = await ScoreService.createScore(score);
       if (updatedScore !== undefined) {
         wrapper.data = updatedScore;

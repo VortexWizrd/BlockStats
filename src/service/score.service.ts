@@ -60,4 +60,18 @@ export class ScoreService {
   public static async removeDownVoteId(id: number, playerId: string) {
     await ScoresRepository.removeDownVoteId(id, playerId);
   }
+
+  public static async setOutdated(
+    playerId: string,
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+  ) {
+    await ScoresRepository.setOutdated(
+      playerId,
+      songHash,
+      songDifficulty,
+      songCharacteristic,
+    );
+  }
 }

@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { scoresTable } from "../db/schema.js";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
 
 export class ScoresRepository extends Repository {
@@ -84,5 +84,26 @@ export class ScoresRepository extends Repository {
         downVoteIds: sql`array_remove(${this.table.downVoteIds}, ${playerId})`,
       })
       .where(eq(this.table.id, id));
+  }
+
+  public static async setOutdated(
+    playerId: string,
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+  ): Promise<void> {
+    await db
+      .update(this.table)
+      .set({
+        outdated: true,
+      })
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.songHash, songHash),
+          eq(this.table.songDifficulty, songDifficulty),
+          eq(this.table.songCharacteristic, songCharacteristic),
+        ),
+      );
   }
 }
