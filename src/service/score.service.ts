@@ -86,4 +86,15 @@ export class ScoreService {
       songCharacteristic,
     )) as Score[];
   }
+
+  public static async getRecent(limit: number): Promise<Score[]> {
+    return (await ScoresRepository.getRecent(limit)) as Score[];
+  }
+
+  public static async getPlayerRecent(
+    playerId: string,
+    limit: number,
+  ): Promise<Score[]> {
+    return (await ScoresRepository.getPlayerRecent(playerId, limit)) as Score[];
+  }
 }

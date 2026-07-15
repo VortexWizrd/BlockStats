@@ -8,6 +8,7 @@ import {
   doublePrecision,
   timestamp,
   text,
+  index,
 } from "drizzle-orm/pg-core";
 import { type RankHistory } from "../common/player.js";
 
@@ -33,11 +34,17 @@ export const playersTable = pgTable("players", {
   name: text().notNull(),
   avatar: text().notNull().default(""),
 
-  // Rank history
+  // Rank history (to be removed)
   blRankHistory: jsonb().$type<RankHistory>(),
   ssRankHistory: jsonb().$type<RankHistory>(),
   asRankHistory: jsonb().$type<RankHistory>(),
   overallRankHistory: jsonb().$type<RankHistory>(),
+
+  // Rank
+  blRank: integer(),
+  ssRank: integer(),
+  asRank: integer(),
+  overallRank: integer(),
 
   totalScores: integer().notNull().default(0),
 });
@@ -174,9 +181,25 @@ export const snipeFeedsTable = pgTable("snipefeeds", {
   minRank: integer(),
 });
 
+export const playerRankHistoryTable = pgTable(
+  "playerrankhistories",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    playerId: varchar({ length: 32 }).notNull(),
+    provider: varchar({ length: 32 }).notNull(),
+    timestamp: timestamp().notNull(),
+    rank: integer().notNull(),
+  },
+  (table) => [
+    index("rankhistory_timestamp_idx").on(table.timestamp),
+    index("rankhistory_rank_idx").on(table.rank),
+  ],
+);
+
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
 export type ScoreMessagesRow = typeof scoreMessagesTable.$inferInsert;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
 export type RankFeedRow = typeof rankFeedsTable.$inferSelect;
 export type SnipeFeedRow = typeof snipeFeedsTable.$inferSelect;
+export type PlayerRankHistoryRow = typeof playerRankHistoryTable.$inferSelect;

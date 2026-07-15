@@ -6,7 +6,7 @@ import Player from "./convert/Player.js";
 import { PlayerService } from "../service/player.service.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { PlayersRepository } from "../repositories/players.repository.js";
+import { PlayersRepository } from "../repositories/players/players.repository.js";
 import mScore from "./convert/Score.js";
 import mScoreFeed from "./convert/ScoreFeed.js";
 import mRankFeed from "./convert/RankFeed.js";
@@ -16,6 +16,7 @@ import { ScoreFeedService } from "../service/feeds/scorefeed.service.js";
 import type ScoreFeed from "../common/feed/scorefeed.js";
 import { RankFeedService } from "../service/feeds/rankfeed.service.js";
 import type RankFeed from "../common/feed/rankfeed.js";
+import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 dotenv.config();
 
 function resolveMigrationsFolder(): string {
@@ -174,5 +175,93 @@ export async function migrateFromMongo(): Promise<void> {
     console.log("Finished adding rank feeds");
   } catch (error) {
     console.error("Error connecting to MongoDB:", error);
+  }
+}
+
+export async function generateRankHistory(): Promise<void> {
+  const players = await PlayersRepository.getAll();
+  if (!players) return;
+
+  for (const player of players) {
+    if (player.blRankHistory) {
+      for (const rankTimestamp of player.blRankHistory) {
+        try {
+          if (
+            await PlayerRankHistoriesRepository.findOne([
+              { name: "provider", value: "BeatLeader" },
+              { name: "playerId", value: player.id },
+              {
+                name: "timestamp",
+                value: new Date(rankTimestamp.timestamp),
+              },
+              { name: "rank", value: rankTimestamp.rank },
+            ])
+          ) {
+            continue;
+          }
+
+          console.log(rankTimestamp.timestamp);
+
+          await PlayerRankHistoriesRepository.insert({
+            provider: "BeatLeader",
+            playerId: player.id,
+            timestamp: new Date(rankTimestamp.timestamp),
+            rank: rankTimestamp.rank,
+          });
+        } catch (err) {
+          console.log(err);
+          continue;
+        }
+      }
+      await PlayersRepository.update(player.id, {
+        blRank:
+          (
+            await PlayerRankHistoriesRepository.getLatestRow(
+              player.id,
+              "BeatLeader",
+            )
+          )?.rank ?? null,
+      });
+    }
+    if (player.ssRankHistory) {
+      for (const rankTimestamp of player.ssRankHistory) {
+        try {
+          if (
+            await PlayerRankHistoriesRepository.findOne([
+              { name: "provider", value: "ScoreSaber" },
+              { name: "playerId", value: player.id },
+              {
+                name: "timestamp",
+                value: new Date(rankTimestamp.timestamp),
+              },
+              { name: "rank", value: rankTimestamp.rank },
+            ])
+          ) {
+            continue;
+          }
+
+          console.log(rankTimestamp.timestamp);
+
+          await PlayerRankHistoriesRepository.insert({
+            provider: "ScoreSaber",
+            playerId: player.id,
+            timestamp: new Date(rankTimestamp.timestamp),
+            rank: rankTimestamp.rank,
+          });
+        } catch (err) {
+          console.log(err);
+          continue;
+        }
+      }
+      await PlayersRepository.update(player.id, {
+        ssRank:
+          (
+            await PlayerRankHistoriesRepository.getLatestRow(
+              player.id,
+              "ScoreSaber",
+            )
+          )?.rank ?? null,
+      });
+    }
   }
 }

@@ -1,6 +1,10 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
-import { migrateFromMongo, runMigrations } from "./db/migrate.js";
+import {
+  generateRankHistory,
+  migrateFromMongo,
+  runMigrations,
+} from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 import { PlayerService } from "./service/player.service.js";
 
@@ -16,6 +20,7 @@ app.listen(port, () => {
 });
 
 await runMigrations();
+await generateRankHistory();
 // await migrateFromMongo();
 
 startDiscord();

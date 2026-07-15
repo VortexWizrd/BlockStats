@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { scoresTable } from "../db/schema.js";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, desc } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
 
 export class ScoresRepository extends Repository {
@@ -123,5 +123,25 @@ export class ScoresRepository extends Repository {
           eq(this.table.outdated, false),
         ),
       );
+  }
+
+  public static async getRecent(limit: number): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .orderBy(desc(this.table.id))
+      .limit(limit);
+  }
+
+  public static async getPlayerRecent(
+    playerId: string,
+    limit: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(eq(this.table.playerId, playerId))
+      .orderBy(desc(this.table.id))
+      .limit(limit);
   }
 }

@@ -9,7 +9,8 @@ import { db } from "../../../db/index.js";
 import { playersTable } from "../../../db/schema.js";
 import { eq } from "drizzle-orm";
 import { PlayerService } from "../../../service/player.service.js";
-import { PlayersRepository } from "../../../repositories/players.repository.js";
+import { PlayersRepository } from "../../../repositories/players/players.repository.js";
+import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -102,7 +103,7 @@ export default {
           .setThumbnail(player.avatar)
           .setColor("Default")
           .setDescription(
-            `${linkText}\n# ${player.ssRankHistory[player.ssRankHistory.length - 1] ? `<:scoresaber:1492695389634035823> #${player.ssRankHistory[player.ssRankHistory.length - 1]?.rank} • ` : ""}${player.blRankHistory[player.blRankHistory.length - 1] ? `<:beatleader:1492695343345832102> #${player.blRankHistory[player.blRankHistory.length - 1]?.rank}` : ""}`,
+            `${linkText}\n# ${player.ssRank ? `<:scoresaber:1492695389634035823> #${player.ssRank} • ` : ""}${player.blRank ? `<:beatleader:1492695343345832102> #${player.blRank}` : ""}`,
           );
 
         return interaction.editReply({

@@ -22,6 +22,11 @@ export default class Player {
   asRankHistory: RankHistory;
   overallRankHistory: RankHistory;
 
+  blRank: number | null;
+  ssRank: number | null;
+  asRank: number | null;
+  overallRank: number | null;
+
   constructor(data: {
     id: string;
     name: string;
@@ -39,6 +44,10 @@ export default class Player {
     ssRankHistory: RankHistory;
     asRankHistory: RankHistory;
     overallRankHistory: RankHistory;
+    blRank: number | null;
+    ssRank: number | null;
+    asRank: number | null;
+    overallRank: number | null;
   }) {
     this.id = data.id;
 
@@ -62,6 +71,11 @@ export default class Player {
     this.ssRankHistory = data.ssRankHistory;
     this.asRankHistory = data.asRankHistory;
     this.overallRankHistory = data.overallRankHistory;
+
+    this.blRank = data.blRank;
+    this.ssRank = data.ssRank;
+    this.asRank = data.asRank;
+    this.overallRank = data.overallRank;
   }
 }
 

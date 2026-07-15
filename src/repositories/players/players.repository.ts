@@ -1,8 +1,8 @@
-import type { RankTimestamp } from "../common/player.js";
-import { db } from "../db/index.js";
-import { playersTable } from "../db/schema.js";
+import type { RankTimestamp } from "../../common/player.js";
+import { db } from "../../db/index.js";
+import { playersTable } from "../../db/schema.js";
 import { eq, sql } from "drizzle-orm";
-import { Repository } from "./baserepository.js";
+import { Repository } from "../baserepository.js";
 
 export class PlayersRepository extends Repository {
   public static readonly table = playersTable;
@@ -44,13 +44,11 @@ export class PlayersRepository extends Repository {
 
   public static async updateBLRank(
     id: string,
-    ranktimestamp: RankTimestamp,
+    rank: number,
   ): Promise<typeof this.row | undefined> {
     const [player] = await db
       .update(playersTable)
-      .set({
-        blRankHistory: sql`COALESCE(${playersTable.blRankHistory}, '[]'::jsonb) || ${JSON.stringify([ranktimestamp])}::jsonb`,
-      })
+      .set({ blRank: rank })
       .where(eq(playersTable.id, id))
       .returning();
     return player;
@@ -58,13 +56,11 @@ export class PlayersRepository extends Repository {
 
   public static async updateSSRank(
     id: string,
-    ranktimestamp: RankTimestamp,
+    rank: number,
   ): Promise<typeof this.row | undefined> {
     const [player] = await db
       .update(playersTable)
-      .set({
-        ssRankHistory: sql`COALESCE(${playersTable.ssRankHistory}, '[]'::jsonb) || ${JSON.stringify([ranktimestamp])}::jsonb`,
-      })
+      .set({ ssRank: rank })
       .where(eq(playersTable.id, id))
       .returning();
     return player;

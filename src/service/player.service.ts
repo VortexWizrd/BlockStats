@@ -1,7 +1,8 @@
 import type { RankHistory } from "../common/player.js";
-import type Player from "../common/player.js";
+import Player from "../common/player.js";
 import type { PlayerRow } from "../db/schema.js";
-import { PlayersRepository } from "../repositories/players.repository.js";
+import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
+import { PlayersRepository } from "../repositories/players/players.repository.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import hitbloqApiService from "./external/hitbloq-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
@@ -63,12 +64,42 @@ export class PlayerService {
         asRankHistory: null,
         overallRankHistory: null,
 
+        blRank: beatLeaderData.rank,
+        ssRank: scoreSaberData.stats?.rank,
+        asRank: null,
+        overallRank: null,
+
         totalScores: 0,
         name: beatLeaderData.name,
         avatar: beatLeaderData.avatar,
       };
 
-      await PlayersRepository.insert(playerInsert).then(() => {
+      await PlayersRepository.insert(playerInsert).then(async () => {
+        if (playerInsert.blRank) {
+          await PlayerRankHistoriesRepository.insert({
+            player: playerInsert.id,
+            provider: "BeatLeader",
+            timestamp: new Date(),
+            rank: playerInsert.blRank,
+          });
+        }
+        if (playerInsert.ssRank) {
+          await PlayerRankHistoriesRepository.insert({
+            player: playerInsert.id,
+            provider: "ScoreSaber",
+            timestamp: new Date(),
+            rank: playerInsert.ssRank,
+          });
+        }
+        if (playerInsert.asRank) {
+          await PlayerRankHistoriesRepository.insert({
+            player: playerInsert.id,
+            provider: "AccSaber",
+            timestamp: new Date(),
+            rank: playerInsert.asRank,
+          });
+        }
+
         return playerInsert as Player;
       });
     } catch (err) {
@@ -141,20 +172,29 @@ export class PlayerService {
     if (!blUser) return;
     if (blUser.rank <= 0) return;
 
-    if (!player.blRankHistory || player.blRankHistory.length <= 0) {
-      return (await PlayersRepository.updateBLRank(player.id, {
+    if (!player.blRank) {
+      await PlayerRankHistoriesRepository.insert({
+        playerId: player.id,
+        provider: "BeatLeader",
         timestamp: new Date(),
         rank: blUser.rank,
-      })) as Player;
+      });
+      return (await PlayersRepository.updateBLRank(
+        player.id,
+        blUser.rank,
+      )) as Player;
     } else {
-      if (
-        player.blRankHistory[player.blRankHistory.length - 1]?.rank !=
-        blUser.rank
-      ) {
-        return (await PlayersRepository.updateBLRank(player.id, {
+      if (player.blRank != blUser.rank) {
+        await PlayerRankHistoriesRepository.insert({
+          playerId: player.id,
+          provider: "BeatLeader",
           timestamp: new Date(),
           rank: blUser.rank,
-        })) as Player;
+        });
+        return (await PlayersRepository.updateBLRank(
+          player.id,
+          blUser.rank,
+        )) as Player;
       }
     }
     return undefined;
@@ -169,20 +209,29 @@ export class PlayerService {
     if (!ssUser) return;
     if (ssUser.stats.rank <= 0) return;
 
-    if (!player.ssRankHistory || player.ssRankHistory.length <= 0) {
-      return (await PlayersRepository.updateSSRank(player.id, {
+    if (!player.ssRank) {
+      await PlayerRankHistoriesRepository.insert({
+        playerId: player.id,
+        provider: "ScoreSaber",
         timestamp: new Date(),
         rank: ssUser.stats.rank,
-      })) as Player;
+      });
+      return (await PlayersRepository.updateSSRank(
+        player.id,
+        ssUser.stats.rank,
+      )) as Player;
     } else {
-      if (
-        player.ssRankHistory[player.ssRankHistory.length - 1]?.rank !=
-        ssUser.stats.rank
-      ) {
-        return (await PlayersRepository.updateSSRank(player.id, {
+      if (player.ssRank != ssUser.stats.rank) {
+        await PlayerRankHistoriesRepository.insert({
+          playerId: player.id,
+          provider: "ScoreSaber",
           timestamp: new Date(),
           rank: ssUser.stats.rank,
-        })) as Player;
+        });
+        return (await PlayersRepository.updateSSRank(
+          player.id,
+          ssUser.stats.rank,
+        )) as Player;
       }
     }
     return undefined;
