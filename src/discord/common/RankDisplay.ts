@@ -34,6 +34,13 @@ export default class RankDisplay {
     }
   }
 
+  private static rankUpdateColor(oldRank: number, newRank: number) {
+    if (newRank > oldRank) {
+      return 0xff0000;
+    }
+    return 0x00ff00;
+  }
+
   /**
    * Returns an embed of a Beat Saber rank update
    * @returns Discord embed of the rank update
@@ -51,7 +58,7 @@ export default class RankDisplay {
     const rankDifference = this.rankDifference(data.oldRank, data.newRank);
 
     const leaderboardIcon = this.leaderboardIcon(data.leaderboard);
-    const leaderboardColor = this.leaderboardColor(data.leaderboard);
+    //const leaderboardColor = this.leaderboardColor(data.leaderboard);
     const embed = new EmbedBuilder()
       .setAuthor({
         name: data.playerName,
@@ -63,7 +70,7 @@ export default class RankDisplay {
       )
       .setThumbnail(leaderboardIcon)
       .setDescription(`# \u200B#${data.oldRank} -> #${data.newRank}`)
-      .setColor(leaderboardColor)
+      .setColor(this.rankUpdateColor(data.oldRank, data.newRank))
       .setTimestamp();
 
     return embed;
