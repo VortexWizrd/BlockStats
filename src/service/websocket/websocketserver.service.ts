@@ -4,6 +4,7 @@ import beatleaderApiService from "../external/beatleader-api.service.js";
 import scoresaberApiService from "../external/scoresaber-api.service.js";
 import { PlayerService } from "../player.service.js";
 import { ScoreService } from "../score.service.js";
+import { PlayerRankHistoriesRepository } from "../../repositories/players/playerrankhistories.repository.js";
 
 class WebSocketServerService {
   private server = new WebSocketServer({
@@ -41,20 +42,21 @@ class WebSocketServerService {
             for (const player of await PlayerService.getAllPlayers()) {
               const updatedPlayer = await PlayerService.updateBLRank(player);
               if (!updatedPlayer) continue;
+              const latestRanks =
+                await PlayerRankHistoriesRepository.getLatestRows(
+                  player.id,
+                  "BeatLeader",
+                  2,
+                );
+              if (!latestRanks || latestRanks.length < 2) continue;
               const rankUpdate = {
                 playerName: updatedPlayer.name,
                 playerAvatar: updatedPlayer.avatar,
                 playerId: updatedPlayer.id,
                 playerUrl: `https://beatleader.com/u/${updatedPlayer.alias ?? updatedPlayer.steamId ?? updatedPlayer.oculusId ?? updatedPlayer.questId ?? "undefined"}`,
                 leaderboard: "BeatLeader",
-                oldRank:
-                  updatedPlayer.blRankHistory[
-                    updatedPlayer.blRankHistory.length - 2
-                  ]?.rank ?? 0,
-                newRank:
-                  updatedPlayer.blRankHistory[
-                    updatedPlayer.blRankHistory.length - 1
-                  ]?.rank ?? 0,
+                oldRank: latestRanks[1]?.rank ?? 0,
+                newRank: updatedPlayer.blRank,
                 timestamp: Date.now(),
               };
               this.sendRankUpdate(rankUpdate);
@@ -101,20 +103,21 @@ class WebSocketServerService {
             if (!player.scoreSaberId) continue;
             const updatedPlayer = await PlayerService.updateSSRank(player);
             if (!updatedPlayer) continue;
+            const latestRanks =
+              await PlayerRankHistoriesRepository.getLatestRows(
+                player.id,
+                "ScoreSaber",
+                2,
+              );
+            if (!latestRanks || latestRanks.length < 2) continue;
             const rankUpdate = {
               playerName: updatedPlayer.name,
               playerAvatar: updatedPlayer.avatar,
               playerId: updatedPlayer.id,
               playerUrl: `https://scoresaber.com/u/${updatedPlayer.scoreSaberAlias ?? updatedPlayer.scoreSaberId ?? "undefined"}`,
               leaderboard: "ScoreSaber",
-              oldRank:
-                updatedPlayer.ssRankHistory[
-                  updatedPlayer.ssRankHistory.length - 2
-                ]?.rank ?? 0,
-              newRank:
-                updatedPlayer.ssRankHistory[
-                  updatedPlayer.ssRankHistory.length - 1
-                ]?.rank ?? 0,
+              oldRank: latestRanks[1]?.rank ?? 0,
+              newRank: updatedPlayer.ssRank,
               timestamp: Date.now(),
             };
             this.sendRankUpdate(rankUpdate);

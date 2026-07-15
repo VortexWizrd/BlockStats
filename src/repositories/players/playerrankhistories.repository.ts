@@ -25,4 +25,24 @@ export class PlayerRankHistoriesRepository extends Repository {
 
     return row;
   }
+
+  public static async getLatestRows(
+    playerId: string,
+    provider: string,
+    limit: number,
+  ): Promise<(typeof this.row)[] | undefined> {
+    const rows = await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.provider, provider),
+        ),
+      )
+      .orderBy(desc(this.table.timestamp))
+      .limit(limit);
+
+    return rows;
+  }
 }
