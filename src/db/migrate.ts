@@ -17,6 +17,9 @@ import type ScoreFeed from "../common/feed/scorefeed.js";
 import { RankFeedService } from "../service/feeds/rankfeed.service.js";
 import type RankFeed from "../common/feed/rankfeed.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
+import { ScoresRepository } from "../repositories/scores.repository.js";
+import { scoresTable } from "./schema.js";
+import { and, eq, ne, notInArray, sql } from "drizzle-orm";
 dotenv.config();
 
 function resolveMigrationsFolder(): string {
@@ -264,4 +267,28 @@ export async function generateRankHistory(): Promise<void> {
       });
     }
   }
+}
+
+export async function setOutdatedScores(): Promise<void> {
+  const selectedScores = db
+    .select({
+      latestId: sql<number>`MAX(${scoresTable.id})`.as("latest_id"),
+    })
+    .from(scoresTable)
+    .groupBy(
+      scoresTable.playerId,
+      scoresTable.songHash,
+      scoresTable.songDifficulty,
+      scoresTable.songCharacteristic,
+    );
+
+  await db
+    .update(scoresTable)
+    .set({ outdated: true })
+    .where(
+      and(
+        eq(scoresTable.outdated, false),
+        notInArray(scoresTable.id, selectedScores),
+      ),
+    );
 }

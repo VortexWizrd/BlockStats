@@ -4,6 +4,7 @@ import {
   generateRankHistory,
   migrateFromMongo,
   runMigrations,
+  setOutdatedScores,
 } from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 import { PlayerService } from "./service/player.service.js";
@@ -21,7 +22,7 @@ app.listen(port, () => {
 
 await runMigrations();
 await generateRankHistory();
-// await migrateFromMongo();
+await setOutdatedScores();
 
 startDiscord();
 
