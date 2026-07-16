@@ -223,12 +223,19 @@ export default {
       }
 
       case "link": {
-        const existingFeed = await RankFeedsRepository.findOne([
-          {
-            name: "channelId",
-            value: interaction.channel?.id.toString(),
-          },
-        ]);
+        const existingFeed = interaction.channel?.isDMBased()
+          ? await RankFeedsRepository.findOne([
+              {
+                name: "userId",
+                value: interaction.user.id.toString(),
+              },
+            ])
+          : await RankFeedsRepository.findOne([
+              {
+                name: "channelId",
+                value: interaction.channel?.id.toString(),
+              },
+            ]);
 
         if (!existingFeed)
           return await interaction.reply({
@@ -336,12 +343,19 @@ export default {
       }
 
       case "unlink": {
-        const existingFeed = await RankFeedsRepository.findOne([
-          {
-            name: "channelId",
-            value: interaction.channel?.id.toString(),
-          },
-        ]);
+        const existingFeed = interaction.channel?.isDMBased()
+          ? await RankFeedsRepository.findOne([
+              {
+                name: "userId",
+                value: interaction.user.id.toString(),
+              },
+            ])
+          : await RankFeedsRepository.findOne([
+              {
+                name: "channelId",
+                value: interaction.channel?.id.toString(),
+              },
+            ]);
 
         if (!existingFeed)
           return await interaction.reply({
@@ -451,12 +465,19 @@ export default {
       }
 
       case "info": {
-        const existingFeed = await RankFeedsRepository.findOne([
-          {
-            name: "channelId",
-            value: interaction.channel?.id.toString(),
-          },
-        ]);
+        const existingFeed = interaction.channel?.isDMBased()
+          ? await RankFeedsRepository.findOne([
+              {
+                name: "userId",
+                value: interaction.user.id.toString(),
+              },
+            ])
+          : await RankFeedsRepository.findOne([
+              {
+                name: "channelId",
+                value: interaction.channel?.id.toString(),
+              },
+            ]);
 
         if (!existingFeed)
           return await interaction.reply({
