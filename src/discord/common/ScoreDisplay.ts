@@ -89,7 +89,9 @@ export default class ScoreDisplay {
           "📈 " +
           (score.improvement < 0 ? "" : "+") +
           (score.improvement * 100).toFixed(2) +
-          "%",
+          "% (from " +
+          ((score.accuracy - score.improvement) * 100).toFixed(2) +
+          "%)",
         value: " ",
         inline: true,
       });
