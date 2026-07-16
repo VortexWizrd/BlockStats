@@ -132,7 +132,7 @@ export class ScoresRepository extends Repository {
     return await db
       .select()
       .from(this.table)
-      .orderBy(desc(this.table.id))
+      .orderBy(desc(this.table.timestamp))
       .limit(limit)
       .offset(offset);
   }
@@ -145,7 +145,7 @@ export class ScoresRepository extends Repository {
       .select()
       .from(this.table)
       .where(eq(this.table.playerId, playerId))
-      .orderBy(desc(this.table.id))
+      .orderBy(desc(this.table.timestamp))
       .limit(limit);
   }
 

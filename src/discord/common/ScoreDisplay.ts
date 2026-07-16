@@ -48,7 +48,7 @@ export default class ScoreDisplay {
         }`,
       )
       .setColor(this.getAccuracyColor(score.accuracy))
-      .setTimestamp();
+      .setTimestamp(score.timestamp ? new Date(score.timestamp) : new Date());
 
     if (score.ssStarRating) {
       embed.addFields({
