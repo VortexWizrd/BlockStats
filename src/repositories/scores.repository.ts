@@ -125,12 +125,16 @@ export class ScoresRepository extends Repository {
       );
   }
 
-  public static async getRecent(limit: number): Promise<(typeof this.row)[]> {
+  public static async getRecent(
+    limit: number,
+    offset: number,
+  ): Promise<(typeof this.row)[]> {
     return await db
       .select()
       .from(this.table)
       .orderBy(desc(this.table.id))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
   }
 
   public static async getPlayerRecent(

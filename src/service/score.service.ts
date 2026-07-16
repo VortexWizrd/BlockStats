@@ -100,8 +100,11 @@ export class ScoreService {
     )) as Score[];
   }
 
-  public static async getRecent(limit: number): Promise<Score[]> {
-    return (await ScoresRepository.getRecent(limit)) as Score[];
+  public static async getRecent(
+    limit: number,
+    offset: number,
+  ): Promise<Score[]> {
+    return (await ScoresRepository.getRecent(limit, offset)) as Score[];
   }
 
   public static async getPlayerRecent(
