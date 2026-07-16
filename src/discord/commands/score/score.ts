@@ -56,7 +56,7 @@ export default {
       case "list": {
         const sort = interaction.options.getString("sort")!;
         const page = interaction.options.getInteger("page")!;
-        if (page <= 0)
+        if (page <= 0 || page * 10 > (await ScoreService.count()))
           return await interaction.reply({
             content: "Invalid page number",
             flags: MessageFlags.Ephemeral,
@@ -64,6 +64,12 @@ export default {
         const offset = (page - 1) * 5;
         if (sort == "sort_recent") {
           const scores = await ScoreService.getRecent(5, offset);
+          if (scores.length == 0) {
+            return await interaction.reply({
+              content: "Invalid page number",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
           let scoreIndex = 1 + offset;
           let scoresText = ``;
           for (const score of scores) {
@@ -74,6 +80,7 @@ export default {
             scoresText += `### \u200B${scoreIndex}. ${scoreTitle} [${score.songDifficulty}]\n - **#${score.blRank ?? score.ssRank ?? "-"} • ${(score.accuracy * 100).toFixed(2)}% • ${score.fullCombo ? "FC" : `${score.missedNotes + score.badCuts}❌`}** [id: \`${score.id}\`]`;
             scoreIndex++;
           }
+
           const embed = new EmbedBuilder()
             .setTitle(`Recent Scores (Page ${page})`)
             .setDescription(scoresText)

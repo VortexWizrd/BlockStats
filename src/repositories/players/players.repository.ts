@@ -1,7 +1,7 @@
 import type { RankTimestamp } from "../../common/player.js";
 import { db } from "../../db/index.js";
 import { playersTable } from "../../db/schema.js";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc, isNotNull, asc, and, ne } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 
 export class PlayersRepository extends Repository {
@@ -64,5 +64,31 @@ export class PlayersRepository extends Repository {
       .where(eq(playersTable.id, id))
       .returning();
     return player;
+  }
+
+  public static async getTopBL(
+    limit: number,
+    offset: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(and(isNotNull(this.table.blRank), ne(this.table.blRank, 0)))
+      .orderBy(asc(this.table.blRank))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  public static async getTopSS(
+    limit: number,
+    offset: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(and(isNotNull(this.table.ssRank), ne(this.table.ssRank, 0)))
+      .orderBy(asc(this.table.ssRank))
+      .limit(limit)
+      .offset(offset);
   }
 }

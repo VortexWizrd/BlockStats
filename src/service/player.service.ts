@@ -281,4 +281,18 @@ export class PlayerService {
       PlayerService.updatePlayerLinks(player.id);
     }
   }
+
+  public static async getTopBL(
+    limit: number,
+    offset: number,
+  ): Promise<Player[]> {
+    return (await PlayersRepository.getTopBL(limit, offset)) as Player[];
+  }
+
+  public static async getTopSS(
+    limit: number,
+    offset: number,
+  ): Promise<Player[]> {
+    return (await PlayersRepository.getTopSS(limit, offset)) as Player[];
+  }
 }

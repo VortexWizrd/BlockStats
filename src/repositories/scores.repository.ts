@@ -140,13 +140,15 @@ export class ScoresRepository extends Repository {
   public static async getPlayerRecent(
     playerId: string,
     limit: number,
+    offset: number,
   ): Promise<(typeof this.row)[]> {
     return await db
       .select()
       .from(this.table)
       .where(eq(this.table.playerId, playerId))
       .orderBy(desc(this.table.timestamp))
-      .limit(limit);
+      .limit(limit)
+      .offset(offset);
   }
 
   public static async getOldScores(
