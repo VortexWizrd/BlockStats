@@ -528,6 +528,7 @@ export default {
           name: "Type",
           value: existingFeed.type,
         });
+        embed.setColor("Blue");
         return interaction.reply({ embeds: [embed] });
       }
     }

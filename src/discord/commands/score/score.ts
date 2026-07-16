@@ -77,7 +77,8 @@ export default {
           const embed = new EmbedBuilder()
             .setTitle(`Recent Scores (Page ${page})`)
             .setDescription(scoresText)
-            .setTimestamp();
+            .setTimestamp()
+            .setColor("Blue");
 
           return interaction.reply({ embeds: [embed] });
         }

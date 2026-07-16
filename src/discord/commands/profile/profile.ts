@@ -101,10 +101,10 @@ export default {
         const embed = new EmbedBuilder()
           .setTitle(player.name)
           .setThumbnail(player.avatar)
-          .setColor("Default")
           .setDescription(
             `${linkText}\n# ${player.ssRank ? `<:scoresaber:1492695389634035823> #${player.ssRank} • ` : ""}${player.blRank ? `<:beatleader:1492695343345832102> #${player.blRank}` : ""}`,
-          );
+          )
+          .setColor("Blue");
 
         return interaction.editReply({
           embeds: [embed],
