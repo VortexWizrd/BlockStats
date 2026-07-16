@@ -237,6 +237,17 @@ export class PlayerService {
     return undefined;
   }
 
+  public static async updatePlayerProfile(
+    playerId: string,
+    name: string,
+    avatarUrl: string,
+  ) {
+    await PlayersRepository.update(playerId, {
+      name: name,
+      avatar: avatarUrl,
+    });
+  }
+
   public static async updatePlayerLinks(id: string) {
     const player = await this.getPlayer(id);
 

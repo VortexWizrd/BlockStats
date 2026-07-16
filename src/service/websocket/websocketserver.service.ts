@@ -164,7 +164,7 @@ class WebSocketServerService {
       data: score,
     };
     const player = await PlayerService.getPlayer(score.playerId);
-    // handle outdated markings
+    // handle outdated markings + profile refresh
     if (player) {
       score.outdated = false;
       if (score.blRank && score.blRank == 0 && !score.ssRank) {
@@ -180,6 +180,17 @@ class WebSocketServerService {
       const updatedScore = await ScoreService.createScore(score);
       if (updatedScore !== undefined) {
         wrapper.data = updatedScore;
+      }
+      if (
+        (player.avatar != score.playerAvatar &&
+          score.playerAvatar.includes("beatleader")) ||
+        player.name != score.playerName
+      ) {
+        PlayerService.updatePlayerProfile(
+          player.id,
+          score.playerName,
+          score.playerAvatar,
+        );
       }
     }
     // handle snipes
