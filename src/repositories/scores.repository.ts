@@ -144,4 +144,27 @@ export class ScoresRepository extends Repository {
       .orderBy(desc(this.table.id))
       .limit(limit);
   }
+
+  public static async getOldScores(
+    playerId: string,
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+    limit: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.songHash, songHash),
+          eq(this.table.songDifficulty, songDifficulty),
+          eq(this.table.songCharacteristic, songCharacteristic),
+          eq(this.table.outdated, true),
+        ),
+      )
+      .orderBy(desc(this.table.id))
+      .limit(limit);
+  }
 }

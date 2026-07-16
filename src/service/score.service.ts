@@ -10,6 +10,19 @@ export class ScoreService {
     try {
       const { id, ...newScore } = score;
 
+      // set score improvement
+      const [previousScore] = await ScoresRepository.getOldScores(
+        newScore.playerId,
+        newScore.songHash,
+        newScore.songDifficulty,
+        newScore.songCharacteristic,
+        1,
+      );
+
+      if (previousScore) {
+        newScore.improvement = score.accuracy - previousScore.accuracy;
+      }
+
       const scoreInsert = await ScoresRepository.insert(
         newScore as ScoreInsert,
       );

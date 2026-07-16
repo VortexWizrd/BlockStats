@@ -83,6 +83,18 @@ export default class ScoreDisplay {
       });
     }
 
+    if (score.improvement) {
+      embed.addFields({
+        name:
+          "📈 " +
+          (score.improvement < 0 ? "" : "+") +
+          (score.improvement * 100).toFixed(2) +
+          "%",
+        value: " ",
+        inline: true,
+      });
+    }
+
     if (score.modifiers && score.modifiers.length != 0) {
       embed.addFields({
         name: score.modifiers.join(" "),
