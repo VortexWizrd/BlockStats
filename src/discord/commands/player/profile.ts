@@ -46,6 +46,17 @@ export default {
     )
     .addSubcommand((cmd) =>
       cmd
+        .setName("refresh")
+        .setDescription("Reload a BlockStats profile's data")
+        .addUserOption((option) =>
+          option
+            .setName("user")
+            .setDescription("The user to refresh")
+            .setRequired(false),
+        ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
         .setName("list")
         .setDescription("List BlockStats tracked players")
         .addStringOption((option) =>
@@ -174,6 +185,21 @@ export default {
         return interaction.editReply({
           embeds: [embed],
         });
+      }
+
+      case "refresh": {
+        await interaction.deferReply();
+
+        const userId =
+          interaction.options.getUser("user")?.id ?? interaction.user.id;
+        const player = await PlayerService.getPlayer(userId);
+
+        if (!player) {
+          return await interaction.editReply("Profile not found");
+        }
+
+        await PlayerService.refreshPlayer(player.id);
+        interaction.editReply("Refreshed player!");
       }
 
       case "list":
