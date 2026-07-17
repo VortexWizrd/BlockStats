@@ -149,6 +149,14 @@ export class PlayerService {
         scoreSaberId: scoreSaberData.id ?? null,
         scoreSaberAlias: scoreSaberData.vanity ?? null,
 
+        blRank:
+          (await PlayerRankHistoriesRepository.getLatestRow(id, "BeatLeader"))
+            ?.rank ?? null,
+
+        ssRank:
+          (await PlayerRankHistoriesRepository.getLatestRow(id, "ScoreSaber"))
+            ?.rank ?? null,
+
         accSaberId: scoreSaberData.id ?? null,
 
         hitBloqId:
