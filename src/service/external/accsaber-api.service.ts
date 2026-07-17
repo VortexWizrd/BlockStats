@@ -17,7 +17,8 @@ class AccSaberAPI extends EventEmitter {
         `https://api.accsaber.com/v1/maps/difficulties?page=0&size=1000&sort=rankedAt,desc&status=RANKED`,
         {},
       );
-      this._RankedMaps = await response.json();
+      const data: any = await response.json();
+      this._RankedMaps = data.content;
     } catch (err) {
       console.log("Failed to get AccSaber ranked maps: ", err);
     }
