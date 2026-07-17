@@ -36,7 +36,7 @@ export class PlayersRepository extends Repository {
         ),
       );
 
-    return this.row;
+    return row;
   }
 
   public static async getAll(): Promise<(typeof this.row)[] | undefined> {
