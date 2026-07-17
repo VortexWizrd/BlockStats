@@ -23,9 +23,19 @@ export class PlayerService {
         await beatleaderApiService.getUserFromDiscord(discordId);
       if (!beatLeaderData) return;
 
-      const scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
+      let scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
         beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
       );
+
+      if (scoreSaberData && scoreSaberData.inactive) {
+        const altScoreSaberData =
+          await scoresaberApiService.getUserFromLinkedIds({
+            oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
+          });
+        if (altScoreSaberData && altScoreSaberData.rank < scoreSaberData.rank) {
+          scoreSaberData = altScoreSaberData;
+        }
+      }
 
       const playerInsert: PlayerRow = {
         id: discordId,
@@ -131,9 +141,19 @@ export class PlayerService {
       const beatLeaderData = await beatleaderApiService.getUserFromDiscord(id);
       if (!beatLeaderData) return;
 
-      const scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
+      let scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
         beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
       );
+
+      if (scoreSaberData && scoreSaberData.inactive) {
+        const altScoreSaberData =
+          await scoresaberApiService.getUserFromLinkedIds({
+            oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
+          });
+        if (altScoreSaberData && altScoreSaberData.rank < scoreSaberData.rank) {
+          scoreSaberData = altScoreSaberData;
+        }
+      }
 
       const data = {
         name: beatLeaderData.name,
