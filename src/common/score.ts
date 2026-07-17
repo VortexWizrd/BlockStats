@@ -141,8 +141,8 @@ export default class Score implements IScore {
   asRating: number | null;
 
   static async fromBeatLeader(blScore: any) {
-    const player = await PlayerService.getPlayerFromBeatLeader(
-      blScore.player.id,
+    const player = await PlayerService.getPlayerByAllIds(
+      blScore.player.id.toString(),
     );
     const scoreSaberLeaderboard =
       await scoresaberApiService.getV1LeaderboardFromHash(
@@ -212,7 +212,7 @@ export default class Score implements IScore {
   }
 
   static async fromScoreSaber(ssScore: any) {
-    const player = await PlayerService.getPlayerFromScoreSaber(
+    const player = await PlayerService.getPlayerByAllIds(
       ssScore.score.leaderboardPlayerInfo.id,
     );
     const difficulty = ssScore.leaderboard.difficulty.difficultyRaw

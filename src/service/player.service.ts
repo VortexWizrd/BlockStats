@@ -121,6 +121,12 @@ export class PlayerService {
     }
   }
 
+  public static async getPlayerByAllIds(
+    id: string,
+  ): Promise<Player | undefined> {
+    return (await PlayersRepository.findByAllIds(id)) as Player;
+  }
+
   public static async count(): Promise<number> {
     return await PlayersRepository.countRows();
   }

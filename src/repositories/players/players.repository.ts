@@ -1,7 +1,7 @@
 import type { RankTimestamp } from "../../common/player.js";
 import { db } from "../../db/index.js";
 import { playersTable } from "../../db/schema.js";
-import { eq, sql, desc, isNotNull, asc, and, ne } from "drizzle-orm";
+import { eq, sql, desc, isNotNull, asc, and, ne, or } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 
 export class PlayersRepository extends Repository {
@@ -12,6 +12,29 @@ export class PlayersRepository extends Repository {
     id: string,
   ): Promise<typeof this.row | undefined> {
     return await this.findOne([{ name: "id", value: id }]);
+  }
+
+  public static async findByAllIds(
+    id: string,
+  ): Promise<typeof this.row | undefined> {
+    const [row] = await db
+      .select()
+      .from(this.table)
+      .where(
+        or(
+          eq(this.table.id, id),
+          eq(this.table.steamId, id),
+          eq(
+            this.table.questId,
+            isNaN(parseInt(id)) ? (parseInt(id) ?? -1) : -1,
+          ),
+          eq(this.table.alias, id),
+          eq(this.table.scoreSaberId, id),
+          eq(this.table.scoreSaberAlias, id),
+        ),
+      );
+
+    return this.row;
   }
 
   public static async getAll(): Promise<(typeof this.row)[] | undefined> {
