@@ -29,8 +29,10 @@ export class PlayersRepository extends Repository {
             isNaN(parseInt(id)) ? (parseInt(id) ?? -1) : -1,
           ),
           eq(this.table.alias, id),
+          eq(this.table.beatLeaderId, id),
           eq(this.table.scoreSaberId, id),
           eq(this.table.scoreSaberAlias, id),
+          eq(this.table.accSaberId, id),
         ),
       );
 
