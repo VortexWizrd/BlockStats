@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { scoresTable } from "../db/schema.js";
-import { and, eq, sql, desc } from "drizzle-orm";
+import { and, eq, sql, desc, count } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
 
 export class ScoresRepository extends Repository {
@@ -172,5 +172,28 @@ export class ScoresRepository extends Repository {
       )
       .orderBy(desc(this.table.id))
       .limit(limit);
+  }
+
+  public static async countPlayerScores(
+    playerId: string,
+    notOutdated: boolean,
+  ): Promise<number> {
+    if (notOutdated) {
+      const [data] = await db
+        .select({ count: count() })
+        .from(this.table)
+        .where(
+          and(
+            eq(this.table.playerId, playerId),
+            eq(this.table.outdated, false),
+          ),
+        );
+      return data?.count ?? 0;
+    }
+    const [data] = await db
+      .select({ count: count() })
+      .from(this.table)
+      .where(eq(this.table.playerId, playerId));
+    return data?.count ?? 0;
   }
 }

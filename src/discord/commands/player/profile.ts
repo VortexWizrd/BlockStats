@@ -12,6 +12,7 @@ import { PlayerService } from "../../../service/player.service.js";
 import { PlayersRepository } from "../../../repositories/players/players.repository.js";
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 import type Player from "../../../common/player.js";
+import { ScoreService } from "../../../service/score.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -132,7 +133,23 @@ export default {
           .setDescription(
             `${linkText}\n# ${player.ssRank ? `<:scoresaber:1492695389634035823> #${player.ssRank} • ` : ""}${player.blRank ? `<:beatleader:1492695343345832102> #${player.blRank}` : ""}`,
           )
-          .setColor("Blue");
+          .setColor("Blue")
+          .addFields(
+            {
+              name: "Scores",
+              value: (
+                (await ScoreService.countPlayerScores(player.id, true)) ?? 0
+              ).toString(),
+              inline: true,
+            },
+            {
+              name: "Total Scores",
+              value: (
+                (await ScoreService.countPlayerScores(player.id, false)) ?? 0
+              ).toString(),
+              inline: true,
+            },
+          );
 
         return interaction.editReply({
           embeds: [embed],

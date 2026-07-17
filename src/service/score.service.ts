@@ -118,4 +118,11 @@ export class ScoreService {
       offset,
     )) as Score[];
   }
+
+  public static async countPlayerScores(
+    playerId: string,
+    notOutdated: boolean,
+  ): Promise<number> {
+    return await ScoresRepository.countPlayerScores(playerId, notOutdated);
+  }
 }
