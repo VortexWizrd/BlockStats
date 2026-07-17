@@ -150,7 +150,7 @@ export class PlayerService {
           await scoresaberApiService.getUserFromLinkedIds({
             oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
           });
-        if (altScoreSaberData && altScoreSaberData.rank < scoreSaberData.rank) {
+        if (altScoreSaberData && !altScoreSaberData.inactive) {
           scoreSaberData = altScoreSaberData;
         }
       }
