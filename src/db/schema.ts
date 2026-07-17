@@ -3,12 +3,12 @@ import {
   integer,
   jsonb,
   pgTable,
-  serial,
   varchar,
   doublePrecision,
   timestamp,
   text,
   index,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { type RankHistory } from "../common/player.js";
 
@@ -196,10 +196,64 @@ export const playerRankHistoryTable = pgTable(
   ],
 );
 
+export const mapsTable = pgTable("maps", {
+  // map id
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  beatSaverId: varchar({ length: 32 }),
+  hash: varchar({ length: 64 }).notNull(),
+
+  // map information
+  songName: text().notNull(),
+  songSubName: text().notNull(),
+  songAuthor: text().notNull(),
+  mapAuthor: text().notNull(),
+  songCover: text().notNull(),
+
+  leaderboardIds: integer().array().notNull(),
+
+  savedTime: timestamp().notNull(),
+  updatedTime: timestamp().notNull(),
+});
+
+export const leaderboardsTable = pgTable("leaderboards", {
+  // leaderboard id
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  mapId: integer().notNull(),
+
+  // leaderboard information
+  difficulty: varchar({ length: 64 }).notNull(),
+  characteristic: varchar({ length: 128 }).notNull(),
+
+  // beatleader
+  blLeaderboardId: varchar({ length: 32 }),
+  blRankedStatus: varchar({ length: 32 }),
+  blStarRating: doublePrecision(),
+  blTechRating: doublePrecision(),
+  blAccRating: doublePrecision(),
+  blPassRating: doublePrecision(),
+
+  // scoresaber
+  ssLeaderboardId: integer(),
+  ssRankedStatus: varchar({ length: 32 }),
+  ssStarRating: doublePrecision(),
+
+  // accsaber
+  asLeaderboardId: uuid(),
+  asRankedStatus: varchar({ length: 32 }),
+  asCategoryId: uuid(),
+  asCategoryCode: varchar({ length: 32 }),
+  asComplexity: doublePrecision(),
+
+  savedTime: timestamp().notNull(),
+  updatedTime: timestamp().notNull(),
+});
+
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
-export type ScoreMessagesRow = typeof scoreMessagesTable.$inferInsert;
+export type ScoreMessageRow = typeof scoreMessagesTable.$inferInsert;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
 export type RankFeedRow = typeof rankFeedsTable.$inferSelect;
 export type SnipeFeedRow = typeof snipeFeedsTable.$inferSelect;
 export type PlayerRankHistoryRow = typeof playerRankHistoryTable.$inferSelect;
+export type MapRow = typeof mapsTable.$inferInsert;
+export type LeaderboardRow = typeof leaderboardsTable.$inferInsert;

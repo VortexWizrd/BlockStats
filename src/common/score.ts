@@ -1,144 +1,53 @@
+import type { ScoreRow } from "../db/schema.js";
 import accsaberApiService from "../service/external/accsaber-api.service.js";
 import beatleaderApiService from "../service/external/beatleader-api.service.js";
 import scoresaberApiService from "../service/external/scoresaber-api.service.js";
 import { PlayerService } from "../service/player.service.js";
 
-export interface IScore {
-  id: number;
+export default class Score implements ScoreRow {
+  id!: number;
+  playerId!: string;
+  provider!: string[];
+  songHash!: string;
+  songDifficulty!: string;
+  songCharacteristic!: string;
+  score!: number;
+  accuracy!: number;
+  fullCombo!: boolean;
+  missedNotes!: number;
+  badCuts!: number;
+  bombHits!: number | null;
+  wallHits!: number | null;
+  ppBL!: number;
+  ppSS!: number;
+  ap!: number;
+  modifiers!: string[];
+  blLeaderboardId!: string | null;
+  blScoreId!: number | null;
+  ssLeaderboardId!: number | null;
+  ssScoreId!: number | null;
+  outdated!: boolean;
+  timestamp!: Date;
+  blRank!: number | null;
+  ssRank!: number | null;
+  playerName!: string;
+  playerAvatar!: string;
+  songName!: string;
+  songSubname!: string;
+  songAuthor!: string;
+  songCover!: string;
+  mapAuthor!: string;
+  improvement!: number | null;
+  upVoteIds!: string[];
+  downVoteIds!: string[];
+  blStarRating!: number | null;
+  ssStarRating!: number | null;
+  asRating!: number | null;
+  messages!: Object | null;
 
-  playerId: string;
-
-  provider: string[];
-
-  playerName: string;
-  playerAvatar: string;
-
-  songName: string;
-  songSubname: string;
-  songAuthor: string;
-  songCover: string;
-  mapAuthor: string;
-  songHash: string;
-  songDifficulty: string;
-  songCharacteristic: string;
-
-  score: number;
-  accuracy: number;
-  fullCombo: boolean;
-  missedNotes: number;
-  badCuts: number;
-  bombHits: number | null;
-  wallHits: number | null;
-  ppBL: number;
-  ppSS: number;
-  ap: number;
-  modifiers: string[];
-  improvement: number | null;
-
-  blLeaderboardId: string | null;
-  blScoreId: number | null;
-  blStarRating: number | null;
-  ssLeaderboardId: number | null;
-  ssScoreId: number | null;
-  ssStarRating: number | null;
-  asRating: number | null;
-
-  outdated: boolean;
-  timestamp: Date;
-  blRank: number | null;
-  ssRank: number | null;
-
-  upVoteIds: string[];
-  downVoteIds: string[];
-}
-
-export default class Score implements IScore {
-  id: number;
-  playerId: string;
-  provider: string[];
-  songHash: string;
-  songDifficulty: string;
-  songCharacteristic: string;
-  score: number;
-  accuracy: number;
-  fullCombo: boolean;
-  missedNotes: number;
-  badCuts: number;
-  bombHits: number | null;
-  wallHits: number | null;
-  ppBL: number;
-  ppSS: number;
-  ap: number;
-  modifiers: string[];
-  blLeaderboardId: string | null;
-  blScoreId: number | null;
-  ssLeaderboardId: number | null;
-  ssScoreId: number | null;
-  outdated: boolean;
-  timestamp: Date;
-  blRank: number | null;
-  ssRank: number | null;
-  playerName: string;
-  playerAvatar: string;
-  songName: string;
-  songSubname: string;
-  songAuthor: string;
-  songCover: string;
-  mapAuthor: string;
-  improvement: number | null;
-  upVoteIds: string[];
-  downVoteIds: string[];
-  constructor(data: IScore) {
-    this.id = data.id;
-
-    this.playerId = data.playerId;
-    this.provider = data.provider;
-
-    this.playerName = data.playerName;
-    this.playerAvatar = data.playerAvatar;
-
-    this.songName = data.songName;
-    this.songSubname = data.songSubname;
-    this.songAuthor = data.songAuthor;
-    this.songCover = data.songCover;
-    this.mapAuthor = data.mapAuthor;
-    this.songHash = data.songHash;
-    this.songDifficulty = data.songDifficulty;
-    this.songCharacteristic = data.songCharacteristic;
-    this.improvement = data.improvement;
-
-    this.score = data.score;
-    this.accuracy = data.accuracy;
-    this.fullCombo = data.fullCombo;
-    this.missedNotes = data.missedNotes;
-    this.badCuts = data.badCuts;
-    this.bombHits = data.bombHits;
-    this.wallHits = data.wallHits;
-    this.ppBL = data.ppBL;
-    this.ppSS = data.ppSS;
-    this.ap = data.ap;
-    this.modifiers = data.modifiers;
-
-    this.blLeaderboardId = data.blLeaderboardId;
-    this.blScoreId = data.blScoreId;
-    this.blRank = data.blRank;
-    this.ssLeaderboardId = data.ssLeaderboardId;
-    this.ssScoreId = data.ssScoreId;
-    this.ssRank = data.ssRank;
-
-    this.outdated = data.outdated;
-    this.timestamp = data.timestamp;
-
-    this.blStarRating = data.blStarRating;
-    this.ssStarRating = data.ssStarRating;
-    this.asRating = data.asRating;
-
-    this.upVoteIds = data.upVoteIds;
-    this.downVoteIds = data.downVoteIds;
+  constructor(data: Score) {
+    Object.assign(this, data);
   }
-  blStarRating: number | null;
-  ssStarRating: number | null;
-  asRating: number | null;
 
   static async fromBeatLeader(blScore: any) {
     const player = await PlayerService.getPlayerByAllIds(
@@ -208,6 +117,7 @@ export default class Score implements IScore {
       ),
       upVoteIds: [],
       downVoteIds: [],
+      messages: null,
     });
   }
 
@@ -272,6 +182,7 @@ export default class Score implements IScore {
       improvement: null,
       upVoteIds: [],
       downVoteIds: [],
+      messages: null,
     });
   }
 }
