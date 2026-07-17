@@ -13,7 +13,10 @@ class AccSaberAPI extends EventEmitter {
 
   public async getRankedMaps() {
     try {
-      const response = await fetch(`https://api.accsaber.com/ranked-maps`, {});
+      const response = await fetch(
+        `https://api.accsaber.com/v1/maps/difficulties?page=0&size=1000&sort=rankedAt,desc&status=RANKED`,
+        {},
+      );
       this._RankedMaps = await response.json();
     } catch (err) {
       console.log("Failed to get AccSaber ranked maps: ", err);
