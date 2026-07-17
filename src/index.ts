@@ -25,5 +25,3 @@ await generateRankHistory();
 await setOutdatedScores();
 
 startDiscord();
-
-await PlayerService.updateAllPlayerLinks();

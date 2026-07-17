@@ -121,6 +121,57 @@ export class PlayerService {
     }
   }
 
+  public static async refreshPlayer(id: string) {
+    try {
+      const existingRow = await PlayersRepository.findById(id);
+      if (!existingRow) {
+        return;
+      }
+
+      const beatLeaderData = await beatleaderApiService.getUserFromDiscord(id);
+      if (!beatLeaderData) return;
+
+      const scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
+        beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
+      );
+
+      const data = {
+        name: beatLeaderData.name,
+        avatar: beatLeaderData.avatar,
+        steamId: (beatLeaderData.linkedIds?.steamId as string) ?? null,
+        oculusId: (beatLeaderData.linkedIds?.oculusPCId as string) ?? null,
+        questId: beatLeaderData.linkedIds?.questId
+          ? Number(beatLeaderData.linkedIds?.questId)
+          : null,
+        alias: beatLeaderData.alias ?? null,
+        beatLeaderId: beatLeaderData.id,
+
+        scoreSaberId: scoreSaberData.id ?? null,
+        scoreSaberAlias: scoreSaberData.vanity ?? null,
+
+        accSaberId: scoreSaberData.id ?? null,
+
+        hitBloqId:
+          (await hitbloqApiService.getUserFromScoreSaber(scoreSaberData?.id)) ??
+          null,
+      };
+
+      console.log(data);
+
+      await PlayersRepository.update(id, data);
+    } catch (err) {
+      console.log("Error updating player: ", err);
+    }
+  }
+
+  public static async refreshAllPlayers() {
+    const players = await PlayersRepository.getAll();
+    if (!players) return;
+
+    for (const existingRow of players) {
+      await this.refreshPlayer(existingRow.id);
+    }
+  }
   public static async getPlayerByAllIds(
     id: string,
   ): Promise<Player | undefined> {
@@ -241,51 +292,6 @@ export class PlayerService {
       }
     }
     return undefined;
-  }
-
-  public static async updatePlayerProfile(
-    playerId: string,
-    name: string,
-    avatarUrl: string,
-  ) {
-    await PlayersRepository.update(playerId, {
-      name: name,
-      avatar: avatarUrl,
-    });
-  }
-
-  public static async updatePlayerLinks(id: string) {
-    const player = await this.getPlayer(id);
-
-    if (!player) return;
-
-    await RankFeedService.replaceIds(player.beatLeaderId ?? "", player.id);
-    await RankFeedService.replaceIds(player.steamId ?? "", player.id);
-    await RankFeedService.replaceIds(player.oculusId ?? "", player.id);
-    await RankFeedService.replaceIds(
-      player.questId?.toString() ?? "",
-      player.id,
-    );
-    await RankFeedService.replaceIds(player.alias ?? "", player.id);
-    await RankFeedService.replaceIds(player.scoreSaberId ?? "", player.id);
-
-    await ScoreFeedService.replaceIds(player.beatLeaderId ?? "", player.id);
-    await ScoreFeedService.replaceIds(player.steamId ?? "", player.id);
-    await ScoreFeedService.replaceIds(player.oculusId ?? "", player.id);
-    await ScoreFeedService.replaceIds(
-      player.questId?.toString() ?? "",
-      player.id,
-    );
-    await ScoreFeedService.replaceIds(player.alias ?? "", player.id);
-    await ScoreFeedService.replaceIds(player.scoreSaberId ?? "", player.id);
-  }
-
-  public static async updateAllPlayerLinks() {
-    const players = await this.getAllPlayers();
-
-    for (const player of players) {
-      PlayerService.updatePlayerLinks(player.id);
-    }
   }
 
   public static async getTopBL(

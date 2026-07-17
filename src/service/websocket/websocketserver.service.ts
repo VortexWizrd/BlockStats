@@ -166,6 +166,7 @@ class WebSocketServerService {
     const player = await PlayerService.getPlayer(score.playerId);
     // handle outdated markings + profile refresh
     if (player) {
+      await PlayerService.refreshPlayer(player.id);
       score.outdated = false;
       if (score.blRank && score.blRank == 0 && !score.ssRank) {
         score.outdated = true;
@@ -186,11 +187,6 @@ class WebSocketServerService {
           score.playerAvatar.includes("beatleader")) ||
         player.name != score.playerName
       ) {
-        PlayerService.updatePlayerProfile(
-          player.id,
-          score.playerName,
-          score.playerAvatar,
-        );
       }
     }
     // handle snipes

@@ -13,6 +13,7 @@ import { PlayersRepository } from "../../../repositories/players/players.reposit
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 import type Player from "../../../common/player.js";
 import { ScoreService } from "../../../service/score.service.js";
+import { link } from "node:fs";
 
 export default {
   data: new SlashCommandBuilder()
@@ -125,6 +126,20 @@ export default {
           return await interaction.editReply("Profile not found");
         }
 
+        const linkedIds = [
+          player.id,
+          player.steamId,
+          player.oculusId,
+          player.questId,
+        ];
+
+        let linkedIdsString = "";
+        for (const linkedId of linkedIds) {
+          if (linkedId == null)
+            if (linkedIdsString != "") linkedIdsString += "\n";
+          linkedIdsString += linkedId;
+        }
+
         const linkText = `[[ <:beatleader:1492695343345832102> BeatLeader ](https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId}) | [ <:discord:1492695870343221323> Discord ](https://discord.com/users/${player.id})${player.scoreSaberId ? ` | [ <:scoresaber:1492695389634035823> ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
 
         const embed = new EmbedBuilder()
@@ -147,6 +162,11 @@ export default {
               value: (
                 (await ScoreService.countPlayerScores(player.id, false)) ?? 0
               ).toString(),
+              inline: true,
+            },
+            {
+              name: "Linked IDs",
+              value: linkedIdsString,
               inline: true,
             },
           );

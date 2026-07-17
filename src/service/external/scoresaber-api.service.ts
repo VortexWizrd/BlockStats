@@ -67,11 +67,10 @@ class ScoreSaberApiService extends EventEmitter {
   }
 
   public async getUserFromLinkedIds(linkedIds: any): Promise<any> {
-    return (
-      (await this.getUserFromId(linkedIds.steamId)) ??
-      (await this.getUserFromId(linkedIds.oculusPCId)) ??
-      null
-    );
+    for (const id in linkedIds) {
+      const user = await this.getUserFromId(linkedIds[id]);
+      if (user) return user;
+    }
   }
 
   public async getLeaderboard(leaderboardId: string): Promise<any> {
