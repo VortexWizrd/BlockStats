@@ -1,6 +1,12 @@
 import EventEmitter from "events";
 import { WebSocket } from "ws";
 
+export type LinkedIds = {
+  steamId?: string;
+  oculusPCId?: string;
+  questId?: number;
+};
+
 class BeatLeaderApiService extends EventEmitter {
   private _socket = new WebSocket("wss://sockets.api.beatleader.com/scores");
   private _lastSocketUpdate: Date = new Date();
@@ -41,46 +47,33 @@ class BeatLeaderApiService extends EventEmitter {
   }
 
   /**
-   * Fetch a BeatLeader profile using a Discord ID
-   * @param discordId - Discord user ID
-   * @returns BeatLeader profile data
+   * Fetch a BeatLeader profile using ID
+   * @param id - BeatLeader profile ID
+   * @returns BeatLeader profile data, if found
    */
-  public async getUserFromDiscord(discordId: string | number): Promise<any> {
-    try {
-      const response = await fetch(
-        `https://api.beatleader.com/player/discord/${discordId}`,
-        {},
-      );
-      return response.json();
-    } catch (error) {
-      console.log("Error fetching BeatLeader user from Discord ID: " + error);
-      return;
-    }
+  public async getUser(id: string | number): Promise<any> {
+    return await this.fetch<any>(`player/${id}`);
   }
 
-  public async getUser(beatLeaderId: string | number): Promise<any> {
-    try {
-      const response = await fetch(
-        `https://api.beatleader.com/player/${beatLeaderId}`,
-        {},
-      );
-      return response.json();
-    } catch (error) {
-      console.log("Error fetching BeatLeader user: " + error);
-      return;
-    }
+  /**
+   * Fetch a BeatLeader profile using a Discord ID
+   * @param id - Discord user ID
+   * @returns BeatLeader profile data, if found
+   */
+  public async getUserFromDiscord(id: string | number): Promise<any> {
+    return await this.fetch<any>(`player/discord/${id}`);
   }
 
-  public async getScoreStatistic(scoreId: string | number): Promise<any> {
+  private async fetch<T>(path: string): Promise<T | null> {
+    const url = `https://api.beatleader.com/${path}`;
     try {
-      const response = await fetch(
-        `https://api.beatleader.com/score/statistic/${scoreId}`,
-        {},
+      const res = await fetch(url);
+      return res.ok ? (res.json() as T) : null;
+    } catch (err) {
+      console.warn(
+        `[WARN]: BeatLeader API: failed to fetch resource "${url}": ${err}`,
       );
-      return response.json();
-    } catch (error) {
-      console.log("Error fetching BeatLeader score statistic: " + error);
-      return;
+      return null;
     }
   }
 

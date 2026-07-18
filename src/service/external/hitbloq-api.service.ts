@@ -13,15 +13,20 @@ class HitBloqApiService extends EventEmitter {
   public async getUserFromScoreSaber(
     scoreSaberId: string | number,
   ): Promise<any> {
+    const data = await this.fetch<any>(`tools/ss_to_hitbloq/${scoreSaberId}`);
+    return data?.id ?? null;
+  }
+
+  private async fetch<T>(path: string): Promise<T | null> {
+    const url = `https://hitbloq.com/api/${path}`;
     try {
-      const response = await fetch(
-        `https://hitbloq.com/api/tools/ss_to_hitbloq/${scoreSaberId}`,
+      const res = await fetch(url);
+      return res.ok ? (res.json() as T) : null;
+    } catch (err) {
+      console.warn(
+        `[WARN]: HitBloq API: failed to fetch resource "${url}": ${err}`,
       );
-      const data: any = await response.json();
-      return data.id;
-    } catch (error) {
-      console.log("Error getting HitBloq ID: " + error);
-      return undefined;
+      return null;
     }
   }
 }

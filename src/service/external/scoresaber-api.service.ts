@@ -1,6 +1,7 @@
 import EventEmitter from "events";
 import { WebSocket } from "ws";
 import { SSPPCalulator } from "../../common/ppcalculator.js";
+import type { LinkedIds } from "./beatleader-api.service.js";
 
 class ScoreSaberApiService extends EventEmitter {
   private _socket = new WebSocket("wss://scoresaber.com/ws");
@@ -16,12 +17,136 @@ class ScoreSaberApiService extends EventEmitter {
       const now = new Date();
 
       if (now.getTime() - this._lastSocketUpdate.getTime() > 60000) {
-        console.log(
-          "[ScoreSaber] No updates in the last 60 seconds, reconnecting...",
+        console.warn(
+          "[WARN]: ScoreSaber API: No updates in the last 60 seconds, reconnecting...",
         );
         this._socket.close();
       }
     }, 30000);
+  }
+
+  /** Get the last recorded ScoreSaber socket update time */
+  public get lastSocketUpdate(): Date {
+    return this._lastSocketUpdate;
+  }
+
+  /**
+   * Estimate ScoreSaber PP
+   * @param maxPP Leaderboard max PP
+   * @param accuracy Score accuracy
+   * @param failed Score failed value
+   * @returns ScoreSaber PP value
+   */
+  public getPP(maxPP: number, accuracy: number, failed: false) {
+    return SSPPCalulator.getPP(maxPP, accuracy, failed);
+  }
+
+  /**
+   * Estimate ScoreSaber PP from hash
+   * @param hash ScoreSaber map hash
+   * @param difficulty ScoreSaber map difficulty
+   * @param accuracy Score accuracy
+   * @param failed Score failed value
+   * @returns ScoreSaber PP value
+   */
+  public async getPPFromHash(
+    hash: string,
+    difficulty: number,
+    accuracy: number,
+    failed: boolean,
+  ) {
+    const leaderboard = await this.getV1LeaderboardFromHash(hash, difficulty);
+    if (!leaderboard) return 0;
+    if (!leaderboard.maxPP) return 0;
+
+    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
+  }
+
+  /**
+   * Estimate ScoreSaber PP from leaderboard
+   * @param id ScoreSaber leaderboard ID
+   * @param accuracy Score accuracy
+   * @param failed Score failed value
+   * @returns ScoreSaber PP value
+   */
+  public async getPPFromLeaderboard(
+    id: string,
+    accuracy: number,
+    failed: boolean,
+  ) {
+    const leaderboard = await this.getV1Leaderboard(id);
+    if (!leaderboard) return 0;
+    if (!leaderboard.maxPP) return 0;
+
+    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
+  }
+
+  /**
+   *  Fetch a ScoreSaber leaderboard using ID
+   * @param id ScoreSaber leaderboard ID
+   * @returns ScoreSaber leaderboard data, if found
+   */
+  public async getLeaderboard(id: string): Promise<any> {
+    return this.fetch<any>(`v2/leaderboards/${id}`);
+  }
+
+  /**
+   * Get maximum PP from ScoreSaber leaderboard
+   * @param id ScoreSaber leaderboard ID
+   * @returns ScoreSaber max PP
+   */
+  public async getRawPP(id: string): Promise<number> {
+    const leaderboard = await this.getV1Leaderboard(id);
+    if (!leaderboard) return 0;
+
+    return leaderboard.maxPP;
+  }
+
+  /**
+   * Fetch a ScoreSaber profile using ID
+   * @param id - Profile ID
+   * @returns ScoreSaber profile data, if found
+   */
+  public async getUserFromId(id: string | number): Promise<any> {
+    return this.fetch<any>(`v2/players/${id}/basic`);
+  }
+
+  /**
+   * Fetch a ScoreSaber profile using BeatLeader linked IDs
+   * @param linkedIds - BeatLeader linked IDs object
+   * @returns ScoreSaber profile data, if found
+   */
+  public async getUserFromLinkedIds(linkedIds: LinkedIds): Promise<any> {
+    for (const id of Object.values(linkedIds)) {
+      if (id === undefined) continue;
+
+      const user = await this.getUserFromId(id);
+      if (user) return user;
+    }
+  }
+
+  /**
+   *  Fetch a ScoreSaber leaderboard using ID
+   * @param id ScoreSaber leaderboard ID
+   * @returns ScoreSaber leaderboard v1 data, if found
+   */
+  public async getV1Leaderboard(id: string): Promise<any> {
+    return this.fetch<any>(`v1/leaderboard/by-id${id}/info`);
+  }
+
+  /**
+   *  Fetch a ScoreSaber leaderboard using map hash and difficulty
+   * @param hash Map hash
+   * @param difficulty Map difficulty
+   * @returns ScoreSaber leaderboard v1 data, if found
+   */
+  public async getV1LeaderboardFromHash(
+    hash: string,
+    difficulty: number,
+  ): Promise<any> {
+    return this.fetch<any>(
+      `v1/leaderboard/by-hash/${hash}/info?difficulty=${difficulty}`,
+    );
   }
 
   private createListeners() {
@@ -43,111 +168,17 @@ class ScoreSaberApiService extends EventEmitter {
     });
   }
 
-  /** Get the last recorded ScoreSaber socket update time */
-  public get lastSocketUpdate(): Date {
-    return this._lastSocketUpdate;
-  }
-
-  /**
-   * Fetch a ScoreSaber profile using their ID
-   * @param userId - Profile ID
-   * @returns ScoreSaber profile data
-   */
-  public async getUserFromId(id: string | number): Promise<any> {
+  private async fetch<T>(path: string): Promise<T | null> {
+    const url = `https://scoresaber.com/api/${path}`;
     try {
-      const response = await fetch(
-        `https://scoresaber.com/api/v2/players/${id}/basic`,
+      const res = await fetch(url);
+      return res.ok ? (res.json() as T) : null;
+    } catch (err) {
+      console.warn(
+        `[WARN]: ScoreSaber API: failed to fetch resource "${url}": ${err}`,
       );
-      if (response.status == 404) return null;
-      return response.json();
-    } catch (error) {
-      console.log("Error getting ScoreSaber user: " + error);
-      return;
+      return null;
     }
-  }
-
-  public async getUserFromLinkedIds(linkedIds: any): Promise<any> {
-    for (const id in linkedIds) {
-      const user = await this.getUserFromId(linkedIds[id]);
-      if (user) return user;
-    }
-  }
-
-  public async getLeaderboard(leaderboardId: string): Promise<any> {
-    try {
-      const response = await fetch(
-        `https://scoresaber.com/api/v2/leaderboards/${leaderboardId}`,
-      );
-      if (response.status == 404) return null;
-      return response.json();
-    } catch (error) {
-      console.log("Error getting ScoreSaber leaderboard: " + error);
-      return;
-    }
-  }
-
-  public async getV1Leaderboard(leaderboardId: string): Promise<any> {
-    try {
-      const response = await fetch(
-        `https://scoresaber.com/api/v1/leaderboard/by-id${leaderboardId}/info`,
-      );
-      if (response.status == 404) return;
-      return response.json();
-    } catch (error) {
-      console.log("Error getting ScoreSaber v1 leaderboard: " + error);
-      return;
-    }
-  }
-
-  public async getV1LeaderboardFromHash(
-    hash: string,
-    difficulty: number,
-  ): Promise<any> {
-    try {
-      const response = await fetch(
-        `https://scoresaber.com/api/v1/leaderboard/by-hash/${hash}/info?difficulty=${difficulty}`,
-      );
-      if (response.status == 404) return;
-      return response.json();
-    } catch (error) {
-      console.log("Error getting ScoreSaber v1 leaderboard: " + error);
-      return;
-    }
-  }
-  public async getRawPP(leaderboardId: string): Promise<number> {
-    const leaderboard = await this.getV1Leaderboard(leaderboardId);
-    if (!leaderboard) return 0;
-
-    return leaderboard.maxPP;
-  }
-
-  public getPP(maxPP: number, accuracy: number, failed: false) {
-    return SSPPCalulator.getPP(maxPP, accuracy, failed);
-  }
-
-  public async getPPFromLeaderboard(
-    leaderboardId: string,
-    accuracy: number,
-    failed: boolean,
-  ) {
-    const leaderboard = await this.getV1Leaderboard(leaderboardId);
-    if (!leaderboard) return 0;
-    if (!leaderboard.maxPP) return 0;
-
-    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
-  }
-
-  public async getPPFromHash(
-    hash: string,
-    difficulty: number,
-    accuracy: number,
-    failed: boolean,
-  ) {
-    const leaderboard = await this.getV1LeaderboardFromHash(hash, difficulty);
-    if (!leaderboard) return 0;
-    if (!leaderboard.maxPP) return 0;
-
-    return SSPPCalulator.getPP(leaderboard.maxPP, accuracy, failed);
   }
 
   private reconnectWebSocket() {
