@@ -243,7 +243,7 @@ export class MapService {
       }
     }
 
-    for (const diff of leaderboard.difficulties) {
+    for (const diff of leaderboard.song.difficulties) {
       const difficulty = diff.difficultyName;
       const characteristic = diff.modeName;
       const existingLeaderboard = await this.getLeaderboardFromMap(
