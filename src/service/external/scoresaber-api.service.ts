@@ -87,7 +87,11 @@ class ScoreSaberApiService extends EventEmitter {
    * @returns ScoreSaber leaderboard data, if found
    */
   public async getLeaderboard(id: string): Promise<any> {
-    return this.fetch<any>(`v2/leaderboards/${id}`);
+    return await this.fetch<any>(`v2/leaderboards/${id}`);
+  }
+
+  public async getMapFromHash(hash: string): Promise<any> {
+    return await this.fetch<any>(`v2/maps/hash/${hash}`);
   }
 
   /**
@@ -108,7 +112,7 @@ class ScoreSaberApiService extends EventEmitter {
    * @returns ScoreSaber profile data, if found
    */
   public async getUserFromId(id: string | number): Promise<any> {
-    return this.fetch<any>(`v2/players/${id}/basic`);
+    return await this.fetch<any>(`v2/players/${id}/basic`);
   }
 
   /**
@@ -131,7 +135,7 @@ class ScoreSaberApiService extends EventEmitter {
    * @returns ScoreSaber leaderboard v1 data, if found
    */
   public async getV1Leaderboard(id: string): Promise<any> {
-    return this.fetch<any>(`v1/leaderboard/by-id${id}/info`);
+    return await this.fetch<any>(`v1/leaderboard/by-id${id}/info`);
   }
 
   /**
@@ -144,7 +148,7 @@ class ScoreSaberApiService extends EventEmitter {
     hash: string,
     difficulty: number,
   ): Promise<any> {
-    return this.fetch<any>(
+    return await this.fetch<any>(
       `v1/leaderboard/by-hash/${hash}/info?difficulty=${difficulty}`,
     );
   }

@@ -2,6 +2,7 @@ import type { ScoreRow } from "../db/schema.js";
 import accsaberApiService from "../service/external/accsaber-api.service.js";
 import beatleaderApiService from "../service/external/beatleader-api.service.js";
 import scoresaberApiService from "../service/external/scoresaber-api.service.js";
+import { MapService } from "../service/map.service.js";
 import { PlayerService } from "../service/player.service.js";
 
 export default class Score implements ScoreRow {
@@ -53,6 +54,9 @@ export default class Score implements ScoreRow {
     const player = await PlayerService.getPlayerByAllIds(
       blScore.player.id.toString(),
     );
+    const leaderboard = await MapService.getLeaderboardFromBeatLeader(
+      blScore.leaderboardId,
+    );
     const scoreSaberLeaderboard =
       await scoresaberApiService.getV1LeaderboardFromHash(
         blScore.leaderboard.song.hash.toUpperCase(),
@@ -92,10 +96,7 @@ export default class Score implements ScoreRow {
           )
         : 0,
       ap: accsaberApiService.getAP(
-        accsaberApiService.getComplexity(
-          blScore.leaderboard.song.hash,
-          blScore.leaderboard.difficulty.difficultyName,
-        ),
+        leaderboard?.asComplexity ?? 0,
         blScore.accuracy,
       ),
       modifiers: blScore.modifiers.split(",").includes("")
@@ -111,10 +112,7 @@ export default class Score implements ScoreRow {
       ssRank: null,
       blStarRating: blScore.leaderboard.difficulty.stars ?? 0,
       ssStarRating: scoreSaberLeaderboard?.stars ?? null,
-      asRating: accsaberApiService.getComplexity(
-        blScore.leaderboard.song.hash,
-        blScore.leaderboard.difficulty.difficultyName,
-      ),
+      asRating: leaderboard?.asComplexity ?? 0,
       upVoteIds: [],
       downVoteIds: [],
       messages: null,
@@ -124,6 +122,9 @@ export default class Score implements ScoreRow {
   static async fromScoreSaber(ssScore: any) {
     const player = await PlayerService.getPlayerByAllIds(
       ssScore.score.leaderboardPlayerInfo.id,
+    );
+    const leaderboard = await MapService.getLeaderboardFromScoreSaber(
+      ssScore.leaderboard.id,
     );
     const difficulty = ssScore.leaderboard.difficulty.difficultyRaw
       .replace(/^_+/, "")
@@ -141,7 +142,10 @@ export default class Score implements ScoreRow {
       mapAuthor: ssScore.leaderboard.levelAuthorName,
       songCover: ssScore.leaderboard.coverImage,
       songHash: ssScore.leaderboard.songHash.toLowerCase(),
-      songDifficulty: difficulty === "ExpertPlus" ? "Expert+" : difficulty,
+      songDifficulty:
+        (leaderboard?.difficulty ?? difficulty === "ExpertPlus")
+          ? "Expert+"
+          : difficulty,
       songCharacteristic: ssScore.leaderboard.difficulty.gameMode.replace(
         "Solo",
         "",
@@ -156,10 +160,7 @@ export default class Score implements ScoreRow {
       ppBL: 0,
       ppSS: ssScore.score.pp,
       ap: accsaberApiService.getAP(
-        accsaberApiService.getComplexity(
-          ssScore.leaderboard.songHash.toLowerCase(),
-          difficulty,
-        ),
+        leaderboard?.asComplexity ?? 0,
         ssScore.score.accuracy,
       ),
       modifiers: ssScore.score.modifiers.split(",").includes("")
@@ -175,10 +176,7 @@ export default class Score implements ScoreRow {
       ssRank: ssScore.score.rank,
       blStarRating: null,
       ssStarRating: ssScore.leaderboard.stars,
-      asRating: accsaberApiService.getComplexity(
-        ssScore.leaderboard.songHash.toLowerCase(),
-        difficulty,
-      ),
+      asRating: leaderboard?.asComplexity ?? 0,
       improvement: null,
       upVoteIds: [],
       downVoteIds: [],

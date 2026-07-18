@@ -6,22 +6,31 @@ class AccSaberAPI extends EventEmitter {
 
   constructor() {
     super();
-
-    // Fetch AccSaber ranked maps (will make it periodically when im not lazy)
-    this.getRankedMaps();
   }
 
   public async getRankedMaps() {
-    try {
-      const response = await fetch(
-        `https://api.accsaber.com/v1/maps/difficulties?page=0&size=1000&sort=rankedAt,desc&status=RANKED`,
-        {},
-      );
-      const data: any = await response.json();
-      this._RankedMaps = data.content;
-    } catch (err) {
-      console.log("Failed to get AccSaber ranked maps: ", err);
-    }
+    const data = await this.fetch<any>(
+      `v1/maps/difficulties?page=0&size=1000&sort=rankedAt,desc&status=RANKED`,
+    );
+    return data.content;
+  }
+
+  /**
+   * Fetch an AccSaber ranked map using hash
+   * @param hash - Map hash
+   * @returns AccSaber map data, if found
+   */
+  public async getMapFromHash(hash: string) {
+    return await this.fetch<any>(`v1/maps/hash/${hash.toLowerCase()}`);
+  }
+
+  /**
+   * Fetch an AccSaber ranked map using hash
+   * @param id - Map ID
+   * @returns AccSaber map data, if found
+   */
+  public async getMapFromId(id: string) {
+    return await this.fetch<any>(`v1/maps/${id}`);
   }
 
   public getComplexity(mapHash: string, difficulty: string): number {
@@ -44,6 +53,36 @@ class AccSaberAPI extends EventEmitter {
   public getAP(complexity: number, acc: number): number {
     if (complexity == 0) return 0;
     return APCalculator.getAP(complexity, acc);
+  }
+
+  /**
+   * Convert AccSaber category ID to its category code
+   * @param id - Category id
+   * @returns AccSaber category code (tech_acc, true_acc, standard_acc, etc.)
+   */
+  public getCategoryCodeFromId(id: string) {
+    switch (id) {
+      case "b0000000-0000-0000-0000-000000000001":
+        return "true_acc";
+      case "b0000000-0000-0000-0000-000000000002":
+        return "standard_acc";
+      case "b0000000-0000-0000-0000-000000000003":
+        return "tech_acc";
+      default:
+        return "";
+    }
+  }
+  private async fetch<T>(path: string): Promise<T | null> {
+    const url = `https://api.accsaber.com/${path}`;
+    try {
+      const res = await fetch(url);
+      return res.ok ? (res.json() as T) : null;
+    } catch (err) {
+      console.warn(
+        `[WARN]: BeatLeader API: failed to fetch resource "${url}": ${err}`,
+      );
+      return null;
+    }
   }
 }
 

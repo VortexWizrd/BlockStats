@@ -46,6 +46,10 @@ class BeatLeaderApiService extends EventEmitter {
     return this._lastSocketUpdate;
   }
 
+  public async getMapFromBeatSaverId(id: string): Promise<any> {
+    return await this.fetch<any>(`leaderboard/${id}?page=1&count=0`);
+  }
+
   /**
    * Fetch a BeatLeader profile using ID
    * @param id - BeatLeader profile ID

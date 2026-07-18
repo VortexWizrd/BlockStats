@@ -5,6 +5,7 @@ import scoresaberApiService from "../external/scoresaber-api.service.js";
 import { PlayerService } from "../player.service.js";
 import { ScoreService } from "../score.service.js";
 import { PlayerRankHistoriesRepository } from "../../repositories/players/playerrankhistories.repository.js";
+import { MapService } from "../map.service.js";
 
 class WebSocketServerService {
   private server = new WebSocketServer({
@@ -163,10 +164,23 @@ class WebSocketServerService {
       type: "score",
       data: score,
     };
+
+    // BlockStats features
     const player = await PlayerService.getPlayer(score.playerId);
-    // handle outdated markings + profile refresh
     if (player) {
+      // refresh player profile
       await PlayerService.refreshPlayer(player.id);
+
+      // Handle leaderboard creation (might make a better way to do this later)
+      const ssFullMap = await MapService.createFromScoreSaber(
+        score.songHash,
+        true,
+      );
+      if (ssFullMap && ssFullMap.map.beatSaverId) {
+        await MapService.createFromBeatLeader(ssFullMap.map.beatSaverId, true);
+      }
+
+      // handle outdated markings
       score.outdated = false;
       if (score.blRank && score.blRank == 0 && !score.ssRank) {
         score.outdated = true;
@@ -181,12 +195,6 @@ class WebSocketServerService {
       const updatedScore = await ScoreService.createScore(score);
       if (updatedScore !== undefined) {
         wrapper.data = updatedScore;
-      }
-      if (
-        (player.avatar != score.playerAvatar &&
-          score.playerAvatar.includes("beatleader")) ||
-        player.name != score.playerName
-      ) {
       }
     }
     // handle snipes

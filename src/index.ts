@@ -8,6 +8,7 @@ import {
 } from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 import { PlayerService } from "./service/player.service.js";
+import { MapService } from "./service/map.service.js";
 
 const app = express();
 const port = 8000;
@@ -23,5 +24,6 @@ app.listen(port, () => {
 await runMigrations();
 await generateRankHistory();
 await setOutdatedScores();
+//await MapService.createAccSaberRankedMaps(); // temp
 
 startDiscord();
