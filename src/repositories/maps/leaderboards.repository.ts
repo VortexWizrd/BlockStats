@@ -1,3 +1,5 @@
+import { db } from "../../db/index.js";
+import { ilike, and, eq } from "drizzle-orm";
 import { leaderboardsTable, mapsTable } from "../../db/schema.js";
 import { Repository } from "../baserepository.js";
 
@@ -34,10 +36,22 @@ export class LeaderboardsRepository extends Repository {
     difficulty: string,
     characteristic: string,
   ): Promise<typeof this.row | undefined> {
-    return await this.findOne([
-      { name: "mapId", value: mapId },
-      { name: "difficulty", value: difficulty },
-      { name: "characteristic", value: characteristic },
-    ]);
+    const [row] = await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.mapId, mapId),
+          eq(this.table.difficulty, difficulty),
+          ilike(this.table.characteristic, characteristic),
+        ),
+      );
+    return row;
+  }
+
+  public static async findFromMap(
+    mapId: number,
+  ): Promise<(typeof this.row)[] | undefined> {
+    return await this.find([{ name: "mapId", value: mapId }]);
   }
 }

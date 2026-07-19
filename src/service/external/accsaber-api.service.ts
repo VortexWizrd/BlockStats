@@ -25,7 +25,7 @@ class AccSaberAPI extends EventEmitter {
   }
 
   /**
-   * Fetch an AccSaber ranked map using hash
+   * Fetch an AccSaber ranked map using id
    * @param id - Map ID
    * @returns AccSaber map data, if found
    */
@@ -79,7 +79,7 @@ class AccSaberAPI extends EventEmitter {
       return res.ok ? (res.json() as T) : null;
     } catch (err) {
       console.warn(
-        `[WARN]: BeatLeader API: failed to fetch resource "${url}": ${err}`,
+        `[WARN]: AccSaber API: failed to fetch resource "${url}": ${err}`,
       );
       return null;
     }

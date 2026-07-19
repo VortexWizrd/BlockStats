@@ -56,27 +56,31 @@ export default {
 
             if (user) {
               const message = await user.send(messageData);
-              ScoreService.addDiscordMessage({
-                id: data.id,
-                messageId: message.id,
-                type: "user",
-                guildId: null,
-                channelId: null,
-                userId: user.id,
-              } as ScoreMessage);
+              if (data.id > 0) {
+                ScoreService.addDiscordMessage({
+                  id: data.id,
+                  messageId: message.id,
+                  type: "user",
+                  guildId: null,
+                  channelId: null,
+                  userId: user.id,
+                } as ScoreMessage);
+              }
             }
           } else if (feed.channelType === "guild") {
             const channel = await client.channels.fetch(feed.channelId ?? "");
             if (channel && channel instanceof TextChannel) {
               const message = await channel.send(messageData);
-              ScoreService.addDiscordMessage({
-                id: data.id,
-                messageId: message.id,
-                type: "guild",
-                guildId: message.guild.id,
-                channelId: message.channel.id,
-                userId: null,
-              } as ScoreMessage);
+              if (data.id > 0) {
+                ScoreService.addDiscordMessage({
+                  id: data.id,
+                  messageId: message.id,
+                  type: "guild",
+                  guildId: message.guild.id,
+                  channelId: message.channel.id,
+                  userId: null,
+                } as ScoreMessage);
+              }
             }
           }
         } catch (err) {

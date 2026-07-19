@@ -12,6 +12,10 @@ export default class Map implements MapRow {
   savedTime!: Date;
   updatedTime!: Date;
   beatSaverId!: string | null;
+  songDescription!: string;
+  songDuration!: number | null;
+  songBPM!: number | null;
+  uploadedTime!: Date | null;
 
   constructor(data: Map) {
     Object.assign(this, data);

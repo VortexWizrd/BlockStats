@@ -57,23 +57,6 @@ export class PlayerService {
           (await hitbloqApiService.getUserFromScoreSaber(scoreSaberData?.id)) ??
           null,
 
-        blRankHistory: [
-          {
-            timestamp: new Date(),
-            rank: beatLeaderData.rank,
-          },
-        ],
-        ssRankHistory: scoreSaberData?.stats?.rank
-          ? [
-              {
-                timestamp: new Date(),
-                rank: scoreSaberData.stats?.rank,
-              },
-            ]
-          : null,
-        asRankHistory: null,
-        overallRankHistory: null,
-
         blRank: beatLeaderData.rank,
         ssRank: scoreSaberData.stats?.rank,
         asRank: null,
@@ -82,6 +65,25 @@ export class PlayerService {
         totalScores: 0,
         name: beatLeaderData.name,
         avatar: beatLeaderData.avatar,
+        beatSaverId: null,
+        accentColor: null,
+        status: null,
+        asTechRank: null,
+        asTrueRank: null,
+        asStandardRank: null,
+        blPP: null,
+        blTechPP: null,
+        blPassPP: null,
+        blAccPP: null,
+        ssPP: null,
+        asPP: null,
+        asTechPP: null,
+        asTruePP: null,
+        asStandardPP: null,
+        overallPP: null,
+        lastScoreTime: null,
+        createdTime: new Date(),
+        updatedTime: new Date(),
       };
 
       await PlayersRepository.insert(playerInsert).then(async () => {

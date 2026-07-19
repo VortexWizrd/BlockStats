@@ -27,17 +27,6 @@ export class ScoresRepository extends Repository {
     ]);
   }
 
-  public static async addMessage(
-    messageId: string,
-    channelId?: string,
-    guildId?: string,
-    userId?: string,
-  ) {
-    await db.update(this.table).set({
-      messages: sql`${this.table.messages} || ${JSON.stringify([{ messageId: messageId, channelId: channelId, guildId: guildId, userId: userId }])}::jsonb`,
-    });
-  }
-
   public static async appendUpVoteId(
     id: number,
     playerId: string,

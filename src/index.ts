@@ -1,7 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
 import {
-  generateRankHistory,
   migrateFromMongo,
   runMigrations,
   setOutdatedScores,
@@ -22,7 +21,6 @@ app.listen(port, () => {
 });
 
 await runMigrations();
-await generateRankHistory();
 await setOutdatedScores();
 //await MapService.createAccSaberRankedMaps(); // temp
 

@@ -34,7 +34,6 @@ export default class Score implements ScoreRow {
   playerName!: string;
   playerAvatar!: string;
   songName!: string;
-  songSubname!: string;
   songAuthor!: string;
   songCover!: string;
   mapAuthor!: string;
@@ -44,7 +43,19 @@ export default class Score implements ScoreRow {
   blStarRating!: number | null;
   ssStarRating!: number | null;
   asRating!: number | null;
-  messages!: Object | null;
+  songSubName!: string;
+  mapId!: number | null;
+  asLeaderboardId!: string | null;
+  asComplexity!: number | null;
+  playerBeatLeaderId!: string | null;
+  playerScoreSaberId!: string | null;
+  leaderboardId!: number | null;
+  blModifiedStarRating!: number | null;
+  ssMaxPP!: number | null;
+  maxScore!: number | null;
+  upVotes!: number;
+  downVotes!: number;
+  asCategoryCode!: string | null;
 
   constructor(data: Score) {
     Object.assign(this, data);
@@ -69,7 +80,7 @@ export default class Score implements ScoreRow {
       playerName: player?.name ?? blScore.player.name,
       playerAvatar: player?.avatar ?? blScore.player.avatar,
       songName: blScore.leaderboard.song.name,
-      songSubname: blScore.leaderboard.song.subName,
+      songSubName: blScore.leaderboard.song.subName,
       songAuthor: blScore.leaderboard.song.author,
       mapAuthor: blScore.leaderboard.song.mapper,
       songCover: blScore.leaderboard.song.coverImage,
@@ -115,7 +126,18 @@ export default class Score implements ScoreRow {
       asRating: leaderboard?.asComplexity ?? 0,
       upVoteIds: [],
       downVoteIds: [],
-      messages: null,
+      mapId: leaderboard?.mapId ?? null,
+      asLeaderboardId: leaderboard?.asLeaderboardId ?? null,
+      asComplexity: leaderboard?.asComplexity ?? null,
+      asCategoryCode: leaderboard?.asCategoryCode ?? null,
+      playerBeatLeaderId: blScore.player.id.toString(),
+      playerScoreSaberId: null,
+      leaderboardId: leaderboard?.id ?? null,
+      blModifiedStarRating: null,
+      ssMaxPP: null,
+      maxScore: blScore.leaderboard.difficulty.maxScore,
+      upVotes: 0,
+      downVotes: 0,
     });
   }
 
@@ -137,7 +159,7 @@ export default class Score implements ScoreRow {
       playerAvatar:
         player?.avatar ?? ssScore.score.leaderboardPlayerInfo.profilePicture,
       songName: ssScore.leaderboard.songName,
-      songSubname: ssScore.leaderboard.songSubName,
+      songSubName: ssScore.leaderboard.songSubName,
       songAuthor: ssScore.leaderboard.songAuthorName,
       mapAuthor: ssScore.leaderboard.levelAuthorName,
       songCover: ssScore.leaderboard.coverImage,
@@ -177,10 +199,21 @@ export default class Score implements ScoreRow {
       blStarRating: null,
       ssStarRating: ssScore.leaderboard.stars,
       asRating: leaderboard?.asComplexity ?? 0,
+      asCategoryCode: leaderboard?.asCategoryCode ?? null,
       improvement: null,
       upVoteIds: [],
       downVoteIds: [],
-      messages: null,
+      mapId: leaderboard?.mapId ?? null,
+      asLeaderboardId: leaderboard?.asLeaderboardId ?? null,
+      asComplexity: leaderboard?.asComplexity ?? null,
+      playerBeatLeaderId: null,
+      playerScoreSaberId: ssScore.score.leaderboardPlayerInfo.id,
+      leaderboardId: leaderboard?.id ?? null,
+      blModifiedStarRating: null,
+      ssMaxPP: ssScore.leaderboard.maxPP ?? 0,
+      maxScore: ssScore.leaderboard.maxScore ?? 0,
+      upVotes: 0,
+      downVotes: 0,
     });
   }
 }

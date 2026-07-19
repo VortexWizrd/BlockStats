@@ -1,19 +1,8 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
-  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
-import { db } from "../../../db/index.js";
-import { playersTable } from "../../../db/schema.js";
-import { eq } from "drizzle-orm";
-import { PlayerService } from "../../../service/player.service.js";
-import { PlayersRepository } from "../../../repositories/players/players.repository.js";
-import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
-import type Player from "../../../common/player.js";
-import { ScoreService } from "../../../service/score.service.js";
-import { link } from "node:fs";
 import { MapService } from "../../../service/map.service.js";
 import Map from "../../../common/map/map.js";
 
@@ -61,29 +50,74 @@ export default {
 
         let embeds = [];
         for (const map of maps) {
-          embeds.push(
-            new EmbedBuilder()
-              .setTitle(
-                `${map.songAuthor ? map.songAuthor + " - " : ""}${map.songName} ${map.songSubName}`,
-              )
-              .setDescription(
-                map.mapAuthor ? `Mapped by ${map.mapAuthor}` : null,
-              )
-              .setURL(
-                map.beatSaverId
-                  ? `https://beatsaver.com/maps/${map.beatSaverId}`
-                  : null,
-              )
-              .setColor("Blue")
-              .setThumbnail(map.songCover),
-          );
+          let description =
+            ("" + map.mapAuthor ? `**Mapped by ${map.mapAuthor}**\n\n` : "") +
+            map.songDescription;
+          try {
+            if (!interaction.channel?.isSendable()) {
+              return await interaction.editReply(
+                "You must be a in a text channel to run this command!",
+              );
+            }
+            interaction.channel.send({
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(
+                    `${map.songAuthor ? map.songAuthor + " - " : ""}${map.songName} ${map.songSubName}`,
+                  )
+                  .setDescription(description)
+                  .setURL(
+                    map.beatSaverId
+                      ? `https://beatsaver.com/maps/${map.beatSaverId}`
+                      : null,
+                  )
+                  .setColor("Blue")
+                  .setThumbnail(map.songCover)
+                  .addFields(
+                    {
+                      name: "BPM",
+                      value: map.songBPM
+                        ? map.songBPM.toString()
+                        : "Not stored",
+                      inline: true,
+                    },
+                    {
+                      name: "Song Length",
+                      value: map.songDuration
+                        ? Math.floor(map.songDuration / 60).toString() +
+                          ":" +
+                          (map.songDuration % 60).toString()
+                        : "Not stored",
+                      inline: true,
+                    },
+                    {
+                      name: "Difficulties",
+                      value: map.leaderboardIds.length.toString(),
+                      inline: true,
+                    },
+                    {
+                      name: "Uploaded",
+                      value: map.uploadedTime
+                        ? `<t:${Math.floor(new Date(map.uploadedTime).getTime() / 1000)}:R>`
+                        : "Not stored",
+                      inline: true,
+                    },
+                  )
+                  .setFooter({
+                    text: `ID: ${map.id}`,
+                  })
+                  .setTimestamp(),
+              ],
+            });
+          } catch (err) {
+            console.error(
+              `[ERROR]: Discord: failed to send leaderboard information: `,
+              err,
+            );
+          }
         }
 
-        if (embeds.length == 0) {
-          return await interaction.editReply("No maps found");
-        }
-
-        await interaction.editReply({ embeds: embeds });
+        await interaction.editReply("Done!");
       }
     }
   },

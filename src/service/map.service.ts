@@ -6,6 +6,7 @@ import { MapsRepository } from "../repositories/maps/maps.repository.js";
 import { LeaderboardsRepository } from "../repositories/maps/leaderboards.repository.js";
 import type Leaderboard from "../common/map/leaderboard.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
+import beatsaverApiService from "./external/beatsaver-api.service.js";
 
 type MapInsert = typeof mapsTable.$inferInsert;
 type LeaderboardInsert = typeof leaderboardsTable.$inferInsert;
@@ -106,6 +107,12 @@ export class MapService {
     )) as Leaderboard;
   }
 
+  public static async getLeaderboardsFromMap(
+    mapId: number,
+  ): Promise<Leaderboard[] | undefined> {
+    return (await LeaderboardsRepository.findFromMap(mapId)) as Leaderboard[];
+  }
+
   public static async createFromScoreSaber(
     hash: string,
     overwrite: boolean,
@@ -116,9 +123,18 @@ export class MapService {
     const scoreSaberMap = await scoresaberApiService.getMapFromHash(
       hash.toUpperCase(),
     );
+    const beatSaverMap = await beatsaverApiService.getMapFromHash(
+      hash.toUpperCase(),
+    );
     if (!scoreSaberMap) {
       console.error(
         `[ERROR]: MapService: Failed to create map from ScoreSaber with hash ${hash}: ScoreSaber returned ${scoreSaberMap}`,
+      );
+      return undefined;
+    }
+    if (!beatSaverMap) {
+      console.error(
+        `[ERROR]: MapService: Failed to create map from ScoreSaber with hash ${hash}: BeatSaver returned ${beatSaverMap.toString()}`,
       );
       return undefined;
     }
@@ -135,6 +151,12 @@ export class MapService {
         savedTime: new Date(),
         updatedTime: new Date(),
         beatSaverId: scoreSaberMap.bsid ?? null,
+        songDescription: beatSaverMap.description ?? "",
+        songDuration: beatSaverMap.metadata.duration ?? null,
+        songBPM: beatSaverMap.metadata.bpm ?? null,
+        uploadedTime: beatSaverMap?.lastPublishedAt
+          ? new Date(beatSaverMap.lastPublishedAt)
+          : null,
       });
       if (!map) {
         console.error(
@@ -142,15 +164,33 @@ export class MapService {
         );
         return undefined;
       }
+    } else {
+      await MapsRepository.update(map.id, {
+        hash: hash.toLowerCase(),
+        songName: scoreSaberMap.songName,
+        songSubName: scoreSaberMap.songSubName,
+        songAuthor: scoreSaberMap.songAuthorName,
+        mapAuthor: scoreSaberMap.levelAuthorName,
+        songCover: scoreSaberMap.coverUrl,
+        updatedTime: new Date(),
+        beatSaverId: scoreSaberMap.bsid ?? null,
+        songDescription: beatSaverMap.description ?? "",
+        songDuration: beatSaverMap.metadata.duration ?? null,
+        songBPM: beatSaverMap.metadata.bpm ?? null,
+        uploadedTime: beatSaverMap?.lastPublishedAt
+          ? new Date(beatSaverMap.lastPublishedAt)
+          : null,
+      });
     }
 
     let leaderboards: Leaderboard[] = [];
 
     // create leaderboards
     for (const ssLeaderboard of scoreSaberMap.leaderboards) {
-      const difficulty = ssLeaderboard.rawDifficulty
+      let difficulty = ssLeaderboard.rawDifficulty
         .replace(/^_+/, "")
         .split("_")[0];
+      if (difficulty == "ExpertPlus") difficulty = "Expert+";
       const characteristic = ssLeaderboard.gameMode.replace("Solo", "");
       const existingLeaderboard = await this.getLeaderboardFromMap(
         map.id,
@@ -212,10 +252,16 @@ export class MapService {
   ): Promise<FullMap | undefined> {
     const leaderboard =
       await beatleaderApiService.getMapFromBeatSaverId(beatSaverId);
-
+    const beatSaverMap = await beatsaverApiService.getMapFromId(beatSaverId);
     if (!leaderboard) {
       console.error(
         `[ERROR]: MapService: Failed to create map from BeatLeader with BeatSaver ID ${beatSaverId}: BeatLeader returned ${leaderboard}`,
+      );
+      return undefined;
+    }
+    if (!beatSaverMap) {
+      console.warn(
+        `[WARN]: MapService: Failed to fetch BeatSaver map ${beatSaverId}: BeatSaver returned ${leaderboard}`,
       );
     }
 
@@ -233,7 +279,13 @@ export class MapService {
         leaderboardIds: [],
         savedTime: new Date(),
         updatedTime: new Date(),
-        beatSaverId: leaderboard.song.id.replace(/[^0-9a-fA-F]/g, ""),
+        beatSaverId: beatSaverMap?.id ?? null,
+        songDescription: beatSaverMap?.description ?? "",
+        songDuration: beatSaverMap?.metadata.duration ?? null,
+        songBPM: beatSaverMap?.metadata.bpm ?? null,
+        uploadedTime: beatSaverMap?.lastPublishedAt
+          ? new Date(beatSaverMap.lastPublishedAt)
+          : null,
       });
       if (!map) {
         console.error(
@@ -241,10 +293,28 @@ export class MapService {
         );
         return undefined;
       }
+    } else {
+      await MapsRepository.update(map.id, {
+        hash: leaderboard.song.hash.toLowerCase(),
+        songName: leaderboard.song.name,
+        songSubName: leaderboard.song.subName,
+        songAuthor: leaderboard.song.author,
+        mapAuthor: leaderboard.song.mapper,
+        songCover: leaderboard.song.coverImage,
+        updatedTime: new Date(),
+        beatSaverId: beatSaverMap?.id ?? null,
+        songDescription: beatSaverMap?.description ?? "",
+        songDuration: beatSaverMap?.metadata.duration ?? null,
+        songBPM: beatSaverMap?.metadata.bpm ?? null,
+        uploadedTime: beatSaverMap?.lastPublishedAt
+          ? new Date(beatSaverMap.lastPublishedAt)
+          : null,
+      });
     }
 
     for (const diff of leaderboard.song.difficulties) {
-      const difficulty = diff.difficultyName;
+      let difficulty = diff.difficultyName;
+      if (difficulty == "ExpertPlus") difficulty = "Expert+";
       const characteristic = diff.modeName;
       const existingLeaderboard = await this.getLeaderboardFromMap(
         map.id,
@@ -326,6 +396,10 @@ export class MapService {
         savedTime: new Date(),
         updatedTime: new Date(),
         beatSaverId: accSaberMap.beatsaverCode ?? null,
+        songDescription: "",
+        songDuration: null,
+        songBPM: null,
+        uploadedTime: null,
       });
       if (!map) {
         console.error(
@@ -416,6 +490,10 @@ export class MapService {
           savedTime: new Date(),
           updatedTime: new Date(),
           beatSaverId: accSaberMap.beatsaverCode ?? null,
+          songDescription: "",
+          songDuration: null,
+          songBPM: null,
+          uploadedTime: null,
         });
         if (!map) {
           console.error(
