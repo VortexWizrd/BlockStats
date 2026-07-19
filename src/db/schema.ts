@@ -10,8 +10,17 @@ import {
   index,
   uuid,
   check,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
+
+export const difficultyEnum = pgEnum("difficulty", [
+  "Expert+",
+  "Expert",
+  "Hard",
+  "Normal",
+  "Easy",
+]);
 
 export const playersTable = pgTable(
   "players",
@@ -100,78 +109,82 @@ export const playersTable = pgTable(
   ],
 );
 
-export const scoresTable = pgTable("scores", {
-  // Primary ID
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+export const scoresTable = pgTable(
+  "scores",
+  {
+    // Primary ID
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
 
-  // Primary score data source
-  provider: varchar({ length: 32 }).array().notNull(),
+    // Primary score data source
+    provider: varchar({ length: 32 }).array().notNull(),
 
-  // Player Information
-  playerId: varchar({ length: 32 }).references(() => playersTable.id, {
-    onDelete: "set null",
-  }),
-  playerBeatLeaderId: varchar({ length: 32 }),
-  playerScoreSaberId: varchar({ length: 32 }),
-  playerName: text().notNull().default(""),
-  playerAvatar: text().notNull().default(""),
+    // Player Information
+    playerId: varchar({ length: 32 }).references(() => playersTable.id, {
+      onDelete: "set null",
+    }),
+    playerBeatLeaderId: varchar({ length: 32 }),
+    playerScoreSaberId: varchar({ length: 32 }),
+    playerName: text().notNull().default(""),
+    playerAvatar: text().notNull().default(""),
 
-  // Map data
-  mapId: integer().references(() => mapsTable.id, {
-    onDelete: "set null",
-  }),
-  songName: text().notNull().default(""),
-  songSubName: text().notNull().default(""),
-  songAuthor: text().notNull().default(""),
-  songCover: text().notNull().default(""),
-  mapAuthor: text().notNull().default(""),
-  songHash: varchar({ length: 64 }).notNull(),
-  songDifficulty: varchar({ length: 64 }).notNull(),
-  songCharacteristic: varchar({ length: 128 }).notNull(),
+    // Map data
+    mapId: integer().references(() => mapsTable.id, {
+      onDelete: "set null",
+    }),
+    songName: text().notNull().default(""),
+    songSubName: text().notNull().default(""),
+    songAuthor: text().notNull().default(""),
+    songCover: text().notNull().default(""),
+    mapAuthor: text().notNull().default(""),
+    songHash: varchar({ length: 64 }).notNull(),
+    songDifficulty: difficultyEnum().notNull(),
+    songCharacteristic: varchar({ length: 128 }).notNull(),
 
-  // Score data
-  score: integer().notNull(),
-  accuracy: doublePrecision().notNull(),
-  fullCombo: boolean().notNull(),
-  missedNotes: integer().notNull(),
-  badCuts: integer().notNull(),
-  bombHits: integer(),
-  wallHits: integer(),
-  ppBL: doublePrecision().notNull().default(0),
-  ppSS: doublePrecision().notNull().default(0),
-  ap: doublePrecision().notNull().default(0),
-  modifiers: varchar({ length: 32 }).array(),
-  improvement: doublePrecision(),
+    // Score data
+    score: integer().notNull(),
+    accuracy: doublePrecision().notNull(),
+    fullCombo: boolean().notNull(),
+    missedNotes: integer().notNull(),
+    badCuts: integer().notNull(),
+    bombHits: integer(),
+    wallHits: integer(),
+    ppBL: doublePrecision().notNull().default(0),
+    ppSS: doublePrecision().notNull().default(0),
+    ap: doublePrecision().notNull().default(0),
+    modifiers: varchar({ length: 32 }).array(),
+    improvement: doublePrecision(),
 
-  // Leaderboard data
-  leaderboardId: integer().references(() => leaderboardsTable.id, {
-    onDelete: "set null",
-  }),
-  blLeaderboardId: varchar({ length: 32 }),
-  blScoreId: integer(),
-  blStarRating: doublePrecision(),
-  blModifiedStarRating: doublePrecision(),
-  blRank: integer(),
-  ssLeaderboardId: integer(),
-  ssScoreId: integer(),
-  ssStarRating: doublePrecision(),
-  ssMaxPP: doublePrecision(),
-  ssRank: integer(),
-  asLeaderboardId: uuid(),
-  asComplexity: doublePrecision(),
-  asCategoryCode: varchar({ length: 32 }),
+    // Leaderboard data
+    leaderboardId: integer().references(() => leaderboardsTable.id, {
+      onDelete: "set null",
+    }),
+    blLeaderboardId: varchar({ length: 32 }),
+    blScoreId: integer(),
+    blStarRating: doublePrecision(),
+    blModifiedStarRating: doublePrecision(),
+    blRank: integer(),
+    ssLeaderboardId: integer(),
+    ssScoreId: integer(),
+    ssStarRating: doublePrecision(),
+    ssMaxPP: doublePrecision(),
+    ssRank: integer(),
+    asLeaderboardId: uuid(),
+    asComplexity: doublePrecision(),
+    asCategoryCode: varchar({ length: 32 }),
 
-  maxScore: integer(),
+    maxScore: integer(),
 
-  outdated: boolean().notNull(),
-  timestamp: timestamp().notNull(),
+    outdated: boolean().notNull(),
+    timestamp: timestamp().notNull(),
 
-  // Discord data
-  upVotes: integer().notNull().default(0),
-  downVotes: integer().notNull().default(0),
-  upVoteIds: varchar({ length: 32 }).array().notNull(),
-  downVoteIds: varchar({ length: 32 }).array().notNull(),
-});
+    // Discord data
+    upVotes: integer().notNull().default(0),
+    downVotes: integer().notNull().default(0),
+    upVoteIds: varchar({ length: 32 }).array().notNull(),
+    downVoteIds: varchar({ length: 32 }).array().notNull(),
+  },
+  (table) => [],
+);
 
 export const scoreMessagesTable = pgTable("scoremessages", {
   id: integer()
@@ -309,10 +322,18 @@ export const leaderboardsTable = pgTable("leaderboards", {
     }),
 
   // leaderboard information
-  difficulty: varchar({ length: 64 }).notNull(),
+  difficulty: difficultyEnum().notNull(),
+  customDifficultyName: text(),
   characteristic: varchar({ length: 128 }).notNull(),
 
   maxScore: integer().notNull().default(0),
+  notes: integer(),
+  bombs: integer(),
+  obstacles: integer(),
+  events: integer(),
+  njs: doublePrecision(),
+  offset: doublePrecision(),
+  nps: doublePrecision(),
 
   // beatleader
   blLeaderboardId: varchar({ length: 32 }),

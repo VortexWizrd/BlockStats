@@ -10,8 +10,8 @@ export default class Score implements ScoreRow {
   playerId!: string;
   provider!: string[];
   songHash!: string;
-  songDifficulty!: string;
   songCharacteristic!: string;
+  songDifficulty!: "Expert+" | "Expert" | "Hard" | "Normal" | "Easy";
   score!: number;
   accuracy!: number;
   fullCombo!: boolean;

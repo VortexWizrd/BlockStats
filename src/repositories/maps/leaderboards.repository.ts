@@ -1,7 +1,8 @@
 import { db } from "../../db/index.js";
 import { ilike, and, eq } from "drizzle-orm";
-import { leaderboardsTable, mapsTable } from "../../db/schema.js";
+import { leaderboardsTable, difficultyEnum } from "../../db/schema.js";
 import { Repository } from "../baserepository.js";
+import type { DifficultyType } from "../../common/map/leaderboard.js";
 
 export class LeaderboardsRepository extends Repository {
   public static readonly table = leaderboardsTable;
@@ -33,7 +34,7 @@ export class LeaderboardsRepository extends Repository {
 
   public static async findOneFromMap(
     mapId: number,
-    difficulty: string,
+    difficulty: DifficultyType,
     characteristic: string,
   ): Promise<typeof this.row | undefined> {
     const [row] = await db

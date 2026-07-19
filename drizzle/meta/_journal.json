@@ -34,7 +34,14 @@
       "idx": 4,
       "version": "7",
       "when": 1784422612243,
-      "tag": "0004_faithful_wiccan",
+      "tag": "0004_leaderboard_p2",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784436278359,
+      "tag": "0005_leaderboard_p3",
       "breakpoints": true
     }
   ]

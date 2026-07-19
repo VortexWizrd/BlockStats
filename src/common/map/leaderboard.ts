@@ -1,11 +1,13 @@
 import type { LeaderboardRow } from "../../db/schema.js";
 
+export type DifficultyType = "Expert+" | "Expert" | "Hard" | "Normal" | "Easy";
+
 export default class Leaderboard implements LeaderboardRow {
   id!: number;
   savedTime!: Date;
   updatedTime!: Date;
   mapId!: number;
-  difficulty!: string;
+  difficulty!: DifficultyType;
   characteristic!: string;
   blLeaderboardId!: string | null;
   blRankedStatus!: string | null;
@@ -21,6 +23,16 @@ export default class Leaderboard implements LeaderboardRow {
   asCategoryId!: string | null;
   asCategoryCode!: string | null;
   asComplexity!: number | null;
+  customDifficultyName?: string | null;
+  maxScore!: number;
+  notes!: number | null;
+  bombs!: number | null;
+  obstacles!: number | null;
+  events!: number | null;
+  njs!: number | null;
+  offset!: number | null;
+  nps!: number | null;
+  ssMaxPP!: number | null;
 
   constructor(data: Leaderboard) {
     Object.assign(this, data);

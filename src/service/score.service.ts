@@ -1,3 +1,4 @@
+import type { DifficultyType } from "../common/map/leaderboard.js";
 import type Score from "../common/score.js";
 import ScoreMessage from "../common/scoremessage.js";
 import type { scoresTable } from "../db/schema.js";
@@ -77,7 +78,7 @@ export class ScoreService {
   public static async setOutdated(
     playerId: string,
     songHash: string,
-    songDifficulty: string,
+    songDifficulty: DifficultyType,
     songCharacteristic: string,
   ) {
     await ScoresRepository.setOutdated(
@@ -90,7 +91,7 @@ export class ScoreService {
 
   public static async getCurrentScoresFromMap(
     songHash: string,
-    songDifficulty: string,
+    songDifficulty: DifficultyType,
     songCharacteristic: string,
   ): Promise<Score[]> {
     return (await ScoresRepository.getCurrentFromMap(

@@ -2,6 +2,7 @@ import { db } from "../db/index.js";
 import { scoresTable } from "../db/schema.js";
 import { and, eq, sql, desc, count } from "drizzle-orm";
 import { Repository } from "./baserepository.js";
+import type { DifficultyType } from "../common/map/leaderboard.js";
 
 export class ScoresRepository extends Repository {
   public static readonly table = scoresTable;
@@ -78,7 +79,7 @@ export class ScoresRepository extends Repository {
   public static async setOutdated(
     playerId: string,
     songHash: string,
-    songDifficulty: string,
+    songDifficulty: DifficultyType,
     songCharacteristic: string,
   ): Promise<void> {
     await db
@@ -98,7 +99,7 @@ export class ScoresRepository extends Repository {
 
   public static async getCurrentFromMap(
     songHash: string,
-    songDifficulty: string,
+    songDifficulty: DifficultyType,
     songCharacteristic: string,
   ): Promise<(typeof this.row)[]> {
     return await db
@@ -143,7 +144,7 @@ export class ScoresRepository extends Repository {
   public static async getOldScores(
     playerId: string,
     songHash: string,
-    songDifficulty: string,
+    songDifficulty: DifficultyType,
     songCharacteristic: string,
     limit: number,
   ): Promise<(typeof this.row)[]> {

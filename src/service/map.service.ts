@@ -7,6 +7,7 @@ import { LeaderboardsRepository } from "../repositories/maps/leaderboards.reposi
 import type Leaderboard from "../common/map/leaderboard.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
 import beatsaverApiService from "./external/beatsaver-api.service.js";
+import type { DifficultyType } from "../common/map/leaderboard.js";
 
 type MapInsert = typeof mapsTable.$inferInsert;
 type LeaderboardInsert = typeof leaderboardsTable.$inferInsert;
@@ -97,7 +98,7 @@ export class MapService {
 
   public static async getLeaderboardFromMap(
     mapId: number,
-    difficulty: string,
+    difficulty: DifficultyType,
     characteristic: string,
   ): Promise<Leaderboard | undefined> {
     return (await LeaderboardsRepository.findOneFromMap(
@@ -203,6 +204,7 @@ export class MapService {
           ssRankedStatus: ssLeaderboard.realm.leaderboardStatus,
           ssStarRating: ssLeaderboard.realm.stars,
           updatedTime: new Date(),
+          maxScore: ssLeaderboard.maxScore,
         };
         const newLeaderboard = await LeaderboardsRepository.update(
           existingLeaderboard.id,
@@ -233,6 +235,15 @@ export class MapService {
         asCategoryId: null,
         asCategoryCode: null,
         asComplexity: null,
+        maxScore: ssLeaderboard.maxScore,
+        notes: null,
+        bombs: null,
+        obstacles: null,
+        events: null,
+        njs: null,
+        offset: null,
+        nps: null,
+        ssMaxPP: null,
       });
       if (!newLeaderboard) {
         continue;
@@ -332,7 +343,15 @@ export class MapService {
           blTechRating: diff.techRating,
           blAccRating: diff.accRating,
           blPassRating: diff.passRating,
+          notes: diff.notes,
+          bombs: diff.bombs,
+          obstacles: diff.walls,
+          njs: diff.njs,
+          offset: diff.noteJumpStartBeatOffset,
+          customDifficultyName: diff.customDifficultyName,
+          nps: diff.nps,
           updatedTime: new Date(),
+          maxScore: diff.maxScore,
         };
         await LeaderboardsRepository.update(existingLeaderboard.id, updateData);
         continue;
@@ -343,6 +362,7 @@ export class MapService {
         updatedTime: new Date(),
         mapId: map.id,
         difficulty: difficulty,
+        customDifficultyName: diff.customDifficultyName,
         characteristic: characteristic,
         blLeaderboardId:
           diff.songId.toString() + diff.value.toString() + diff.mode.toString(),
@@ -359,6 +379,15 @@ export class MapService {
         asCategoryId: null,
         asCategoryCode: null,
         asComplexity: null,
+        maxScore: diff.maxScore,
+        notes: diff.notes,
+        bombs: diff.bombs,
+        obstacles: diff.walls,
+        events: null,
+        njs: diff.njs,
+        offset: diff.noteJumpStartBeatOffset,
+        nps: diff.nps,
+        ssMaxPP: null,
       });
       if (!newLeaderboard) {
         continue;
@@ -462,6 +491,15 @@ export class MapService {
           leaderboard.categoryId,
         ),
         asComplexity: leaderboard.complexity,
+        maxScore: 0,
+        notes: null,
+        bombs: null,
+        obstacles: null,
+        events: null,
+        njs: null,
+        offset: null,
+        nps: null,
+        ssMaxPP: null,
       });
       if (!newLeaderboard) {
         continue;
@@ -559,6 +597,15 @@ export class MapService {
             leaderboard.categoryId,
           ),
           asComplexity: leaderboard.complexity,
+          maxScore: 0,
+          notes: null,
+          bombs: null,
+          obstacles: null,
+          events: null,
+          njs: null,
+          offset: null,
+          nps: null,
+          ssMaxPP: null,
         });
         if (!newLeaderboard) {
           continue;
