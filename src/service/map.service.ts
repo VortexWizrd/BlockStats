@@ -263,136 +263,144 @@ export class MapService {
   ): Promise<FullMap | undefined> {
     const leaderboard =
       await beatleaderApiService.getMapFromBeatSaverId(beatSaverId);
-    const beatSaverMap = await beatsaverApiService.getMapFromId(beatSaverId);
+
     if (!leaderboard) {
       console.error(
         `[ERROR]: MapService: Failed to create map from BeatLeader with BeatSaver ID ${beatSaverId}: BeatLeader returned ${leaderboard}`,
       );
       return undefined;
     }
+    const beatSaverMap = await beatsaverApiService.getMapFromHash(
+      leaderboard.hash,
+    );
     if (!beatSaverMap) {
       console.warn(
         `[WARN]: MapService: Failed to fetch BeatSaver map ${beatSaverId}: BeatSaver returned ${leaderboard}`,
       );
     }
 
-    let map = await this.getMapFromHash(leaderboard.song.hash);
-    if (map && !overwrite) return undefined;
-    if (!map) {
-      map = await this.createMap({
-        id: -1,
-        hash: leaderboard.song.hash.toLowerCase(),
-        songName: leaderboard.song.name,
-        songSubName: leaderboard.song.subName,
-        songAuthor: leaderboard.song.author,
-        mapAuthor: leaderboard.song.mapper,
-        songCover: leaderboard.song.coverImage,
-        leaderboardIds: [],
-        savedTime: new Date(),
-        updatedTime: new Date(),
-        beatSaverId: beatSaverMap?.id ?? null,
-        songDescription: beatSaverMap?.description ?? "",
-        songDuration: beatSaverMap?.metadata.duration ?? null,
-        songBPM: beatSaverMap?.metadata.bpm ?? null,
-        uploadedTime: beatSaverMap?.lastPublishedAt
-          ? new Date(beatSaverMap.lastPublishedAt)
-          : null,
-      });
+    for (const leaderboardGroup of leaderboard.leaderboardGroup) {
+      const selectedLeaderboard =
+        await beatleaderApiService.getMapFromBeatSaverId(leaderboardGroup.id);
+      if (!selectedLeaderboard) continue;
+      let map = await this.getMapFromHash(selectedLeaderboard.song.hash);
+      if (map && !overwrite) return undefined;
       if (!map) {
-        console.error(
-          `[ERROR]: MapService: Failed to create map from BeatLeader with hash ${leaderboard.song.hash}: Map failed to be found or created on DB`,
-        );
-        return undefined;
+        map = await this.createMap({
+          id: -1,
+          hash: selectedLeaderboard.song.hash.toLowerCase(),
+          songName: selectedLeaderboard.song.name,
+          songSubName: selectedLeaderboard.song.subName,
+          songAuthor: selectedLeaderboard.song.author,
+          mapAuthor: selectedLeaderboard.song.mapper,
+          songCover: selectedLeaderboard.song.coverImage,
+          leaderboardIds: [],
+          savedTime: new Date(),
+          updatedTime: new Date(),
+          beatSaverId: beatSaverMap?.id ?? null,
+          songDescription: beatSaverMap?.description ?? "",
+          songDuration: selectedLeaderboard.duration,
+          songBPM: selectedLeaderboard.bpm,
+          uploadedTime: beatSaverMap?.lastPublishedAt
+            ? new Date(beatSaverMap.lastPublishedAt)
+            : null,
+        });
+        if (!map) {
+          console.error(
+            `[ERROR]: MapService: Failed to create map from BeatLeader with hash ${leaderboard.song.hash}: Map failed to be found or created on DB`,
+          );
+          continue;
+        }
+      } else {
+        await MapsRepository.update(map.id, {
+          hash: leaderboard.song.hash.toLowerCase(),
+          songName: leaderboard.song.name,
+          songSubName: leaderboard.song.subName,
+          songAuthor: leaderboard.song.author,
+          mapAuthor: leaderboard.song.mapper,
+          songCover: leaderboard.song.coverImage,
+          updatedTime: new Date(),
+          songDuration: selectedLeaderboard.duration,
+          songBPM: selectedLeaderboard.bpm,
+        });
       }
-    } else {
-      await MapsRepository.update(map.id, {
-        hash: leaderboard.song.hash.toLowerCase(),
-        songName: leaderboard.song.name,
-        songSubName: leaderboard.song.subName,
-        songAuthor: leaderboard.song.author,
-        mapAuthor: leaderboard.song.mapper,
-        songCover: leaderboard.song.coverImage,
-        updatedTime: new Date(),
-        beatSaverId: beatSaverMap?.id ?? null,
-        songDescription: beatSaverMap?.description ?? "",
-        songDuration: beatSaverMap?.metadata.duration ?? null,
-        songBPM: beatSaverMap?.metadata.bpm ?? null,
-        uploadedTime: beatSaverMap?.lastPublishedAt
-          ? new Date(beatSaverMap.lastPublishedAt)
-          : null,
-      });
-    }
 
-    for (const diff of leaderboard.song.difficulties) {
-      let difficulty = diff.difficultyName;
-      if (difficulty == "ExpertPlus") difficulty = "Expert+";
-      const characteristic = diff.modeName;
-      const existingLeaderboard = await this.getLeaderboardFromMap(
-        map.id,
-        difficulty,
-        characteristic,
-      );
-      if (existingLeaderboard) {
-        const updateData = {
+      for (const diff of leaderboard.song.difficulties) {
+        let difficulty = diff.difficultyName;
+        if (difficulty == "ExpertPlus") difficulty = "Expert+";
+        const characteristic = diff.modeName;
+        const existingLeaderboard = await this.getLeaderboardFromMap(
+          map.id,
+          difficulty,
+          characteristic,
+        );
+        if (existingLeaderboard) {
+          const updateData = {
+            blLeaderboardId:
+              diff.songId.toString() +
+              diff.value.toString() +
+              diff.mode.toString(),
+            blRankedStatus: diff.status.toString(), // what does this even mean why is it a number
+            blStarRating: diff.stars,
+            blTechRating: diff.techRating,
+            blAccRating: diff.accRating,
+            blPassRating: diff.passRating,
+            notes: diff.notes,
+            bombs: diff.bombs,
+            obstacles: diff.walls,
+            njs: diff.njs,
+            offset: diff.noteJumpStartBeatOffset,
+            customDifficultyName: diff.customDifficultyName,
+            nps: diff.nps,
+            updatedTime: new Date(),
+            maxScore: diff.maxScore,
+          };
+          await LeaderboardsRepository.update(
+            existingLeaderboard.id,
+            updateData,
+          );
+          continue;
+        }
+        const newLeaderboard = await this.createLeaderboard({
+          id: -1,
+          savedTime: new Date(),
+          updatedTime: new Date(),
+          mapId: map.id,
+          difficulty: difficulty,
+          customDifficultyName: diff.customDifficultyName,
+          characteristic: characteristic,
           blLeaderboardId:
             diff.songId.toString() +
             diff.value.toString() +
             diff.mode.toString(),
-          blRankedStatus: diff.status.toString(), // what does this even mean why is it a number
+          blRankedStatus: diff.status.toString(),
           blStarRating: diff.stars,
           blTechRating: diff.techRating,
           blAccRating: diff.accRating,
           blPassRating: diff.passRating,
+          ssLeaderboardId: null,
+          ssRankedStatus: null,
+          ssStarRating: null,
+          asLeaderboardId: null,
+          asRankedStatus: null,
+          asCategoryId: null,
+          asCategoryCode: null,
+          asComplexity: null,
+          maxScore: diff.maxScore,
           notes: diff.notes,
           bombs: diff.bombs,
           obstacles: diff.walls,
+          events: null,
           njs: diff.njs,
           offset: diff.noteJumpStartBeatOffset,
-          customDifficultyName: diff.customDifficultyName,
           nps: diff.nps,
-          updatedTime: new Date(),
-          maxScore: diff.maxScore,
-        };
-        await LeaderboardsRepository.update(existingLeaderboard.id, updateData);
-        continue;
+          ssMaxPP: null,
+        });
+        if (!newLeaderboard) {
+          continue;
+        }
+        await this.addLeaderboardId(map.id, newLeaderboard.id);
       }
-      const newLeaderboard = await this.createLeaderboard({
-        id: -1,
-        savedTime: new Date(),
-        updatedTime: new Date(),
-        mapId: map.id,
-        difficulty: difficulty,
-        customDifficultyName: diff.customDifficultyName,
-        characteristic: characteristic,
-        blLeaderboardId:
-          diff.songId.toString() + diff.value.toString() + diff.mode.toString(),
-        blRankedStatus: diff.status.toString(),
-        blStarRating: diff.stars,
-        blTechRating: diff.techRating,
-        blAccRating: diff.accRating,
-        blPassRating: diff.passRating,
-        ssLeaderboardId: null,
-        ssRankedStatus: null,
-        ssStarRating: null,
-        asLeaderboardId: null,
-        asRankedStatus: null,
-        asCategoryId: null,
-        asCategoryCode: null,
-        asComplexity: null,
-        maxScore: diff.maxScore,
-        notes: diff.notes,
-        bombs: diff.bombs,
-        obstacles: diff.walls,
-        events: null,
-        njs: diff.njs,
-        offset: diff.noteJumpStartBeatOffset,
-        nps: diff.nps,
-        ssMaxPP: null,
-      });
-      if (!newLeaderboard) {
-        continue;
-      }
-      await this.addLeaderboardId(map.id, newLeaderboard.id);
     }
   }
 
