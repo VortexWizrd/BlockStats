@@ -271,7 +271,7 @@ export class MapService {
       return undefined;
     }
     const beatSaverMap = await beatsaverApiService.getMapFromHash(
-      leaderboard.hash,
+      leaderboard.song.hash,
     );
     if (!beatSaverMap) {
       console.warn(
