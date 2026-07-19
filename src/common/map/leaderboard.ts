@@ -2,6 +2,14 @@ import type { LeaderboardRow } from "../../db/schema.js";
 
 export type DifficultyType = "Expert+" | "Expert" | "Hard" | "Normal" | "Easy";
 
+export enum DifficultyColor {
+  "Expert+" = 0x8f48db,
+  "Expert" = 0xbf2a42,
+  "Hard" = 0xff6347,
+  "Normal" = 0x59b0f4,
+  "Easy" = 0x3cb371,
+}
+
 export default class Leaderboard implements LeaderboardRow {
   id!: number;
   savedTime!: Date;

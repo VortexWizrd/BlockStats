@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { MapService } from "../../../service/map.service.js";
 import Map from "../../../common/map/map.js";
+import { DifficultyColor } from "../../../common/map/leaderboard.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -74,8 +75,74 @@ export default {
                         ? `https://beatsaver.com/maps/${map.beatSaverId}`
                         : null,
                     )
-                    .setColor("Blue")
+                    .setColor(DifficultyColor[leaderboard.difficulty])
                     .setThumbnail(map.songCover)
+                    .addFields(
+                      {
+                        name: "Notes",
+                        value: leaderboard.notes
+                          ? leaderboard.notes.toString()
+                          : "Not stored",
+                        inline: true,
+                      },
+                      {
+                        name: "Bombs",
+                        value: leaderboard.bombs
+                          ? leaderboard.bombs.toString()
+                          : "Not stored",
+                        inline: true,
+                      },
+                      {
+                        name: "Walls",
+                        value: leaderboard.obstacles
+                          ? leaderboard.obstacles.toString()
+                          : "Not stored",
+                        inline: true,
+                      },
+                      {
+                        name: "NJS",
+                        value: leaderboard.njs
+                          ? leaderboard.njs.toString()
+                          : "Not stored",
+                        inline: true,
+                      },
+                      {
+                        name: "NPS",
+                        value: leaderboard.nps
+                          ? leaderboard.nps.toString()
+                          : "Not stored",
+                        inline: true,
+                      },
+                      {
+                        name: "BeatLeader",
+                        value:
+                          leaderboard.blRankedStatus == "5" &&
+                          leaderboard.blStarRating
+                            ? leaderboard.blStarRating.toString() + "★"
+                            : "unranked",
+                        inline: true,
+                      },
+                      {
+                        name: "ScoreSaber",
+                        value:
+                          leaderboard.ssRankedStatus == "RANKED" &&
+                          leaderboard.ssStarRating
+                            ? leaderboard.ssStarRating.toString() + "★"
+                            : leaderboard.ssRankedStatus
+                              ? leaderboard.ssRankedStatus.toLowerCase()
+                              : "unranked",
+                        inline: true,
+                      },
+                      {
+                        name: "AccSaber",
+                        value:
+                          leaderboard.asComplexity && leaderboard.asCategoryCode
+                            ? leaderboard.asComplexity.toString() +
+                              ` (${leaderboard.asCategoryCode})`
+                            : "unranked",
+                        inline: true,
+                      },
+                    )
                     .setFooter({
                       text: `ID: ${leaderboard.id} • Map ID: ${map.id}`,
                     })
