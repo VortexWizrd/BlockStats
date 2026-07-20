@@ -10,8 +10,8 @@ export class RankFeedService {
   ): Promise<RankFeed | undefined> {
     try {
       const existingRow =
-        (await ScoreFeedsRepository.findByUserId(rankFeed.userId ?? "0")) ??
-        (await ScoreFeedsRepository.findByUserId(rankFeed.channelId ?? "0"));
+        (await RankFeedsRepository.findByUserId(rankFeed.userId ?? "0")) ??
+        (await RankFeedsRepository.findByUserId(rankFeed.channelId ?? "0"));
       if (existingRow) {
         return;
       }
