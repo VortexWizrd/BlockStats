@@ -87,9 +87,10 @@ export default class Score implements ScoreRow {
       songHash: blScore.leaderboard.song.hash,
       improvement: null,
       songDifficulty:
-        blScore.leaderboard.difficulty.difficultyName === "ExpertPlus"
+        leaderboard?.difficulty ??
+        (blScore.leaderboard.difficulty.difficultyName === "ExpertPlus"
           ? "Expert+"
-          : blScore.leaderboard.difficulty.difficultyName,
+          : blScore.leaderboard.difficulty.difficultyName),
       songCharacteristic: blScore.leaderboard.difficulty.modeName,
       score: blScore.baseScore ?? 0,
       accuracy: blScore.accuracy,
@@ -165,9 +166,8 @@ export default class Score implements ScoreRow {
       songCover: ssScore.leaderboard.coverImage,
       songHash: ssScore.leaderboard.songHash.toLowerCase(),
       songDifficulty:
-        (leaderboard?.difficulty ?? difficulty === "ExpertPlus")
-          ? "Expert+"
-          : difficulty,
+        leaderboard?.difficulty ??
+        (difficulty === "ExpertPlus" ? "Expert+" : difficulty),
       songCharacteristic: ssScore.leaderboard.difficulty.gameMode.replace(
         "Solo",
         "",
