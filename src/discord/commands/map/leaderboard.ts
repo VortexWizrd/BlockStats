@@ -1,4 +1,7 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
@@ -63,91 +66,115 @@ export default {
                   "You must be a in a text channel to run this command!",
                 );
               }
-              interaction.channel.send({
-                embeds: [
-                  new EmbedBuilder()
-                    .setTitle(
-                      `${map.songAuthor ? map.songAuthor + " - " : ""}${map.songName} ${map.songSubName ? map.songSubName + " " : ""}[${leaderboard.characteristic} ${leaderboard.difficulty}]`,
-                    )
-                    .setDescription(description)
+              const embed = new EmbedBuilder()
+                .setTitle(
+                  `${map.songAuthor ? map.songAuthor + " - " : ""}${map.songName} ${map.songSubName ? map.songSubName + " " : ""}[${leaderboard.characteristic} ${leaderboard.difficulty}]`,
+                )
+                .setDescription(description)
+                .setURL(
+                  map.beatSaverId
+                    ? `https://beatsaver.com/maps/${map.beatSaverId}`
+                    : null,
+                )
+                .setColor(DifficultyColor[leaderboard.difficulty])
+                .setThumbnail(map.songCover)
+                .addFields(
+                  {
+                    name: "Notes",
+                    value: leaderboard.notes
+                      ? leaderboard.notes.toString()
+                      : "Not stored",
+                    inline: true,
+                  },
+                  {
+                    name: "Bombs",
+                    value: leaderboard.bombs
+                      ? leaderboard.bombs.toString()
+                      : "Not stored",
+                    inline: true,
+                  },
+                  {
+                    name: "Walls",
+                    value: leaderboard.obstacles
+                      ? leaderboard.obstacles.toString()
+                      : "Not stored",
+                    inline: true,
+                  },
+                  {
+                    name: "NJS",
+                    value: leaderboard.njs
+                      ? leaderboard.njs.toString()
+                      : "Not stored",
+                    inline: true,
+                  },
+                  {
+                    name: "NPS",
+                    value: leaderboard.nps
+                      ? leaderboard.nps.toString()
+                      : "Not stored",
+                    inline: true,
+                  },
+                  {
+                    name: "BeatLeader",
+                    value:
+                      leaderboard.blRankedStatus == "5" &&
+                      leaderboard.blStarRating
+                        ? leaderboard.blStarRating.toString() + "★"
+                        : "unranked",
+                    inline: true,
+                  },
+                  {
+                    name: "ScoreSaber",
+                    value:
+                      leaderboard.ssRankedStatus == "RANKED" &&
+                      leaderboard.ssStarRating
+                        ? leaderboard.ssStarRating.toString() + "★"
+                        : leaderboard.ssRankedStatus
+                          ? leaderboard.ssRankedStatus.toLowerCase()
+                          : "unranked",
+                    inline: true,
+                  },
+                  {
+                    name: "AccSaber",
+                    value:
+                      leaderboard.asComplexity && leaderboard.asCategoryCode
+                        ? leaderboard.asComplexity.toString() +
+                          ` (${leaderboard.asCategoryCode})`
+                        : "unranked",
+                    inline: true,
+                  },
+                )
+                .setFooter({
+                  text: `ID: ${leaderboard.id} • Map ID: ${map.id}`,
+                })
+                .setTimestamp();
+
+              const buttons = new ActionRowBuilder<ButtonBuilder>();
+              if (leaderboard.blLeaderboardId) {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setLabel("BeatLeader")
                     .setURL(
-                      map.beatSaverId
-                        ? `https://beatsaver.com/maps/${map.beatSaverId}`
-                        : null,
+                      `https://beatleader.com/leaderboard/global/${leaderboard.blLeaderboardId}`,
                     )
-                    .setColor(DifficultyColor[leaderboard.difficulty])
-                    .setThumbnail(map.songCover)
-                    .addFields(
-                      {
-                        name: "Notes",
-                        value: leaderboard.notes
-                          ? leaderboard.notes.toString()
-                          : "Not stored",
-                        inline: true,
-                      },
-                      {
-                        name: "Bombs",
-                        value: leaderboard.bombs
-                          ? leaderboard.bombs.toString()
-                          : "Not stored",
-                        inline: true,
-                      },
-                      {
-                        name: "Walls",
-                        value: leaderboard.obstacles
-                          ? leaderboard.obstacles.toString()
-                          : "Not stored",
-                        inline: true,
-                      },
-                      {
-                        name: "NJS",
-                        value: leaderboard.njs
-                          ? leaderboard.njs.toString()
-                          : "Not stored",
-                        inline: true,
-                      },
-                      {
-                        name: "NPS",
-                        value: leaderboard.nps
-                          ? leaderboard.nps.toString()
-                          : "Not stored",
-                        inline: true,
-                      },
-                      {
-                        name: "BeatLeader",
-                        value:
-                          leaderboard.blRankedStatus == "5" &&
-                          leaderboard.blStarRating
-                            ? leaderboard.blStarRating.toString() + "★"
-                            : "unranked",
-                        inline: true,
-                      },
-                      {
-                        name: "ScoreSaber",
-                        value:
-                          leaderboard.ssRankedStatus == "RANKED" &&
-                          leaderboard.ssStarRating
-                            ? leaderboard.ssStarRating.toString() + "★"
-                            : leaderboard.ssRankedStatus
-                              ? leaderboard.ssRankedStatus.toLowerCase()
-                              : "unranked",
-                        inline: true,
-                      },
-                      {
-                        name: "AccSaber",
-                        value:
-                          leaderboard.asComplexity && leaderboard.asCategoryCode
-                            ? leaderboard.asComplexity.toString() +
-                              ` (${leaderboard.asCategoryCode})`
-                            : "unranked",
-                        inline: true,
-                      },
+                    .setEmoji("1492695343345832102")
+                    .setStyle(ButtonStyle.Link),
+                );
+              }
+              if (leaderboard.asLeaderboardId) {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setLabel("AccSaber")
+                    .setURL(
+                      `https://accsaber.com/maps/${map.beatSaverId}?difficulty=${leaderboard.difficulty == "Expert+" ? "expert-plus" : leaderboard.difficulty.toLowerCase()}`,
                     )
-                    .setFooter({
-                      text: `ID: ${leaderboard.id} • Map ID: ${map.id}`,
-                    })
-                    .setTimestamp(),
-                ],
+                    .setEmoji("1511190711431593994")
+                    .setStyle(ButtonStyle.Link),
+                );
+              }
+              interaction.channel.send({
+                embeds: [embed],
+                components: [buttons],
               });
             } catch (err) {
               console.error(
