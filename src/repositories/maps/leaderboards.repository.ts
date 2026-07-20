@@ -1,6 +1,10 @@
 import { db } from "../../db/index.js";
 import { ilike, and, eq } from "drizzle-orm";
-import { leaderboardsTable, difficultyEnum } from "../../db/schema.js";
+import {
+  leaderboardsTable,
+  difficultyEnum,
+  mapsTable,
+} from "../../db/schema.js";
 import { Repository } from "../baserepository.js";
 import type { DifficultyType } from "../../common/map/leaderboard.js";
 

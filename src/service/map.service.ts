@@ -622,4 +622,6 @@ export class MapService {
       }
     }
   }
+
+  public static async fixDifficulties() {}
 }
