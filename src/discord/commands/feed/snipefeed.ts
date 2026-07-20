@@ -226,7 +226,7 @@ export default {
       }
 
       case "link": {
-        const existingFeed = interaction.channel?.isDMBased()
+        const existingFeed = !interaction.guild
           ? await SnipeFeedsRepository.findOne([
               {
                 name: "userId",
@@ -347,7 +347,7 @@ export default {
       }
 
       case "unlink": {
-        const existingFeed = interaction.channel?.isDMBased()
+        const existingFeed = !interaction.guild
           ? await SnipeFeedsRepository.findOne([
               {
                 name: "userId",
@@ -469,7 +469,7 @@ export default {
       }
 
       case "info": {
-        const existingFeed = interaction.channel?.isDMBased()
+        const existingFeed = !interaction.guild
           ? await SnipeFeedsRepository.findOne([
               {
                 name: "userId",
