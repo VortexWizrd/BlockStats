@@ -17,6 +17,7 @@ export default {
   },
   async execute(interaction: ButtonInteraction) {
     if (!interaction.isButton()) return;
+    if (!["score-like", "score-dislike"].includes(interaction.customId)) return;
 
     const player = await PlayerService.getPlayer(interaction.user.id);
     if (!player) {

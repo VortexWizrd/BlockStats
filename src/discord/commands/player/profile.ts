@@ -1,5 +1,9 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
+  ComponentType,
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
@@ -136,16 +140,71 @@ export default {
       }
 
       case "unlink": {
+        const player = await PlayerService.getPlayer(interaction.user.id);
+        if (!player)
+          return await interaction.reply({
+            content: `Your profile does not exist!`,
+            flags: MessageFlags.Ephemeral,
+          });
+
+        const confirmButton = new ButtonBuilder()
+          .setCustomId("unlink_confirm")
+          .setLabel("Yes")
+          .setStyle(ButtonStyle.Danger);
+
+        const cancelButton = new ButtonBuilder()
+          .setCustomId("unlink_cancel")
+          .setLabel("Cancel")
+          .setStyle(ButtonStyle.Secondary);
+
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          confirmButton,
+          cancelButton,
+        );
+
+        const response = await interaction.reply({
+          content: `**WARNING**: Your BlockStats user **${player.name}** with **${await ScoreService.countPlayerScores(player.id, false)} lifetime scores** will be deleted. Are you sure you want to continue?`,
+          components: [row],
+          flags: MessageFlags.Ephemeral,
+        });
+
         try {
-          await db
-            .delete(playersTable)
-            .where(eq(playersTable.id, interaction.user.id));
-          return await interaction.reply("Successfully deleted profile");
+          const input = await response.awaitMessageComponent({
+            filter: (i) => i.user.id === interaction.user.id,
+            componentType: ComponentType.Button,
+            time: 15000,
+          });
+
+          if (input.customId === "unlink_confirm") {
+            await input.update({
+              content: "Deleting profile...",
+              components: [],
+            });
+
+            try {
+              await db
+                .delete(playersTable)
+                .where(eq(playersTable.id, interaction.user.id));
+              return await interaction.editReply({
+                content: "Successfully deleted profile",
+                components: [],
+              });
+            } catch (err) {
+              console.error(
+                "[ERROR]: Discord: Profile: Error deleting BlockStats profile: ",
+                err,
+              );
+              return await interaction.editReply({
+                content: "Failed to delete profile",
+                components: [],
+              });
+            }
+          }
         } catch (err) {
-          console.error(
-            "[ERROR]: Discord: Profile: Error deleting BlockStats profile: ",
-            err,
-          );
+          await interaction.editReply({
+            content: "Timed out",
+            components: [],
+          });
         }
       }
 
