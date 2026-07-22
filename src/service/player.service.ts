@@ -86,34 +86,34 @@ export class PlayerService {
         updatedTime: new Date(),
       };
 
-      await PlayersRepository.insert(playerInsert).then(async () => {
-        if (playerInsert.blRank) {
-          await PlayerRankHistoriesRepository.insert({
-            player: playerInsert.id,
-            provider: "BeatLeader",
-            timestamp: new Date(),
-            rank: playerInsert.blRank,
-          });
-        }
-        if (playerInsert.ssRank) {
-          await PlayerRankHistoriesRepository.insert({
-            player: playerInsert.id,
-            provider: "ScoreSaber",
-            timestamp: new Date(),
-            rank: playerInsert.ssRank,
-          });
-        }
-        if (playerInsert.asRank) {
-          await PlayerRankHistoriesRepository.insert({
-            player: playerInsert.id,
-            provider: "AccSaber",
-            timestamp: new Date(),
-            rank: playerInsert.asRank,
-          });
-        }
+      const newPlayer = await PlayersRepository.insert(playerInsert);
+      if (!newPlayer) return undefined;
+      if (newPlayer.blRank) {
+        await PlayerRankHistoriesRepository.insert({
+          player: newPlayer.id,
+          provider: "BeatLeader",
+          timestamp: new Date(),
+          rank: playerInsert.blRank,
+        });
+      }
+      if (newPlayer.ssRank) {
+        await PlayerRankHistoriesRepository.insert({
+          player: newPlayer.id,
+          provider: "ScoreSaber",
+          timestamp: new Date(),
+          rank: playerInsert.ssRank,
+        });
+      }
+      if (newPlayer.asRank) {
+        await PlayerRankHistoriesRepository.insert({
+          player: newPlayer.id,
+          provider: "AccSaber",
+          timestamp: new Date(),
+          rank: playerInsert.asRank,
+        });
+      }
 
-        return playerInsert as Player;
-      });
+      return playerInsert as Player;
     } catch (err) {
       console.log("Error creating player: ", err);
     }
