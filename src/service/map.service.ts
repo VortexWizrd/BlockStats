@@ -26,7 +26,7 @@ export class MapService {
       );
       return mapInsert as Map;
     } catch (err) {
-      console.log("Error creating map: ", err);
+      console.error("[ERROR] MapService: Failed to create map: ", err);
       return undefined;
     }
   }
@@ -55,7 +55,7 @@ export class MapService {
       );
       return leaderboardInsert as Leaderboard;
     } catch (err) {
-      console.log("Error creating map: ", err);
+      console.error("[ERROR] MapService: Failed to create leaderboard: ", err);
       return undefined;
     }
   }

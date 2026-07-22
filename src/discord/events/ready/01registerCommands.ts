@@ -30,7 +30,7 @@ export default {
     (async () => {
       try {
         console.log(
-          `Started refreshing ${commands.length} application (/) commands.`,
+          `[LOG]: Discord: Started refreshing ${commands.length} application (/) commands.`,
         );
 
         const clientId = String(process.env.DISCORD_ID);
@@ -41,10 +41,12 @@ export default {
 
         if (data instanceof Array) {
           console.log(
-            `Successfully reloaded ${data.length} application (/) commands.`,
+            `[LOG]: Discord: Successfully reloaded ${data.length} application (/) commands.`,
           );
         } else {
-          console.log(`Successfully reloaded application (/) commands.`);
+          console.log(
+            `[LOG]: Discord: Successfully reloaded application (/) commands.`,
+          );
         }
       } catch (error) {
         console.error(error);

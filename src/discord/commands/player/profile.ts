@@ -122,7 +122,10 @@ export default {
             .where(eq(playersTable.id, interaction.user.id));
           return await interaction.reply("Successfully deleted profile");
         } catch (err) {
-          console.log("Error deleting BlockStats profile: ", err);
+          console.error(
+            "[ERROR]: Discord: Profile: Error deleting BlockStats profile: ",
+            err,
+          );
         }
       }
 

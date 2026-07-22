@@ -52,12 +52,10 @@ export default {
           return await interaction.editReply("Not implemented");
         }
 
-        console.log(maps);
         for (const map of maps) {
           for (const leaderboard of (await MapService.getLeaderboardsFromMap(
             map.id,
           )) ?? []) {
-            console.log(leaderboard);
             let description =
               "" + map.mapAuthor ? `**Mapped by ${map.mapAuthor}**\n\n` : "";
             try {

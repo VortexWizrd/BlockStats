@@ -29,7 +29,7 @@ export class ScoreService {
       );
       return scoreInsert as Score;
     } catch (err) {
-      console.log("Error creating score: ", err);
+      console.error("[ERROR] ScoreService: Failed to create score: ", err);
       return undefined;
     }
   }

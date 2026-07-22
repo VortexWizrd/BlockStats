@@ -115,7 +115,7 @@ export class PlayerService {
 
       return playerInsert as Player;
     } catch (err) {
-      console.log("Error creating player: ", err);
+      console.error("[ERROR] PlayerService: Failed to create player: ", err);
     }
   }
 
@@ -129,7 +129,7 @@ export class PlayerService {
       }
       return existingRow as Player;
     } catch (err) {
-      console.log("Error getting player: ", err);
+      console.error("[ERROR] PlayerService: Failed to get player: ", err);
     }
   }
 
@@ -186,11 +186,9 @@ export class PlayerService {
           null,
       };
 
-      console.log(data);
-
       await PlayersRepository.update(id, data);
     } catch (err) {
-      console.log("Error updating player: ", err);
+      console.error("[ERROR] PlayerService: Failed to update player: ", err);
     }
   }
 
@@ -228,7 +226,10 @@ export class PlayerService {
       }
       return steam as Player;
     } catch (err) {
-      console.log("Error getting player from BeatLeader ID: ", err);
+      console.error(
+        "[ERROR] PlayerService: Failed to get player from BeatLeader ID: ",
+        err,
+      );
     }
   }
 
@@ -239,7 +240,10 @@ export class PlayerService {
       const player = await PlayersRepository.findByScoreSaberId(scoreSaberId);
       return player as Player;
     } catch (err) {
-      console.log("Error getting player from BeatLeader ID: ", err);
+      console.error(
+        "[ERROR] PlayerService: Failed to get player from BeatLeader ID: ",
+        err,
+      );
     }
   }
 
@@ -247,7 +251,7 @@ export class PlayerService {
     try {
       return (await PlayersRepository.getAll()) as Player[];
     } catch (err) {
-      console.log("Error getting all players: ", err);
+      console.error("[ERROR] PlayerService: Failed to get all players: ", err);
       return [];
     }
   }

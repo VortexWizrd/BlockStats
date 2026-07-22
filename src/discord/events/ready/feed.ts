@@ -83,12 +83,12 @@ export default {
               }
             }
           }
-        } catch (err) {
-          console.log(
-            "[Discord]: Feed: Score feed with id " +
+        } catch (err: any) {
+          console.warn(
+            "[WARN]: Discord: Feed: Score feed with id " +
               feed.id +
               " failed to send message: ",
-            err,
+            err?.message ?? err,
           );
         }
       }
@@ -125,12 +125,12 @@ export default {
               channel.send({ embeds: [embed] });
             }
           }
-        } catch (err) {
-          console.log(
-            "[Discord]: Feed: Rank feed with id " +
+        } catch (err: any) {
+          console.warn(
+            "[WARN]: Discord:: Score feed with id " +
               feed.id +
               " failed to send message: ",
-            err,
+            err?.message ?? err,
           );
         }
       }
@@ -173,12 +173,12 @@ export default {
               const message = await channel.send(messageData);
             }
           }
-        } catch (err) {
-          console.log(
-            "[Discord]: Feed: Snipe feed with id " +
+        } catch (err: any) {
+          console.warn(
+            "[WARN]: Discord: Score feed with id " +
               feed.id +
               " failed to send message: ",
-            err,
+            err?.message ?? err,
           );
         }
       }
