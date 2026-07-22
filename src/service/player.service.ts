@@ -57,8 +57,9 @@ export class PlayerService {
           (await hitbloqApiService.getUserFromScoreSaber(scoreSaberData?.id)) ??
           null,
 
-        blRank: beatLeaderData.rank,
-        ssRank: scoreSaberData.stats?.rank,
+        blRank: beatLeaderData.rank > 0 ? beatLeaderData.rank : null,
+        ssRank:
+          scoreSaberData.stats?.rank > 0 ? scoreSaberData.stats.rank : null,
         asRank: null,
         overallRank: null,
 
@@ -113,7 +114,7 @@ export class PlayerService {
         });
       }
 
-      return playerInsert as Player;
+      return newPlayer as Player;
     } catch (err) {
       console.error("[ERROR] PlayerService: Failed to create player: ", err);
     }

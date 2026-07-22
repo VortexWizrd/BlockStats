@@ -125,7 +125,14 @@ export default {
         const player = await PlayersRepository.findById(interaction.user.id);
 
         if (!player) {
-          await PlayerService.createPlayer(interaction.user.id);
+          try {
+            await PlayerService.createPlayer(interaction.user.id);
+          } catch (err) {
+            return await interaction.reply({
+              content: "Failed to create profile",
+              flags: MessageFlags.Ephemeral,
+            });
+          }
 
           return await interaction.reply({
             content: "Profile created successfully!",
