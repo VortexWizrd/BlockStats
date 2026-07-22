@@ -90,7 +90,7 @@ export class PlayerService {
       if (!newPlayer) return undefined;
       if (newPlayer.blRank) {
         await PlayerRankHistoriesRepository.insert({
-          player: newPlayer.id,
+          playerId: newPlayer.id,
           provider: "BeatLeader",
           timestamp: new Date(),
           rank: playerInsert.blRank,
@@ -98,7 +98,7 @@ export class PlayerService {
       }
       if (newPlayer.ssRank) {
         await PlayerRankHistoriesRepository.insert({
-          player: newPlayer.id,
+          playerId: newPlayer.id,
           provider: "ScoreSaber",
           timestamp: new Date(),
           rank: playerInsert.ssRank,
@@ -106,7 +106,7 @@ export class PlayerService {
       }
       if (newPlayer.asRank) {
         await PlayerRankHistoriesRepository.insert({
-          player: newPlayer.id,
+          playerId: newPlayer.id,
           provider: "AccSaber",
           timestamp: new Date(),
           rank: playerInsert.asRank,
