@@ -85,7 +85,10 @@ export default {
           }
         } catch (err) {
           console.log(
-            "[Feed]: feed with id " + feed.id + " no longer exists on Discord",
+            "[Discord]: Feed: Score feed with id " +
+              feed.id +
+              " failed to send message: ",
+            err,
           );
         }
       }
@@ -109,17 +112,26 @@ export default {
       }
 
       for (const feed of feeds) {
-        if (feed.channelType === "user") {
-          const user = await client.users.fetch(feed.userId || "");
+        try {
+          if (feed.channelType === "user") {
+            const user = await client.users.fetch(feed.userId || "");
 
-          if (user) {
-            await user.send({ embeds: [embed] });
+            if (user) {
+              await user.send({ embeds: [embed] });
+            }
+          } else if (feed.channelType === "guild") {
+            const channel = await client.channels.fetch(feed.channelId ?? "");
+            if (channel && channel instanceof TextChannel) {
+              channel.send({ embeds: [embed] });
+            }
           }
-        } else if (feed.channelType === "guild") {
-          const channel = await client.channels.fetch(feed.channelId ?? "");
-          if (channel && channel instanceof TextChannel) {
-            channel.send({ embeds: [embed] });
-          }
+        } catch (err) {
+          console.log(
+            "[Discord]: Feed: Rank feed with id " +
+              feed.id +
+              " failed to send message: ",
+            err,
+          );
         }
       }
     });
@@ -163,7 +175,10 @@ export default {
           }
         } catch (err) {
           console.log(
-            "[Feed]: feed with id " + feed.id + " no longer exists on Discord",
+            "[Discord]: Feed: Snipe feed with id " +
+              feed.id +
+              " failed to send message: ",
+            err,
           );
         }
       }
