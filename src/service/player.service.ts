@@ -341,4 +341,10 @@ export class PlayerService {
   ): Promise<Player[]> {
     return (await PlayersRepository.getTopSS(limit, offset)) as Player[];
   }
+
+  public static async setPlayerAccentColor(id: string, color: string) {
+    await PlayersRepository.update(id, {
+      accentColor: color,
+    });
+  }
 }

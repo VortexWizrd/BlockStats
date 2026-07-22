@@ -3,6 +3,7 @@ import {
   EmbedBuilder,
   MessageFlags,
   SlashCommandBuilder,
+  type ColorResolvable,
 } from "discord.js";
 import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
 import { db } from "../../../db/index.js";
@@ -42,6 +43,14 @@ export default {
             .setName("user")
             .setDescription("The user to view")
             .setRequired(false),
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("debuginfo")
+            .setDescription(
+              "Show additional information mainly used for debugging",
+            )
+            .setRequired(false),
         ),
     )
     .addSubcommand((cmd) =>
@@ -79,6 +88,17 @@ export default {
           option
             .setName("page")
             .setDescription("Page number")
+            .setRequired(true),
+        ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("color")
+        .setDescription("Change your profile's accent color")
+        .addStringOption((option) =>
+          option
+            .setName("hex")
+            .setDescription("Hex color value (format example: #3498DB)")
             .setRequired(true),
         ),
     ),
@@ -149,9 +169,17 @@ export default {
 
         let linkedIdsString = "";
         for (const linkedId of linkedIds) {
-          if (linkedId == null)
-            if (linkedIdsString != "") linkedIdsString += "\n";
+          if (linkedId == null) continue;
+          if (linkedIdsString != "") linkedIdsString += "\n";
           linkedIdsString += linkedId;
+        }
+
+        let color: ColorResolvable = parseInt(
+          player.accentColor?.slice(1) ?? "",
+          16,
+        );
+        if (!color || Number.isNaN(color)) {
+          color = "Blue";
         }
 
         const linkText = `[[ <:beatleader:1492695343345832102> BeatLeader ](https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId}) | [ <:discord:1492695870343221323> Discord ](https://discord.com/users/${player.id})${player.scoreSaberId ? ` | [ <:scoresaber:1492695389634035823> ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
@@ -162,28 +190,34 @@ export default {
           .setDescription(
             `${linkText}\n# ${player.ssRank ? `<:scoresaber:1492695389634035823> #${player.ssRank} • ` : ""}${player.blRank ? `<:beatleader:1492695343345832102> #${player.blRank}` : ""}`,
           )
-          .setColor("Blue")
+          .setColor(color)
           .addFields(
             {
-              name: "Scores",
+              name: "Current Scores",
               value: (
                 (await ScoreService.countPlayerScores(player.id, true)) ?? 0
               ).toString(),
               inline: true,
             },
             {
-              name: "Total Scores",
+              name: "Lifetime Scores",
               value: (
                 (await ScoreService.countPlayerScores(player.id, false)) ?? 0
               ).toString(),
               inline: true,
             },
-            {
-              name: "Linked IDs",
-              value: linkedIdsString,
-              inline: true,
-            },
-          );
+          )
+          .setFooter({
+            text: `ID: ${player.id}`,
+          })
+          .setTimestamp();
+        if (interaction.options.getBoolean("debuginfo")) {
+          embed.addFields({
+            name: "Linked IDs",
+            value: linkedIdsString,
+            inline: true,
+          });
+        }
 
         return interaction.editReply({
           embeds: [embed],
@@ -302,6 +336,37 @@ export default {
           return interaction.reply({ embeds: [embed] });
         }
         break;
+
+      case "color": {
+        const color = interaction.options.getString("hex");
+        if (!color || !/^#[0-9A-Fa-f]{6}$/.test(color)) {
+          return interaction.reply({
+            content: "Invalid color format",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+        const colorValue = parseInt(color.slice(1), 16);
+        if (Number.isNaN(color)) {
+          return interaction.reply({
+            content: "Invalid color format",
+            flags: MessageFlags.Ephemeral,
+          });
+        }
+
+        const player = await PlayerService.getPlayer(interaction.user.id);
+        if (!player)
+          return interaction.reply({
+            content:
+              "You must link your profile using **/profile link** before running this command!",
+            flags: MessageFlags.Ephemeral,
+          });
+
+        await PlayerService.setPlayerAccentColor(player.id, color);
+        return interaction.reply({
+          content: "Accent color updated successfully!",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
     }
   },
 };
