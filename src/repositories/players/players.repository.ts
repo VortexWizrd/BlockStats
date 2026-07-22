@@ -91,6 +91,50 @@ export class PlayersRepository extends Repository {
     return player;
   }
 
+  public static async updateASRank(
+    id: string,
+    rank: number,
+    type: "Tech Acc" | "True Acc" | "Standard Acc" | "Overall",
+  ): Promise<typeof this.row | undefined> {
+    switch (type) {
+      case "Tech Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asTechRank: rank })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "True Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asTrueRank: rank })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "Standard Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asStandardRank: rank })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "Overall": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asRank: rank })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+    }
+  }
+
   public static async getTopBL(
     limit: number,
     offset: number,

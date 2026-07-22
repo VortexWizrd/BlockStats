@@ -18,6 +18,11 @@ export default class RankDisplay {
         return `https://beatleader.com/assets/logo-small.png`;
       case "ScoreSaber":
         return `https://bsaber.com/uploads/communities/scoresaber-logo-reuben-afriendlypug-.png`;
+      case "AccSaber":
+      case "AccSaber (Tech Acc)":
+      case "AccSaber (True Acc)":
+      case "AccSaber (Standard Acc)":
+        return `https://accsaber.com/assets/logo-DduqGXE6.png`;
       default:
         return `https://tiermaker.com/images/template_images/2022/15746443/youtube-emotes-15746443/face-orange-biting-nails.png`;
     }
@@ -58,7 +63,6 @@ export default class RankDisplay {
     const rankDifference = this.rankDifference(data.oldRank, data.newRank);
 
     const leaderboardIcon = this.leaderboardIcon(data.leaderboard);
-    //const leaderboardColor = this.leaderboardColor(data.leaderboard);
     const embed = new EmbedBuilder()
       .setAuthor({
         name: data.playerName,

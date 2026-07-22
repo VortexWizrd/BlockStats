@@ -3,6 +3,7 @@ import Player from "../common/player.js";
 import type { PlayerRow } from "../db/schema.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
+import accsaberApiService from "./external/accsaber-api.service.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import hitbloqApiService from "./external/hitbloq-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
@@ -326,6 +327,87 @@ export class PlayerService {
         )) as Player;
       }
     }
+    return undefined;
+  }
+
+  public static async updateASRank(
+    player: Player,
+  ): Promise<Player | undefined> {
+    const asUser = await accsaberApiService.getPlayer(
+      player.accSaberId ?? "-1",
+    );
+    if (!asUser) return;
+    for (const stat of asUser.statistics) {
+      const categoryName = accsaberApiService.getCategoryNameFromId(
+        stat.categoryId,
+      );
+      switch (categoryName) {
+        case "Tech Acc":
+          if (!player.asTechRank || player.asTechRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ranking,
+            });
+            (await PlayersRepository.updateASRank(
+              player.id,
+              stat.ranking,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "Standard Acc":
+          if (!player.asStandardRank || player.asStandardRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ranking,
+            });
+            (await PlayersRepository.updateASRank(
+              player.id,
+              stat.ranking,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "True Acc":
+          if (!player.asTrueRank || player.asTrueRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ranking,
+            });
+            (await PlayersRepository.updateASRank(
+              player.id,
+              stat.ranking,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "Overall":
+          if (!player.asRank || player.asRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber`,
+              timestamp: new Date(),
+              rank: stat.ranking,
+            });
+            (await PlayersRepository.updateASRank(
+              player.id,
+              stat.ranking,
+              categoryName,
+            )) as Player;
+          }
+          break;
+      }
+    }
+
     return undefined;
   }
 

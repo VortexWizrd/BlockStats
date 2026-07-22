@@ -6,6 +6,8 @@ import { PlayerService } from "../player.service.js";
 import { ScoreService } from "../score.service.js";
 import { PlayerRankHistoriesRepository } from "../../repositories/players/playerrankhistories.repository.js";
 import { MapService } from "../map.service.js";
+import WebSocketScoreEvent from "./events/score.js";
+import WebSocketRankEvent from "./events/rank.js";
 
 class WebSocketServerService {
   private server = new WebSocketServer({
@@ -13,10 +15,8 @@ class WebSocketServerService {
   });
 
   private ws: WebSocket | undefined;
-  private scoreStorage: Score[] = [];
 
-  private blRankedSubmissions = 0;
-  private ssRankedSubmissions = 0;
+  private asRankedSubmissions = 0;
 
   constructor() {
     this.server.on("connection", (ws) => {
@@ -35,128 +35,26 @@ class WebSocketServerService {
       });
 
       beatleaderApiService.addListener("score", async (data) => {
+        WebSocketRankEvent.processBLRank();
         try {
-          // Rank feed
-          // update every 5 ranked submissions (may change if better alternative)
-          if (this.blRankedSubmissions >= 5) {
-            this.blRankedSubmissions = 0;
-            for (const player of await PlayerService.getAllPlayers()) {
-              const updatedPlayer = await PlayerService.updateBLRank(player);
-              if (!updatedPlayer) continue;
-              const latestRanks =
-                await PlayerRankHistoriesRepository.getLatestRows(
-                  player.id,
-                  "BeatLeader",
-                  2,
-                );
-              if (!latestRanks || latestRanks.length < 2) continue;
-              const rankUpdate = {
-                playerName: updatedPlayer.name,
-                playerAvatar: updatedPlayer.avatar,
-                playerId: updatedPlayer.id,
-                playerUrl: `https://beatleader.com/u/${updatedPlayer.alias ?? updatedPlayer.steamId ?? updatedPlayer.oculusId ?? updatedPlayer.questId ?? "undefined"}`,
-                leaderboard: "BeatLeader",
-                oldRank: latestRanks[1]?.rank ?? 0,
-                newRank: updatedPlayer.blRank,
-                timestamp: Date.now(),
-              };
-              this.sendRankUpdate(rankUpdate);
-            }
-          } else {
-            this.blRankedSubmissions++;
-          }
-
-          // Score feed
-          const blConvertedScore = await Score.fromBeatLeader(data);
-          if (this.scoreStorage.includes(blConvertedScore)) return;
-          for (const score of this.scoreStorage) {
-            if (
-              score.songHash == blConvertedScore.songHash &&
-              score.songDifficulty == blConvertedScore.songDifficulty &&
-              score.songCharacteristic == blConvertedScore.songCharacteristic &&
-              score.blScoreId == null &&
-              !score.provider.includes("BeatLeader") &&
-              Math.abs(score.accuracy - blConvertedScore.accuracy) < 0.0002
-            ) {
-              this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
-              score.blLeaderboardId = blConvertedScore.blLeaderboardId;
-              score.blRank = blConvertedScore.blRank;
-              score.blScoreId = blConvertedScore.blScoreId;
-              score.blStarRating = blConvertedScore.blStarRating;
-              score.ppBL = blConvertedScore.ppBL;
-              score.provider = ["ScoreSaber", "BeatLeader"];
-              this.sendScore(score);
-              return;
-            }
-          }
-          this.tempStoreScore(blConvertedScore);
+          WebSocketScoreEvent.processBLScore(data);
         } catch (err) {
           console.log(err);
         }
       });
 
       scoresaberApiService.addListener("score", async (data) => {
-        // Rank feed
-        // update every 5 ranked submissions (may change if better alternative)
-        if (this.ssRankedSubmissions >= 5) {
-          this.ssRankedSubmissions = 0;
-          for (const player of await PlayerService.getAllPlayers()) {
-            if (!player.scoreSaberId) continue;
-            const updatedPlayer = await PlayerService.updateSSRank(player);
-            if (!updatedPlayer) continue;
-            const latestRanks =
-              await PlayerRankHistoriesRepository.getLatestRows(
-                player.id,
-                "ScoreSaber",
-                2,
-              );
-            if (!latestRanks || latestRanks.length < 2) continue;
-            const rankUpdate = {
-              playerName: updatedPlayer.name,
-              playerAvatar: updatedPlayer.avatar,
-              playerId: updatedPlayer.id,
-              playerUrl: `https://scoresaber.com/u/${updatedPlayer.scoreSaberAlias ?? updatedPlayer.scoreSaberId ?? "undefined"}`,
-              leaderboard: "ScoreSaber",
-              oldRank: latestRanks[1]?.rank ?? 0,
-              newRank: updatedPlayer.ssRank,
-              timestamp: Date.now(),
-            };
-            this.sendRankUpdate(rankUpdate);
-          }
-        } else {
-          this.ssRankedSubmissions++;
-        }
+        WebSocketRankEvent.processSSRank();
 
         // Score feed
-        try {
-          const ssConvertedScore = await Score.fromScoreSaber(data);
-          if (this.scoreStorage.includes(ssConvertedScore)) return;
-          for (const score of this.scoreStorage) {
-            if (
-              score.songHash == ssConvertedScore.songHash &&
-              score.songDifficulty == ssConvertedScore.songDifficulty &&
-              score.songCharacteristic == ssConvertedScore.songCharacteristic &&
-              score.ssScoreId == null &&
-              !score.provider.includes("ScoreSaber") &&
-              Math.abs(score.accuracy - ssConvertedScore.accuracy) < 0.0002
-            ) {
-              this.scoreStorage = this.scoreStorage.filter((i) => i !== score);
-              score.ssLeaderboardId = ssConvertedScore.ssLeaderboardId;
-              score.ssRank = ssConvertedScore.ssRank;
-              score.ssScoreId = ssConvertedScore.ssScoreId;
-              score.ssStarRating = ssConvertedScore.ssStarRating;
-              score.ppSS = ssConvertedScore.ppSS;
-              score.provider = ["BeatLeader", "ScoreSaber"];
-              await this.sendScore(score);
-              return;
-            }
-          }
-          this.tempStoreScore(ssConvertedScore);
-        } catch (err) {
-          console.log(err);
-        }
+        WebSocketScoreEvent.processSSScore(data);
       });
     });
+  }
+
+  public async send(wrapper: { type: string; data: any }) {
+    if (this.ws === undefined) throw new Error("WebSocket not initialized");
+    this.ws.send(JSON.stringify(wrapper));
   }
 
   public async sendScore(score: Score): Promise<void> {
@@ -216,17 +114,7 @@ class WebSocketServerService {
         }
       }
     }
-    if (this.ws === undefined) throw new Error("WebSocket not initialized");
-    this.ws.send(JSON.stringify(wrapper));
-  }
-
-  public sendRankUpdate(rankUpdate: any) {
-    const wrapper = {
-      type: "rank",
-      data: rankUpdate,
-    };
-    if (this.ws === undefined) throw new Error("WebSocket not initialized");
-    this.ws.send(JSON.stringify(wrapper));
+    this.send(wrapper);
   }
 
   public sendSnipe(snipeUpdate: any) {
@@ -236,19 +124,6 @@ class WebSocketServerService {
     };
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
     this.ws.send(JSON.stringify(wrapper));
-  }
-
-  private async tempStoreScore(score: Score) {
-    this.scoreStorage.push(score);
-
-    await new Promise((resolve) => setTimeout(resolve, 10000));
-
-    const index = this.scoreStorage.indexOf(score);
-    if (index !== -1) {
-      this.scoreStorage.splice(index, 1);
-
-      return this.sendScore(score);
-    }
   }
 }
 

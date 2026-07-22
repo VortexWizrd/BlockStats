@@ -54,6 +54,13 @@ class AccSaberAPI extends EventEmitter {
     if (complexity == 0) return 0;
     return APCalculator.getAP(complexity, acc);
   }
+  /** Fetch an AccSaber player using id
+   * @param id - Player ID
+   * @returns AccSaber player data, if found
+   */
+  public async getPlayer(id: string) {
+    return await this.fetch<any>(`v1/users/${id}?statistics=true`);
+  }
 
   /**
    * Convert AccSaber category ID to its category code
@@ -68,6 +75,21 @@ class AccSaberAPI extends EventEmitter {
         return "standard_acc";
       case "b0000000-0000-0000-0000-000000000003":
         return "tech_acc";
+      default:
+        return "";
+    }
+  }
+
+  public getCategoryNameFromId(id: string) {
+    switch (id) {
+      case "b0000000-0000-0000-0000-000000000001":
+        return "True Acc";
+      case "b0000000-0000-0000-0000-000000000002":
+        return "Standard Acc";
+      case "b0000000-0000-0000-0000-000000000003":
+        return "Tech Acc";
+      case "b0000000-0000-0000-0000-000000000005":
+        return "Overall";
       default:
         return "";
     }
