@@ -311,11 +311,13 @@ export default {
           }
         } else {
           const player =
-            (await PlayerService.getPlayer(discordId ?? "")) ??
-            (await PlayerService.getPlayerFromBeatLeader(beatLeaderId ?? "")) ??
-            (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
+            (await PlayerService.getPlayer(discordId ?? "-2")) ??
+            (await PlayerService.getPlayerFromBeatLeader(
+              beatLeaderId ?? "-2",
+            )) ??
+            (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? "-2"));
 
-          if (player) {
+          if (player && player.id) {
             ScoreFeedService.addPlayerId(existingFeed.id, player.id);
             return await interaction.reply({
               content: `Added BlockStats user **${player.name}** to the score feed!`,
@@ -337,11 +339,16 @@ export default {
               );
               if (ssProfile && ssProfile.id) {
                 ScoreFeedService.addPlayerId(existingFeed.id, ssProfile.id);
+                return await interaction.reply({
+                  content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the score feed!`,
+                  flags: MessageFlags.Ephemeral,
+                });
+              } else {
+                return await interaction.reply({
+                  content: `**Failed to add user.** If you are adding someone through their Discord user, make sure their Discord is linked in their BeatLeader, or use their BeatLeader ID instead. Otherwise, check if the ID has been entered correctly. `,
+                  flags: MessageFlags.Ephemeral,
+                });
               }
-              return await interaction.reply({
-                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the score feed!`,
-                flags: MessageFlags.Ephemeral,
-              });
             }
           }
         }
