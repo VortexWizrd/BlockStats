@@ -15,6 +15,7 @@ import { ScoreService } from "../../../service/score.service.js";
 import type ScoreMessage from "../../../common/scoremessage.js";
 import SnipeDisplay from "../../common/SnipeDisplay.js";
 import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
+import type ScoreFeed from "../../../common/feed/scorefeed.js";
 
 export default {
   data: {
@@ -30,13 +31,16 @@ export default {
         components: [],
       };
 
-      let feeds = await ScoreFeedService.getGlobalScoreFeeds();
+      let feeds = new Set<ScoreFeed>(
+        await ScoreFeedService.getGlobalScoreFeeds(),
+      );
       const player = await PlayerService.getPlayer(data.playerId);
       if (player) {
-        feeds = feeds.concat(
-          await ScoreFeedService.getBlockStatsGlobalScoreFeeds(),
-          await ScoreFeedService.getConnectedScoreFeeds(player.id),
-        );
+        feeds = new Set<ScoreFeed>([
+          ...feeds,
+          ...(await ScoreFeedService.getBlockStatsGlobalScoreFeeds()),
+          ...(await ScoreFeedService.getConnectedScoreFeeds(player.id)),
+        ]);
         messageData.components = [
           ScoreDisplay.getButtons(
             data.upVoteIds.length,
@@ -44,9 +48,15 @@ export default {
           ),
         ];
       } else {
-        feeds = feeds.concat(
-          await ScoreFeedService.getConnectedScoreFeeds(data.playerId),
-        );
+        feeds = new Set<ScoreFeed>([
+          ...feeds,
+          ...(await ScoreFeedService.getConnectedScoreFeeds(
+            data.playerBeatLeaderId ?? "",
+          )),
+          ...(await ScoreFeedService.getConnectedScoreFeeds(
+            data.playerScoreSaberId ?? "",
+          )),
+        ]);
       }
 
       for (const feed of feeds) {
