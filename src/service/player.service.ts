@@ -272,6 +272,7 @@ export class PlayerService {
         timestamp: new Date(),
         rank: blUser.rank,
       });
+      await PlayersRepository.updateBLPP(player.id, blUser.pp ?? 0);
       return (await PlayersRepository.updateBLRank(
         player.id,
         blUser.rank,
@@ -284,6 +285,7 @@ export class PlayerService {
           timestamp: new Date(),
           rank: blUser.rank,
         });
+        await PlayersRepository.updateBLPP(player.id, blUser.pp ?? 0);
         return (await PlayersRepository.updateBLRank(
           player.id,
           blUser.rank,
