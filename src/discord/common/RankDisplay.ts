@@ -58,6 +58,9 @@ export default class RankDisplay {
     oldRank: number;
     newRank: number;
     playerUrl: string;
+    abovePlayerName: string | undefined;
+    abovePlayerPP: number | undefined;
+    pp: number | undefined;
   }): EmbedBuilder {
     const rankUpdateType = this.rankUpdateType(data.oldRank, data.newRank);
     const rankDifference = this.rankDifference(data.oldRank, data.newRank);
@@ -76,6 +79,18 @@ export default class RankDisplay {
       .setDescription(`# \u200B#${data.oldRank} -> #${data.newRank}`)
       .setColor(this.rankUpdateColor(data.oldRank, data.newRank))
       .setTimestamp();
+
+    if (
+      rankUpdateType == "Gained" &&
+      data.abovePlayerName &&
+      data.abovePlayerPP &&
+      data.pp
+    ) {
+      embed.addFields({
+        name: "Next Rank",
+        value: `${data.abovePlayerName} (+${data.abovePlayerPP - data.pp}pp)`,
+      });
+    }
 
     return embed;
   }

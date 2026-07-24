@@ -129,6 +129,10 @@ class ScoreSaberApiService extends EventEmitter {
     }
   }
 
+  public async getUserFromRank(rank: number): Promise<any> {
+    return (await this.fetch<any>(`v2/players?page=${rank}&limit=1`))?.data[0];
+  }
+
   /**
    *  Fetch a ScoreSaber leaderboard using ID
    * @param id ScoreSaber leaderboard ID

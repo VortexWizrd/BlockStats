@@ -91,6 +91,19 @@ export class PlayersRepository extends Repository {
     return player;
   }
 
+  public static async updateSSPP(
+    id: string,
+    pp: number,
+  ): Promise<typeof this.row | undefined> {
+    if (pp <= 0) return undefined;
+    const [player] = await db
+      .update(playersTable)
+      .set({ ssPP: pp })
+      .where(eq(playersTable.id, id))
+      .returning();
+    return player;
+  }
+
   public static async updateASRank(
     id: string,
     rank: number,

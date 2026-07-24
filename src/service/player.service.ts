@@ -309,6 +309,7 @@ export class PlayerService {
         timestamp: new Date(),
         rank: ssUser.stats.rank,
       });
+      await PlayersRepository.updateSSPP(player.id, ssUser.stats.totalPP ?? 0);
       return (await PlayersRepository.updateSSRank(
         player.id,
         ssUser.stats.rank,
@@ -321,6 +322,10 @@ export class PlayerService {
           timestamp: new Date(),
           rank: ssUser.stats.rank,
         });
+        await PlayersRepository.updateSSPP(
+          player.id,
+          ssUser.stats.totalPP ?? 0,
+        );
         return (await PlayersRepository.updateSSRank(
           player.id,
           ssUser.stats.rank,

@@ -1,4 +1,5 @@
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
+import scoresaberApiService from "../../external/scoresaber-api.service.js";
 import { PlayerService } from "../../player.service.js";
 import websocketserverService from "../websocketserver.service.js";
 
@@ -49,14 +50,28 @@ export default class WebSocketRankEvent {
           2,
         );
         if (!latestRanks || latestRanks.length < 2) continue;
+
         const rankUpdate = {
           playerName: updatedPlayer.name,
           playerAvatar: updatedPlayer.avatar,
           playerId: updatedPlayer.id,
           playerUrl: `https://scoresaber.com/u/${updatedPlayer.scoreSaberAlias ?? updatedPlayer.scoreSaberId ?? "undefined"}`,
           leaderboard: "ScoreSaber",
+          pp: updatedPlayer.ssPP ?? undefined,
           oldRank: latestRanks[1]?.rank ?? 0,
           newRank: updatedPlayer.ssRank,
+          abovePlayerName:
+            (
+              await scoresaberApiService.getUserFromRank(
+                (updatedPlayer.ssRank ?? -1) - 1,
+              )
+            ).name ?? undefined,
+          abovePlayerPP:
+            (
+              await scoresaberApiService.getUserFromRank(
+                (updatedPlayer.ssRank ?? -1) - 1,
+              )
+            )?.stats?.totalPP ?? undefined,
           timestamp: Date.now(),
         };
         this.sendRankUpdate(rankUpdate);
