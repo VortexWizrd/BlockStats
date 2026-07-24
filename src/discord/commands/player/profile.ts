@@ -33,6 +33,11 @@ export default {
     )
     .addSubcommand((cmd) =>
       cmd
+        .setName("changescoresaber")
+        .setDescription("Connect a different ScoreSaber account to BlockStats"),
+    )
+    .addSubcommand((cmd) =>
+      cmd
         .setName("unlink")
         .setDescription(
           "Delete your BlockStats profile (WARNING: ALL data not stored on other sites will be deleted!)",
@@ -213,6 +218,20 @@ export default {
             components: [],
           });
         }
+      }
+
+      case "changescoresaber": {
+        const player = await PlayerService.getPlayer(interaction.user.id);
+        if (!player)
+          return await interaction.reply({
+            content: `Your profile does not exist! Please use **/profile link** before running this command!`,
+            flags: MessageFlags.Ephemeral,
+          });
+        await PlayerService.markScoreSaberChange(player.id);
+        return await interaction.reply({
+          content: `Profile marked for ScoreSaber change! Please set a new score in game with both your BeatLeader and ScoreSaber to connect your new ScoreSaber account!`,
+          flags: MessageFlags.Ephemeral,
+        });
       }
 
       case "show": {

@@ -220,4 +220,27 @@ export class PlayersRepository extends Repository {
       .limit(limit)
       .offset(offset);
   }
+
+  public static async markScoreSaberChange(
+    id: string,
+  ): Promise<typeof this.row | undefined> {
+    const [player] = await db
+      .update(playersTable)
+      .set({ scoreSaberChange: true })
+      .where(eq(playersTable.id, id))
+      .returning();
+    return player;
+  }
+
+  public static async changeScoreSaber(
+    id: string,
+    scoreSaberId: string,
+  ): Promise<typeof this.row | undefined> {
+    const [player] = await db
+      .update(playersTable)
+      .set({ scoreSaberId: scoreSaberId, scoreSaberChange: null })
+      .where(eq(playersTable.id, id))
+      .returning();
+    return player;
+  }
 }

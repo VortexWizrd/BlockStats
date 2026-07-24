@@ -37,6 +37,7 @@ export default class Player implements PlayerRow {
   lastScoreTime!: Date | null;
   createdTime!: Date;
   updatedTime!: Date;
+  scoreSaberChange!: boolean | null;
 
   constructor(data: Player) {
     Object.assign(this, data);

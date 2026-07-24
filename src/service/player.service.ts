@@ -1,6 +1,6 @@
 import type { RankHistory } from "../common/player.js";
 import Player from "../common/player.js";
-import type { PlayerRow } from "../db/schema.js";
+import { playerRankHistoryTable, type PlayerRow } from "../db/schema.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
@@ -51,6 +51,7 @@ export class PlayerService {
 
         scoreSaberId: scoreSaberData.id ?? null,
         scoreSaberAlias: scoreSaberData.vanity ?? null,
+        scoreSaberChange: false,
 
         accSaberId: scoreSaberData.id ?? null,
 
@@ -135,6 +136,14 @@ export class PlayerService {
     }
   }
 
+  public static async markScoreSaberChange(id: string) {
+    return await PlayersRepository.markScoreSaberChange(id);
+  }
+
+  public static async changeScoreSaber(id: string, scoreSaberId: string) {
+    return await PlayersRepository.changeScoreSaber(id, scoreSaberId);
+  }
+
   public static async refreshPlayer(id: string) {
     try {
       const existingRow = await PlayersRepository.findById(id);
@@ -145,17 +154,28 @@ export class PlayerService {
       const beatLeaderData = await beatleaderApiService.getUserFromDiscord(id);
       if (!beatLeaderData) return;
 
-      let scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
-        beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
-      );
-
-      if (scoreSaberData && scoreSaberData.inactive) {
-        const altScoreSaberData =
-          await scoresaberApiService.getUserFromLinkedIds({
-            oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
-          });
-        if (altScoreSaberData && !altScoreSaberData.inactive) {
-          scoreSaberData = altScoreSaberData;
+      let scoreSaberData: any;
+      if (
+        existingRow.scoreSaberId &&
+        !Object.values(beatLeaderData.linkedIds).includes(
+          existingRow.scoreSaberId,
+        )
+      ) {
+        scoreSaberData = await scoresaberApiService.getUserFromId(
+          existingRow.scoreSaberId,
+        );
+      } else {
+        scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
+          beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
+        );
+        if (scoreSaberData && scoreSaberData.inactive) {
+          const altScoreSaberData =
+            await scoresaberApiService.getUserFromLinkedIds({
+              oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
+            });
+          if (altScoreSaberData && !altScoreSaberData.inactive) {
+            scoreSaberData = altScoreSaberData;
+          }
         }
       }
 

@@ -43,6 +43,13 @@
       "when": 1784436278359,
       "tag": "0005_leaderboard_p3",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784930450174,
+      "tag": "0006_scoresaber_account_changing",
+      "breakpoints": true
     }
   ]
 }

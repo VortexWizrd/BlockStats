@@ -46,6 +46,18 @@ export default class WebSocketScoreEvent {
     // BlockStats features
     const player = await PlayerService.getPlayer(score.playerId);
     if (player) {
+      // Handle ScoreSaber account changes
+      if (player.scoreSaberChange) {
+        if (score.playerScoreSaberId) {
+          await PlayerService.changeScoreSaber(
+            player.id,
+            score.playerScoreSaberId,
+          );
+          console.log(
+            `[LOG]: Changed ${player.name}'s ScoreSaber ID to ${score.playerScoreSaberId}`,
+          );
+        }
+      }
       // refresh player profile
       await PlayerService.refreshPlayer(player.id);
 

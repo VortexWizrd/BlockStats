@@ -40,6 +40,8 @@ export const playersTable = pgTable(
     hitBloqId: integer(),
     beatSaverId: integer(),
 
+    scoreSaberChange: boolean(),
+
     // Profile data
     name: text().notNull(),
     avatar: text().notNull().default(""),
