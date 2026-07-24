@@ -1,6 +1,6 @@
 import type { PgTableWithColumns } from "drizzle-orm/pg-core";
 import { db } from "../db/index.js";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, getTableName, sql } from "drizzle-orm";
 
 export abstract class Repository {
   public static readonly table: PgTableWithColumns<any>;
@@ -56,5 +56,25 @@ export abstract class Repository {
       .delete(this.table)
       .where(and(...conditions))
       .returning();
+  }
+
+  public static async getTableSize() {
+    if (!this.table) return undefined;
+    const tableName = getTableName(this.table);
+
+    const result = await db.execute<{
+      tableSize: string;
+      indexesSize: string;
+      totalSize: string;
+      totalSizeBytes: number;
+    }>(sql`
+    SELECT 
+      pg_size_pretty(pg_table_size(${tableName}::regclass)) AS "tableSize",
+      pg_size_pretty(pg_indexes_size(${tableName}::regclass)) AS "indexesSize",
+      pg_size_pretty(pg_total_relation_size(${tableName}::regclass)) AS "totalSize",
+      pg_total_relation_size(${tableName}::regclass)::int AS "totalSizeBytes"
+  `);
+
+    return result.rows[0];
   }
 }

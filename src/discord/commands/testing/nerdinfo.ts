@@ -11,6 +11,13 @@ import scoresaberApiService from "../../../service/external/scoresaber-api.servi
 import websocketclientService from "../../../service/websocket/websocketclient.service.js";
 import { ScoreService } from "../../../service/score.service.js";
 import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
+import { PlayersRepository } from "../../../repositories/players/players.repository.js";
+import { ScoreFeedsRepository } from "../../../repositories/feeds/scorefeeds.repository.js";
+import { RankFeedsRepository } from "../../../repositories/feeds/rankfeeds.repository.js";
+import { SnipeFeedsRepository } from "../../../repositories/feeds/snipefeeds.repository.js";
+import { ScoresRepository } from "../../../repositories/scores.repository.js";
+import { LeaderboardsRepository } from "../../../repositories/maps/leaderboards.repository.js";
+import { MapsRepository } from "../../../repositories/maps/maps.repository.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -23,27 +30,37 @@ export default {
       .addFields([
         {
           name: "Accounts",
-          value: (await PlayerService.count()).toString(),
+          value: `${await PlayerService.count()} (${(await PlayersRepository.getTableSize())?.totalSize})`,
           inline: true,
         },
         {
           name: "Score Feeds",
-          value: (await ScoreFeedService.count()).toString(),
+          value: `${await ScoreFeedService.count()} (${(await ScoreFeedsRepository.getTableSize())?.totalSize})`,
           inline: true,
         },
         {
           name: "Rank Feeds",
-          value: (await RankFeedService.count()).toString(),
+          value: `${await RankFeedService.count()} (${(await RankFeedsRepository.getTableSize())?.totalSize})`,
           inline: true,
         },
         {
           name: "Snipe Feeds",
-          value: (await SnipeFeedService.count()).toString(),
+          value: `${await SnipeFeedService.count()} (${(await SnipeFeedsRepository.getTableSize())?.totalSize})`,
           inline: true,
         },
         {
           name: "Scores",
-          value: (await ScoreService.count()).toString(),
+          value: `${await ScoreService.count()} (${(await ScoresRepository.getTableSize())?.totalSize})`,
+          inline: true,
+        },
+        {
+          name: "Leaderboards",
+          value: `${await LeaderboardsRepository.countRows()} (${(await LeaderboardsRepository.getTableSize())?.totalSize})`,
+          inline: true,
+        },
+        {
+          name: "Maps",
+          value: `${await MapsRepository.countRows()} (${(await MapsRepository.getTableSize())?.totalSize})`,
           inline: true,
         },
         {
