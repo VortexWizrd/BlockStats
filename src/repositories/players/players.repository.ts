@@ -71,50 +71,84 @@ export class PlayersRepository extends Repository {
     id: string,
     rank: number,
   ): Promise<typeof this.row | undefined> {
-    const [player] = await db
-      .update(playersTable)
-      .set({ blRank: rank })
-      .where(eq(playersTable.id, id))
-      .returning();
-    return player;
+    if (rank <= 0) {
+      const [player] = await db
+        .update(playersTable)
+        .set({ blRank: null })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    } else {
+      const [player] = await db
+        .update(playersTable)
+        .set({ blRank: rank })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    }
   }
 
   public static async updateSSRank(
     id: string,
     rank: number,
   ): Promise<typeof this.row | undefined> {
-    const [player] = await db
-      .update(playersTable)
-      .set({ ssRank: rank })
-      .where(eq(playersTable.id, id))
-      .returning();
-    return player;
+    if (rank <= 0) {
+      const [player] = await db
+        .update(playersTable)
+        .set({ ssRank: null })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    } else {
+      const [player] = await db
+        .update(playersTable)
+        .set({ ssRank: rank })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    }
   }
 
   public static async updateBLPP(
     id: string,
     pp: number,
   ): Promise<typeof this.row | undefined> {
-    if (pp <= 0) return undefined;
-    const [player] = await db
-      .update(playersTable)
-      .set({ blPP: pp })
-      .where(eq(playersTable.id, id))
-      .returning();
-    return player;
+    if (pp <= 0) {
+      const [player] = await db
+        .update(playersTable)
+        .set({ blPP: null })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    } else {
+      const [player] = await db
+        .update(playersTable)
+        .set({ blPP: pp })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    }
   }
 
   public static async updateSSPP(
     id: string,
     pp: number,
   ): Promise<typeof this.row | undefined> {
-    if (pp <= 0) return undefined;
-    const [player] = await db
-      .update(playersTable)
-      .set({ ssPP: pp })
-      .where(eq(playersTable.id, id))
-      .returning();
-    return player;
+    if (pp <= 0) {
+      const [player] = await db
+        .update(playersTable)
+        .set({ ssPP: null })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    } else {
+      const [player] = await db
+        .update(playersTable)
+        .set({ ssPP: pp })
+        .where(eq(playersTable.id, id))
+        .returning();
+      return player;
+    }
   }
 
   public static async updateASRank(

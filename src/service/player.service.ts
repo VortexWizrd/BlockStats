@@ -264,6 +264,13 @@ export class PlayerService {
     const blUser = await beatleaderApiService.getUserFromDiscord(player.id);
     if (!blUser) return;
     if (blUser.rank <= 0) return;
+    if (blUser.pp == 0) {
+      if (player.blRank != null) {
+        await PlayersRepository.updateBLRank(player.id, -1);
+        await PlayersRepository.updateBLPP(player.id, -1);
+      }
+      return undefined;
+    }
 
     if (!player.blRank) {
       await PlayerRankHistoriesRepository.insert({
@@ -303,6 +310,13 @@ export class PlayerService {
     );
     if (!ssUser) return;
     if (ssUser.stats.rank <= 0) return;
+    if (ssUser.stats.totalPP == 0) {
+      if (player.ssRank != null) {
+        await PlayersRepository.updateSSRank(player.id, -1);
+        await PlayersRepository.updateSSPP(player.id, -1);
+      }
+      return undefined;
+    }
 
     if (!player.ssRank) {
       await PlayerRankHistoriesRepository.insert({
