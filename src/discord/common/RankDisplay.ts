@@ -88,7 +88,7 @@ export default class RankDisplay {
     ) {
       embed.addFields({
         name: "Next Rank",
-        value: `${data.abovePlayerName} (+${data.abovePlayerPP - data.pp}pp)`,
+        value: `#${data.newRank + 1} ${data.abovePlayerName} (+${(data.abovePlayerPP - data.pp).toFixed(2)}pp)`,
       });
     }
 
