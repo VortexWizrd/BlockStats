@@ -68,6 +68,11 @@ class BeatLeaderApiService extends EventEmitter {
     return await this.fetch<any>(`player/discord/${id}`);
   }
 
+  public async getUserFromRank(rank: number): Promise<any> {
+    return (await this.fetch<any>(`players?sortBy=0&page=${rank}&count=1`))
+      ?.data[0];
+  }
+
   private async fetch<T>(path: string): Promise<T | null> {
     const url = `https://api.beatleader.com/${path}`;
     try {

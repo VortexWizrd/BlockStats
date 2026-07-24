@@ -1,4 +1,5 @@
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
+import beatleaderApiService from "../../external/beatleader-api.service.js";
 import scoresaberApiService from "../../external/scoresaber-api.service.js";
 import { PlayerService } from "../../player.service.js";
 import websocketserverService from "../websocketserver.service.js";
@@ -20,14 +21,21 @@ export default class WebSocketRankEvent {
           2,
         );
         if (!latestRanks || latestRanks.length < 2) continue;
+
+        const abovePlayer = await beatleaderApiService.getUserFromRank(
+          (updatedPlayer.blRank ?? -1) - 1,
+        );
         const rankUpdate = {
           playerName: updatedPlayer.name,
           playerAvatar: updatedPlayer.avatar,
           playerId: updatedPlayer.id,
           playerUrl: `https://beatleader.com/u/${updatedPlayer.alias ?? updatedPlayer.steamId ?? updatedPlayer.oculusId ?? updatedPlayer.questId ?? "undefined"}`,
           leaderboard: "BeatLeader",
+          pp: updatedPlayer.blPP ?? undefined,
           oldRank: latestRanks[1]?.rank ?? 0,
           newRank: updatedPlayer.blRank,
+          abovePlayerName: abovePlayer?.name ?? undefined,
+          abovePlayerPP: abovePlayer?.pp ?? undefined,
           timestamp: Date.now(),
         };
         this.sendRankUpdate(rankUpdate);
@@ -51,6 +59,10 @@ export default class WebSocketRankEvent {
         );
         if (!latestRanks || latestRanks.length < 2) continue;
 
+        const abovePlayer = await scoresaberApiService.getUserFromRank(
+          (updatedPlayer.ssRank ?? -1) - 1,
+        );
+
         const rankUpdate = {
           playerName: updatedPlayer.name,
           playerAvatar: updatedPlayer.avatar,
@@ -60,18 +72,8 @@ export default class WebSocketRankEvent {
           pp: updatedPlayer.ssPP ?? undefined,
           oldRank: latestRanks[1]?.rank ?? 0,
           newRank: updatedPlayer.ssRank,
-          abovePlayerName:
-            (
-              await scoresaberApiService.getUserFromRank(
-                (updatedPlayer.ssRank ?? -1) - 1,
-              )
-            ).name ?? undefined,
-          abovePlayerPP:
-            (
-              await scoresaberApiService.getUserFromRank(
-                (updatedPlayer.ssRank ?? -1) - 1,
-              )
-            )?.stats?.totalPP ?? undefined,
+          abovePlayerName: abovePlayer?.name ?? undefined,
+          abovePlayerPP: abovePlayer?.stats?.totalPP ?? undefined,
           timestamp: Date.now(),
         };
         this.sendRankUpdate(rankUpdate);

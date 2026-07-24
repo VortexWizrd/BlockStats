@@ -80,12 +80,7 @@ export default class RankDisplay {
       .setColor(this.rankUpdateColor(data.oldRank, data.newRank))
       .setTimestamp();
 
-    if (
-      rankUpdateType == "Gained" &&
-      data.abovePlayerName &&
-      data.abovePlayerPP &&
-      data.pp
-    ) {
+    if (data.abovePlayerName && data.abovePlayerPP && data.pp) {
       embed.addFields({
         name: "Next Rank",
         value: `#${data.newRank + 1} ${data.abovePlayerName} (+${(data.abovePlayerPP - data.pp).toFixed(2)}pp)`,
