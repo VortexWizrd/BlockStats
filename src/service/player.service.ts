@@ -389,7 +389,7 @@ export class PlayerService {
               timestamp: new Date(),
               rank: stat.ranking,
             });
-            (await PlayersRepository.updateASRank(
+            return (await PlayersRepository.updateASRank(
               player.id,
               stat.ranking,
               categoryName,
@@ -405,7 +405,7 @@ export class PlayerService {
               timestamp: new Date(),
               rank: stat.ranking,
             });
-            (await PlayersRepository.updateASRank(
+            return (await PlayersRepository.updateASRank(
               player.id,
               stat.ranking,
               categoryName,
@@ -421,7 +421,7 @@ export class PlayerService {
               timestamp: new Date(),
               rank: stat.ranking,
             });
-            (await PlayersRepository.updateASRank(
+            return (await PlayersRepository.updateASRank(
               player.id,
               stat.ranking,
               categoryName,
@@ -437,7 +437,7 @@ export class PlayerService {
               timestamp: new Date(),
               rank: stat.ranking,
             });
-            (await PlayersRepository.updateASRank(
+            return (await PlayersRepository.updateASRank(
               player.id,
               stat.ranking,
               categoryName,

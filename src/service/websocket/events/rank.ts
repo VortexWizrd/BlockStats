@@ -90,7 +90,6 @@ export default class WebSocketRankEvent {
         if (!player.accSaberId) continue;
         const updatedPlayer = await PlayerService.updateASRank(player);
         if (!updatedPlayer) continue;
-        console.log(player.name, updatedPlayer);
         if (updatedPlayer.asRank != player.asRank) {
           const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
             player.id,
