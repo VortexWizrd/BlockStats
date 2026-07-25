@@ -30,6 +30,7 @@ export default class WebSocketScoreEvent {
         score.blStarRating = blConvertedScore.blStarRating;
         score.ppBL = blConvertedScore.ppBL;
         score.provider = ["ScoreSaber", "BeatLeader"];
+        score.playerBeatLeaderId = blConvertedScore.playerScoreSaberId;
         this.sendScore(score);
         return;
       }
@@ -135,6 +136,7 @@ export default class WebSocketScoreEvent {
         score.ssStarRating = ssConvertedScore.ssStarRating;
         score.ppSS = ssConvertedScore.ppSS;
         score.provider = ["BeatLeader", "ScoreSaber"];
+        score.playerScoreSaberId = ssConvertedScore.playerScoreSaberId;
         await this.sendScore(score);
         return;
       }
