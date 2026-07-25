@@ -228,6 +228,9 @@ export default {
             flags: MessageFlags.Ephemeral,
           });
         await PlayerService.markScoreSaberChange(player.id);
+        console.log(
+          `[LOG] Discord: Profile: Player ${player.name} triggered ScoreSaber account change`,
+        );
         return await interaction.reply({
           content: `Profile marked for ScoreSaber change! Please set a new score in game with both your BeatLeader and ScoreSaber to connect your new ScoreSaber account!`,
           flags: MessageFlags.Ephemeral,

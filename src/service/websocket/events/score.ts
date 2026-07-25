@@ -48,6 +48,9 @@ export default class WebSocketScoreEvent {
     if (player) {
       // Handle ScoreSaber account changes
       if (player.scoreSaberChange) {
+        console.log(
+          `[LOG]: Initializing ScoreSaber account change for player ${player.name}`,
+        );
         if (score.playerScoreSaberId) {
           await PlayerService.changeScoreSaber(
             player.id,
