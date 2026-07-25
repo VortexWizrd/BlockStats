@@ -1,14 +1,10 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
-import {
-  migrateFromMongo,
-  runMigrations,
-  setOutdatedScores,
-} from "./db/migrate.js";
+import { runMigrations, setOutdatedScores } from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 import { PlayerService } from "./service/player.service.js";
 import { MapService } from "./service/map.service.js";
-import { ScoresRepository } from "./repositories/scores.repository.js";
+import { ScoresRepository } from "./repositories/scores/scores.repository.js";
 
 const app = express();
 const port = 8000;

@@ -5,10 +5,12 @@ import scoresaberApiService from "../service/external/scoresaber-api.service.js"
 import { MapService } from "../service/map.service.js";
 import { PlayerService } from "../service/player.service.js";
 
+export type ProviderType = "BeatLeader" | "ScoreSaber";
+
 export default class Score implements ScoreRow {
   id!: number;
   playerId!: string;
-  provider!: string[];
+  provider!: ProviderType[];
   songHash!: string;
   songCharacteristic!: string;
   songDifficulty!: "Expert+" | "Expert" | "Hard" | "Normal" | "Easy";
@@ -38,8 +40,6 @@ export default class Score implements ScoreRow {
   songCover!: string;
   mapAuthor!: string;
   improvement!: number | null;
-  upVoteIds!: string[];
-  downVoteIds!: string[];
   blStarRating!: number | null;
   ssStarRating!: number | null;
   asRating!: number | null;
@@ -125,8 +125,6 @@ export default class Score implements ScoreRow {
       blStarRating: blScore.leaderboard.difficulty.stars ?? 0,
       ssStarRating: scoreSaberLeaderboard?.stars ?? null,
       asRating: leaderboard?.asComplexity ?? 0,
-      upVoteIds: [],
-      downVoteIds: [],
       mapId: leaderboard?.mapId ?? null,
       asLeaderboardId: leaderboard?.asLeaderboardId ?? null,
       asComplexity: leaderboard?.asComplexity ?? null,
@@ -201,8 +199,6 @@ export default class Score implements ScoreRow {
       asRating: leaderboard?.asComplexity ?? 0,
       asCategoryCode: leaderboard?.asCategoryCode ?? null,
       improvement: null,
-      upVoteIds: [],
-      downVoteIds: [],
       mapId: leaderboard?.mapId ?? null,
       asLeaderboardId: leaderboard?.asLeaderboardId ?? null,
       asComplexity: leaderboard?.asComplexity ?? null,

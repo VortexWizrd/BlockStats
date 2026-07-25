@@ -42,10 +42,7 @@ export default {
           ...(await ScoreFeedService.getConnectedScoreFeeds(player.id)),
         ]);
         messageData.components = [
-          ScoreDisplay.getButtons(
-            data.upVoteIds.length,
-            data.downVoteIds.length,
-          ),
+          ScoreDisplay.getButtons(data.upVotes, data.downVotes),
         ];
       } else {
         feeds = new Set<ScoreFeed>([

@@ -107,10 +107,7 @@ export default {
           });
 
         const embed = await ScoreDisplay.getEmbed(score);
-        const buttons = ScoreDisplay.getButtons(
-          score.upVoteIds.length,
-          score.downVoteIds.length,
-        );
+        const buttons = ScoreDisplay.getButtons(score.upVotes, score.downVotes);
         if (!embed || !buttons)
           return await interaction.reply({
             content: "Failed to get score",

@@ -15,7 +15,7 @@ import { PlayersRepository } from "../../../repositories/players/players.reposit
 import { ScoreFeedsRepository } from "../../../repositories/feeds/scorefeeds.repository.js";
 import { RankFeedsRepository } from "../../../repositories/feeds/rankfeeds.repository.js";
 import { SnipeFeedsRepository } from "../../../repositories/feeds/snipefeeds.repository.js";
-import { ScoresRepository } from "../../../repositories/scores.repository.js";
+import { ScoresRepository } from "../../../repositories/scores/scores.repository.js";
 import { LeaderboardsRepository } from "../../../repositories/maps/leaderboards.repository.js";
 import { MapsRepository } from "../../../repositories/maps/maps.repository.js";
 

@@ -2,8 +2,9 @@ import type { DifficultyType } from "../common/map/leaderboard.js";
 import type Score from "../common/score.js";
 import ScoreMessage from "../common/scoremessage.js";
 import type { scoresTable } from "../db/schema.js";
-import { ScoreMessagesRepository } from "../repositories/scoremessages.repository.js";
-import { ScoresRepository } from "../repositories/scores.repository.js";
+import { ScoreMessagesRepository } from "../repositories/scores/scoremessages.repository.js";
+import { ScoresRepository } from "../repositories/scores/scores.repository.js";
+import { ScoreVotesRepository } from "../repositories/scores/scorevotes.repository.js";
 
 type ScoreInsert = typeof scoresTable.$inferInsert;
 export class ScoreService {
@@ -42,10 +43,6 @@ export class ScoreService {
     return await ScoresRepository.countRows();
   }
 
-  public static async removeUpVoteId(id: number, playerId: string) {
-    await ScoresRepository.removeUpVoteId(id, playerId);
-  }
-
   public static async addDiscordMessage(scoreMessage: ScoreMessage) {
     await ScoreMessagesRepository.insert(scoreMessage);
   }
@@ -63,16 +60,27 @@ export class ScoreService {
     return (await ScoresRepository.findById(scoreMessage.id)) as Score;
   }
 
-  public static async addUpVoteId(id: number, playerId: string) {
-    await ScoresRepository.appendUpVoteId(id, playerId);
+  public static async getUserVote(scoreId: number, playerId: string) {
+    return await ScoreVotesRepository.getUserVote(scoreId, playerId);
   }
 
-  public static async addDownVoteId(id: number, playerId: string) {
-    await ScoresRepository.appendDownVoteId(id, playerId);
-  }
+  public static async voteScore(
+    scoreId: number,
+    playerId: string,
+    voteType: "up" | "down",
+  ) {
+    const existingVote = await ScoreVotesRepository.getUserVote(
+      scoreId,
+      playerId,
+    );
 
-  public static async removeDownVoteId(id: number, playerId: string) {
-    await ScoresRepository.removeDownVoteId(id, playerId);
+    if (existingVote && existingVote.voteType === voteType) {
+      await ScoreVotesRepository.removeVote(scoreId, playerId);
+      return "removed";
+    } else {
+      return await ScoreVotesRepository.setVote(scoreId, playerId, voteType);
+      return "added";
+    }
   }
 
   public static async setOutdated(

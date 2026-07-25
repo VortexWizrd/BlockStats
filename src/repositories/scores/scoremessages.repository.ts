@@ -1,5 +1,5 @@
-import { scoreMessagesTable } from "../db/schema.js";
-import { Repository } from "./baserepository.js";
+import { scoreMessagesTable } from "../../db/schema.js";
+import { Repository } from "../baserepository.js";
 
 export class ScoreMessagesRepository extends Repository {
   public static readonly table = scoreMessagesTable;

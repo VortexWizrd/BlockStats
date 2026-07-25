@@ -1,7 +1,6 @@
 import {
   boolean,
   integer,
-  jsonb,
   pgTable,
   varchar,
   doublePrecision,
@@ -11,9 +10,11 @@ import {
   uuid,
   check,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
+// [[ Enums ]]
 export const difficultyEnum = pgEnum("difficulty", [
   "Expert+",
   "Expert",
@@ -21,7 +22,10 @@ export const difficultyEnum = pgEnum("difficulty", [
   "Normal",
   "Easy",
 ]);
+export const providerEnum = pgEnum("provider", ["BeatLeader", "ScoreSaber"]);
+export const voteEnum = pgEnum("vote", ["up", "down"]);
 
+// [[ Tables ]]
 export const playersTable = pgTable(
   "players",
   {
@@ -73,8 +77,11 @@ export const playersTable = pgTable(
 
     lastScoreTime: timestamp(),
 
-    createdTime: timestamp().notNull(),
-    updatedTime: timestamp().notNull(),
+    createdTime: timestamp().notNull().defaultNow(),
+    updatedTime: timestamp()
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     check(
@@ -118,7 +125,7 @@ export const scoresTable = pgTable(
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
 
     // Primary score data source
-    provider: varchar({ length: 32 }).array().notNull(),
+    provider: providerEnum().array().notNull(),
 
     // Player Information
     playerId: varchar({ length: 32 }).references(() => playersTable.id, {
@@ -182,10 +189,30 @@ export const scoresTable = pgTable(
     // Discord data
     upVotes: integer().notNull().default(0),
     downVotes: integer().notNull().default(0),
-    upVoteIds: varchar({ length: 32 }).array().notNull(),
-    downVoteIds: varchar({ length: 32 }).array().notNull(),
   },
-  (table) => [],
+  (table) => [
+    index("scores_player_id_idx").on(table.playerId),
+    index("scores_map_id_idx").on(table.mapId),
+    index("scores_leaderboard_id_idx").on(table.leaderboardId),
+    index("scores_song_hash_idx").on(table.songHash),
+    index("scores_timestamp_idx").on(table.timestamp),
+  ],
+);
+
+export const scoreVotesTable = pgTable(
+  "scoreVotes",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    scoreId: integer()
+      .notNull()
+      .references(() => scoresTable.id, { onDelete: "cascade" }),
+    playerId: varchar({ length: 32 })
+      .notNull()
+      .references(() => playersTable.id, { onDelete: "cascade" }),
+    voteType: voteEnum().notNull(),
+    timestamp: timestamp().notNull().defaultNow(),
+  },
+  (table) => [unique("score_player_idx").on(table.scoreId, table.playerId)],
 );
 
 export const scoreMessagesTable = pgTable("scoremessages", {
@@ -287,80 +314,91 @@ export const playerRankHistoryTable = pgTable(
   ],
 );
 
-export const mapsTable = pgTable("maps", {
-  // map id
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  beatSaverId: varchar({ length: 32 }),
-  hash: varchar({ length: 64 }).notNull(),
+export const mapsTable = pgTable(
+  "maps",
+  {
+    // map id
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    beatSaverId: varchar({ length: 32 }),
+    hash: varchar({ length: 64 }).notNull(),
 
-  // map basic information
-  songName: text().notNull(),
-  songSubName: text().notNull(),
-  songAuthor: text().notNull(),
-  mapAuthor: text().notNull(),
-  songCover: text().notNull(),
-  songDescription: text().notNull().default(""),
+    // map basic information
+    songName: text().notNull(),
+    songSubName: text().notNull(),
+    songAuthor: text().notNull(),
+    mapAuthor: text().notNull(),
+    songCover: text().notNull(),
+    songDescription: text().notNull().default(""),
 
-  // detailed information
-  songDuration: integer(),
-  songBPM: doublePrecision(),
+    // detailed information
+    songDuration: integer(),
+    songBPM: doublePrecision(),
 
-  // leaderboards
-  leaderboardIds: integer().array().notNull(),
+    // leaderboards
+    leaderboardIds: integer().array().notNull(),
 
-  // timestamps
-  uploadedTime: timestamp(),
-  savedTime: timestamp().notNull().defaultNow(),
-  updatedTime: timestamp().notNull().defaultNow(),
-});
+    // timestamps
+    uploadedTime: timestamp(),
+    savedTime: timestamp().notNull().defaultNow(),
+    updatedTime: timestamp().notNull().defaultNow(),
+  },
+  (table) => [
+    index("maps_hash_idx").on(table.hash),
+    index("maps_beatsaver_idx").on(table.beatSaverId),
+  ],
+);
 
-export const leaderboardsTable = pgTable("leaderboards", {
-  // leaderboard id
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  mapId: integer()
-    .notNull()
-    .references(() => mapsTable.id, {
-      onDelete: "cascade",
-    }),
+export const leaderboardsTable = pgTable(
+  "leaderboards",
+  {
+    // leaderboard id
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    mapId: integer()
+      .notNull()
+      .references(() => mapsTable.id, {
+        onDelete: "cascade",
+      }),
 
-  // leaderboard information
-  difficulty: difficultyEnum().notNull(),
-  customDifficultyName: text(),
-  characteristic: varchar({ length: 128 }).notNull(),
+    // leaderboard information
+    difficulty: difficultyEnum().notNull(),
+    customDifficultyName: text(),
+    characteristic: varchar({ length: 128 }).notNull(),
 
-  maxScore: integer().notNull().default(0),
-  notes: integer(),
-  bombs: integer(),
-  obstacles: integer(),
-  events: integer(),
-  njs: doublePrecision(),
-  offset: doublePrecision(),
-  nps: doublePrecision(),
+    maxScore: integer().notNull().default(0),
+    notes: integer(),
+    bombs: integer(),
+    obstacles: integer(),
+    events: integer(),
+    njs: doublePrecision(),
+    offset: doublePrecision(),
+    nps: doublePrecision(),
 
-  // beatleader
-  blLeaderboardId: varchar({ length: 32 }),
-  blRankedStatus: varchar({ length: 32 }),
-  blStarRating: doublePrecision(),
-  blTechRating: doublePrecision(),
-  blAccRating: doublePrecision(),
-  blPassRating: doublePrecision(),
+    // beatleader
+    blLeaderboardId: varchar({ length: 32 }),
+    blRankedStatus: varchar({ length: 32 }),
+    blStarRating: doublePrecision(),
+    blTechRating: doublePrecision(),
+    blAccRating: doublePrecision(),
+    blPassRating: doublePrecision(),
 
-  // scoresaber
-  ssLeaderboardId: integer(),
-  ssRankedStatus: varchar({ length: 32 }),
-  ssStarRating: doublePrecision(),
-  ssMaxPP: doublePrecision(),
+    // scoresaber
+    ssLeaderboardId: integer(),
+    ssRankedStatus: varchar({ length: 32 }),
+    ssStarRating: doublePrecision(),
+    ssMaxPP: doublePrecision(),
 
-  // accsaber
-  asLeaderboardId: uuid(),
-  asRankedStatus: varchar({ length: 32 }),
-  asCategoryId: uuid(),
-  asCategoryCode: varchar({ length: 32 }),
-  asComplexity: doublePrecision(),
+    // accsaber
+    asLeaderboardId: uuid(),
+    asRankedStatus: varchar({ length: 32 }),
+    asCategoryId: uuid(),
+    asCategoryCode: varchar({ length: 32 }),
+    asComplexity: doublePrecision(),
 
-  savedTime: timestamp().notNull(),
-  updatedTime: timestamp().notNull(),
-});
+    savedTime: timestamp().notNull(),
+    updatedTime: timestamp().notNull(),
+  },
+  (table) => [index("leaderboards_map_id_idx").on(table.mapId)],
+);
 
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;

@@ -1,8 +1,12 @@
-import { db } from "../db/index.js";
-import { leaderboardsTable, scoresTable, type ScoreRow } from "../db/schema.js";
+import { db } from "../../db/index.js";
+import {
+  leaderboardsTable,
+  scoresTable,
+  type ScoreRow,
+} from "../../db/schema.js";
 import { and, eq, sql, desc, count } from "drizzle-orm";
-import { Repository } from "./baserepository.js";
-import type { DifficultyType } from "../common/map/leaderboard.js";
+import { Repository } from "../baserepository.js";
+import type { DifficultyType } from "../../common/map/leaderboard.js";
 
 export class ScoresRepository extends Repository {
   public static readonly table = scoresTable;
@@ -26,54 +30,6 @@ export class ScoresRepository extends Repository {
         value: id,
       },
     ]);
-  }
-
-  public static async appendUpVoteId(
-    id: number,
-    playerId: string,
-  ): Promise<void> {
-    await db
-      .update(this.table)
-      .set({
-        upVoteIds: sql`array_append(${this.table.upVoteIds}, ${playerId})`,
-      })
-      .where(eq(this.table.id, id));
-  }
-
-  public static async appendDownVoteId(
-    id: number,
-    playerId: string,
-  ): Promise<void> {
-    await db
-      .update(this.table)
-      .set({
-        downVoteIds: sql`array_append(${this.table.downVoteIds}, ${playerId})`,
-      })
-      .where(eq(this.table.id, id));
-  }
-
-  public static async removeUpVoteId(
-    id: number,
-    playerId: string,
-  ): Promise<void> {
-    await db
-      .update(this.table)
-      .set({
-        upVoteIds: sql`array_remove(${this.table.upVoteIds}, ${playerId})`,
-      })
-      .where(eq(this.table.id, id));
-  }
-
-  public static async removeDownVoteId(
-    id: number,
-    playerId: string,
-  ): Promise<void> {
-    await db
-      .update(this.table)
-      .set({
-        downVoteIds: sql`array_remove(${this.table.downVoteIds}, ${playerId})`,
-      })
-      .where(eq(this.table.id, id));
   }
 
   public static async setOutdated(

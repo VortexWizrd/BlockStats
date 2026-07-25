@@ -35,45 +35,19 @@ export default {
         flags: MessageFlags.Ephemeral,
       });
 
-    switch (interaction.customId) {
-      case "score-like": {
-        if (score.downVoteIds.includes(player.id)) {
-          await ScoreService.removeDownVoteId(score.id, player.id);
-        }
-        if (score.upVoteIds.includes(player.id)) {
-          await ScoreService.removeUpVoteId(score.id, player.id);
-          await interaction.reply({
-            content: "Removed like!",
-            flags: MessageFlags.Ephemeral,
-          });
-        } else {
-          await ScoreService.addUpVoteId(score.id, player.id);
-          await interaction.reply({
-            content: "Liked score!",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-        break;
-      }
-      case "score-dislike": {
-        if (score.upVoteIds.includes(player.id)) {
-          await ScoreService.removeUpVoteId(score.id, player.id);
-        }
-        if (score.downVoteIds.includes(player.id)) {
-          await ScoreService.removeDownVoteId(score.id, player.id);
-          await interaction.reply({
-            content: "Removed dislike!",
-            flags: MessageFlags.Ephemeral,
-          });
-        } else {
-          await ScoreService.addDownVoteId(score.id, player.id);
-          await interaction.reply({
-            content: "Disliked score!",
-            flags: MessageFlags.Ephemeral,
-          });
-        }
-        break;
-      }
+    const voteType = interaction.customId === "score-like" ? "up" : "down";
+    const result = await ScoreService.voteScore(score.id, player.id, voteType);
+
+    if (result === "removed") {
+      await interaction.reply({
+        content: `Removed ${voteType === "up" ? "like" : "dislike"}!`,
+        flags: MessageFlags.Ephemeral,
+      });
+    } else {
+      await interaction.reply({
+        content: `${voteType === "up" ? "Liked" : "Disliked"} score!`,
+        flags: MessageFlags.Ephemeral,
+      });
     }
 
     const updatedScore = await ScoreService.getFromMessageId(
@@ -97,8 +71,8 @@ export default {
             await message.edit({
               components: [
                 ScoreDisplay.getButtons(
-                  updatedScore.upVoteIds.length,
-                  updatedScore.downVoteIds.length,
+                  updatedScore.upVotes,
+                  updatedScore.downVotes,
                 ),
               ],
             });
@@ -117,8 +91,8 @@ export default {
             await message.edit({
               components: [
                 ScoreDisplay.getButtons(
-                  updatedScore.upVoteIds.length,
-                  updatedScore.downVoteIds.length,
+                  updatedScore.upVotes,
+                  updatedScore.downVotes,
                 ),
               ],
             });
