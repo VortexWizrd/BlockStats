@@ -112,7 +112,7 @@ export default {
           }
 
           const newFeed = new RankFeed({
-            id: undefined,
+            id: -1,
             type: interaction.options.getString("type") ?? "global",
             channelType: "user",
             displayType: "embed",
@@ -125,7 +125,7 @@ export default {
             blRanked: null,
             asRanked: null,
             managerRoleId: null,
-            minRank: null,
+            requestType: "closed",
           });
 
           await RankFeedService.createRankFeed(newFeed);
@@ -154,21 +154,20 @@ export default {
             });
 
           const newFeed = new RankFeed({
-            id: undefined,
-            type: interaction.options.getString("type") ?? "blockstats_global",
-            channelType: "guild",
+            id: -1,
+            type: interaction.options.getString("type") ?? "global",
+            channelType: "user",
             displayType: "embed",
-            userId: null,
-            guildId: interaction.guild.id,
-            channelId: interaction.channel.id,
+            userId: interaction.user.id,
+            guildId: null,
+            channelId: null,
             playerIds: [],
             hasFilters: false,
             ssRanked: null,
             blRanked: null,
             asRanked: null,
-            managerRoleId:
-              interaction.options.getRole("manager-role")?.id ?? null,
-            minRank: null,
+            managerRoleId: null,
+            requestType: "closed",
           });
 
           await RankFeedService.createRankFeed(newFeed);
@@ -434,7 +433,7 @@ export default {
           if (player) {
             RankFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** to the rank feed!`,
+              content: `Removed BlockStats user **${player.name}** from the rank feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {

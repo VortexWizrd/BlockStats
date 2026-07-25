@@ -1,6 +1,7 @@
 import type { RankHistory } from "../common/player.js";
 import Player from "../common/player.js";
 import { playerRankHistoryTable, type PlayerRow } from "../db/schema.js";
+import { PlayerPPHistoriesRepository } from "../repositories/players/playerpphistories.repository.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
@@ -212,14 +213,6 @@ export class PlayerService {
     }
   }
 
-  public static async refreshAllPlayers() {
-    const players = await PlayersRepository.getAll();
-    if (!players) return;
-
-    for (const existingRow of players) {
-      await this.refreshPlayer(existingRow.id);
-    }
-  }
   public static async getPlayerByAllIds(
     id: string,
   ): Promise<Player | undefined> {
@@ -276,106 +269,232 @@ export class PlayerService {
     }
   }
 
-  public static async updateBLRank(
+  public static async updateBLPP(
     player: Player,
+    skipValidation: boolean,
+    blData?: any,
   ): Promise<Player | undefined> {
-    const blUser = await beatleaderApiService.getUserFromDiscord(player.id);
-    if (!blUser) return;
-    if (blUser.rank <= 0) return;
-    if (blUser.pp == 0) {
-      if (player.blRank != null) {
-        await PlayersRepository.updateBLRank(player.id, -1);
-        await PlayersRepository.updateBLPP(player.id, -1);
+    const blUser =
+      blData ?? (await beatleaderApiService.getUserFromDiscord(player.id));
+    if (!skipValidation) {
+      if (!blUser || blUser.rank <= 0) return;
+      if (blUser.pp == 0) {
+        if (player.blRank != null) {
+          await PlayersRepository.updateBLRank(player.id, -1);
+          await PlayersRepository.updateBLPP(player.id, -1);
+        }
+        return undefined;
       }
-      return undefined;
     }
 
-    if (!player.blRank) {
+    if (!player.blPP || player.blPP != blUser.pp) {
+      await PlayerPPHistoriesRepository.insert({
+        playerId: player.id,
+        provider: "BeatLeader",
+        timestamp: new Date(),
+        pp: blUser.pp,
+      });
+      return (await PlayersRepository.updateBLPP(
+        player.id,
+        blUser.pp ?? 0,
+      )) as Player;
+    }
+  }
+
+  public static async updateBLRank(
+    player: Player,
+    skipValidation: boolean,
+    blData?: any,
+  ): Promise<Player | undefined> {
+    const blUser =
+      blData ?? (await beatleaderApiService.getUserFromDiscord(player.id));
+    if (!skipValidation) {
+      if (!blUser || blUser.rank <= 0) return;
+      if (blUser.pp == 0) {
+        if (player.blRank != null) {
+          await PlayersRepository.updateBLRank(player.id, -1);
+          await PlayersRepository.updateBLPP(player.id, -1);
+        }
+        return undefined;
+      }
+    }
+
+    if (!player.blRank || player.blRank != blUser.rank) {
       await PlayerRankHistoriesRepository.insert({
         playerId: player.id,
         provider: "BeatLeader",
         timestamp: new Date(),
         rank: blUser.rank,
       });
-      await PlayersRepository.updateBLPP(player.id, blUser.pp ?? 0);
       return (await PlayersRepository.updateBLRank(
         player.id,
-        blUser.rank,
+        blUser.rank ?? 0,
       )) as Player;
-    } else {
-      if (player.blRank != blUser.rank) {
-        await PlayerRankHistoriesRepository.insert({
-          playerId: player.id,
-          provider: "BeatLeader",
-          timestamp: new Date(),
-          rank: blUser.rank,
-        });
-        await PlayersRepository.updateBLPP(player.id, blUser.pp ?? 0);
-        return (await PlayersRepository.updateBLRank(
-          player.id,
-          blUser.rank,
-        )) as Player;
-      }
     }
     return undefined;
   }
 
-  public static async updateSSRank(
+  public static async updateSSPP(
     player: Player,
+    skipValidation: boolean,
+    ssData?: any,
   ): Promise<Player | undefined> {
-    const ssUser = await scoresaberApiService.getUserFromId(
-      player.scoreSaberId ?? "-1",
-    );
-    if (!ssUser) return;
-    if (ssUser.stats.rank <= 0) return;
-    if (ssUser.stats.totalPP == 0) {
-      if (player.ssRank != null) {
-        await PlayersRepository.updateSSRank(player.id, -1);
-        await PlayersRepository.updateSSPP(player.id, -1);
+    const ssUser =
+      ssData ??
+      (await scoresaberApiService.getUserFromId(player.scoreSaberId ?? ""));
+    if (!skipValidation) {
+      if (!ssUser || !ssUser.stats?.rank || ssUser.stats.rank <= 0) return;
+      if (ssUser.stats.totalPP == 0) {
+        if (player.ssRank != null) {
+          await PlayersRepository.updateSSRank(player.id, -1);
+          await PlayersRepository.updateSSPP(player.id, -1);
+        }
+        return undefined;
       }
-      return undefined;
     }
 
-    if (!player.ssRank) {
+    if (!player.ssPP || player.ssPP != ssUser.stats.totalPP) {
+      await PlayerPPHistoriesRepository.insert({
+        playerId: player.id,
+        provider: "ScoreSaber",
+        timestamp: new Date(),
+        pp: ssUser.stats.totalPP,
+      });
+      return (await PlayersRepository.updateSSPP(
+        player.id,
+        ssUser.stats.totalPP ?? 0,
+      )) as Player;
+    }
+  }
+
+  public static async updateSSRank(
+    player: Player,
+    skipValidation: boolean,
+    ssData?: any,
+  ): Promise<Player | undefined> {
+    const ssUser =
+      ssData ??
+      (await scoresaberApiService.getUserFromId(player.scoreSaberId ?? ""));
+    if (!skipValidation) {
+      if (!ssUser || !ssUser.stats?.rank || ssUser.stats.rank <= 0) return;
+      if (ssUser.stats.totalPP == 0) {
+        if (player.ssRank != null) {
+          await PlayersRepository.updateSSRank(player.id, -1);
+          await PlayersRepository.updateSSPP(player.id, -1);
+        }
+        return undefined;
+      }
+    }
+
+    if (!player.ssRank || player.ssRank != ssUser.stats.rank) {
       await PlayerRankHistoriesRepository.insert({
         playerId: player.id,
         provider: "ScoreSaber",
         timestamp: new Date(),
         rank: ssUser.stats.rank,
       });
-      await PlayersRepository.updateSSPP(player.id, ssUser.stats.totalPP ?? 0);
       return (await PlayersRepository.updateSSRank(
         player.id,
-        ssUser.stats.rank,
+        ssUser.stats.rank ?? 0,
       )) as Player;
-    } else {
-      if (player.ssRank != ssUser.stats.rank) {
-        await PlayerRankHistoriesRepository.insert({
-          playerId: player.id,
-          provider: "ScoreSaber",
-          timestamp: new Date(),
-          rank: ssUser.stats.rank,
-        });
-        await PlayersRepository.updateSSPP(
-          player.id,
-          ssUser.stats.totalPP ?? 0,
-        );
-        return (await PlayersRepository.updateSSRank(
-          player.id,
-          ssUser.stats.rank,
-        )) as Player;
-      }
     }
     return undefined;
   }
 
+  public static async updateASPP(
+    player: Player,
+    skipValidation: boolean,
+    asData?: any,
+  ): Promise<Player | undefined> {
+    const asUser =
+      asData ?? (await accsaberApiService.getPlayer(player.accSaberId ?? "-1"));
+    if (!skipValidation) {
+      if (!asUser) return;
+    }
+
+    for (const stat of asUser.statistics) {
+      const categoryName = accsaberApiService.getCategoryNameFromId(
+        stat.categoryId,
+      );
+      switch (categoryName) {
+        case "Tech Acc":
+          if (!player.asTechRank || player.asTechRank != stat.ap) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ap,
+            });
+            return (await PlayersRepository.updateASPP(
+              player.id,
+              stat.pp,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "Standard Acc":
+          if (!player.asStandardRank || player.asStandardRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ap,
+            });
+            return (await PlayersRepository.updateASPP(
+              player.id,
+              stat.pp,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "True Acc":
+          if (!player.asTrueRank || player.asTrueRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber (${categoryName})`,
+              timestamp: new Date(),
+              rank: stat.ap,
+            });
+            return (await PlayersRepository.updateASPP(
+              player.id,
+              stat.pp,
+              categoryName,
+            )) as Player;
+          }
+          break;
+
+        case "Overall":
+          if (!player.asRank || player.asRank != stat.ranking) {
+            await PlayerRankHistoriesRepository.insert({
+              playerId: player.id,
+              provider: `AccSaber`,
+              timestamp: new Date(),
+              rank: stat.ap,
+            });
+            return (await PlayersRepository.updateASPP(
+              player.id,
+              stat.pp,
+              categoryName,
+            )) as Player;
+          }
+          break;
+      }
+    }
+  }
+
   public static async updateASRank(
     player: Player,
+    skipValidation: boolean,
+    asData?: any,
   ): Promise<Player | undefined> {
-    const asUser = await accsaberApiService.getPlayer(
-      player.accSaberId ?? "-1",
-    );
-    if (!asUser) return;
+    const asUser =
+      asData ?? (await accsaberApiService.getPlayer(player.accSaberId ?? "-1"));
+    if (!skipValidation) {
+      if (!asUser) return;
+    }
+
     for (const stat of asUser.statistics) {
       const categoryName = accsaberApiService.getCategoryNameFromId(
         stat.categoryId,

@@ -1,45 +1,28 @@
-export default class SnipeFeed {
-  id: number | undefined;
+import type { SnipeFeedRow } from "../../db/schema.js";
 
-  type: string;
-  channelType: string;
-  displayType: string;
+export default class SnipeFeed implements SnipeFeedRow {
+  id!: number;
 
-  userId: string | null;
-  channelId: string | null;
-  guildId: string | null;
+  type!: string;
+  channelType!: string;
+  displayType!: string;
+  requestType!: "open" | "closed" | "request";
 
-  managerRoleId: string | null;
+  userId!: string | null;
+  channelId!: string | null;
+  guildId!: string | null;
 
-  playerIds: string[];
+  managerRoleId!: string | null;
 
-  hasFilters: boolean;
-  ssRanked: boolean | null;
-  blRanked: boolean | null;
-  asRanked: boolean | null;
-  minRank: number | null;
+  playerIds!: string[];
 
-  constructor(data: {
-    id: number | undefined;
+  hasFilters!: boolean;
+  ssRanked!: boolean | null;
+  blRanked!: boolean | null;
+  asRanked!: boolean | null;
+  minRank!: number | null;
 
-    type: string;
-    channelType: string;
-    displayType: string;
-
-    userId: string | null;
-    channelId: string | null;
-    guildId: string | null;
-
-    managerRoleId: string | null;
-
-    playerIds: string[];
-
-    hasFilters: boolean;
-    ssRanked: boolean | null;
-    blRanked: boolean | null;
-    asRanked: boolean | null;
-    minRank: number | null;
-  }) {
+  constructor(data: SnipeFeed) {
     this.id = data.id;
     this.type = data.type;
     this.channelType = data.channelType;

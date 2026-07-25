@@ -11,14 +11,16 @@ export class RankFeedService {
     try {
       const existingRow =
         (await RankFeedsRepository.findByUserId(rankFeed.userId ?? "0")) ??
-        (await RankFeedsRepository.findByUserId(rankFeed.channelId ?? "0"));
+        (await RankFeedsRepository.findByChannelId(rankFeed.channelId ?? "0"));
       if (existingRow) {
         return;
       }
 
-      await RankFeedsRepository.insert(rankFeed as RankFeedInsert).then(() => {
-        return rankFeed;
-      });
+      const { id, ...newFeed } = rankFeed;
+
+      return (await RankFeedsRepository.insert(
+        newFeed as RankFeedInsert,
+      )) as RankFeed;
     } catch (err) {
       console.log("Error creating Rank Feed: ", err);
     }

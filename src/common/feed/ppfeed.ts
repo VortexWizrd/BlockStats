@@ -1,6 +1,6 @@
-import type { ScoreFeedRow } from "../../db/schema.js";
+import type { PPFeedRow, RankFeedRow } from "../../db/schema.js";
 
-export default class ScoreFeed implements ScoreFeedRow {
+export default class PPFeed implements PPFeedRow {
   id!: number;
 
   type!: string;
@@ -20,9 +20,8 @@ export default class ScoreFeed implements ScoreFeedRow {
   ssRanked!: boolean | null;
   blRanked!: boolean | null;
   asRanked!: boolean | null;
-  minRank!: number | null;
 
-  constructor(data: ScoreFeed) {
+  constructor(data: PPFeed) {
     this.id = data.id;
     this.type = data.type;
     this.channelType = data.channelType;
@@ -36,6 +35,6 @@ export default class ScoreFeed implements ScoreFeedRow {
     this.ssRanked = data.ssRanked;
     this.blRanked = data.blRanked;
     this.asRanked = data.asRanked;
-    this.minRank = data.minRank;
+    this.requestType = data.requestType;
   }
 }

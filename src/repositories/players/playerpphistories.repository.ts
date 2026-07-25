@@ -1,11 +1,14 @@
 import { db } from "../../db/index.js";
-import { playerRankHistoryTable } from "../../db/schema.js";
+import {
+  playerPPHistoryTable,
+  playerRankHistoryTable,
+} from "../../db/schema.js";
 import { eq, desc, and } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 import type { ProviderType } from "../../common/provider.js";
 
-export class PlayerRankHistoriesRepository extends Repository {
-  public static readonly table = playerRankHistoryTable;
+export class PlayerPPHistoriesRepository extends Repository {
+  public static readonly table = playerPPHistoryTable;
   public static readonly row = this.table.$inferInsert;
 
   public static async getLatestRow(

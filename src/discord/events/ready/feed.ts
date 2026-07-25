@@ -16,6 +16,8 @@ import type ScoreMessage from "../../../common/scoremessage.js";
 import SnipeDisplay from "../../common/SnipeDisplay.js";
 import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
 import type ScoreFeed from "../../../common/feed/scorefeed.js";
+import { PPFeedService } from "../../../service/feeds/ppfeed.service.js";
+import PPDisplay from "../../common/PPDisplay.js";
 
 export default {
   data: {
@@ -134,7 +136,50 @@ export default {
           }
         } catch (err: any) {
           console.warn(
-            "[WARN]: Discord:: Score feed with id " +
+            "[WARN]: Discord: Rank feed with id " +
+              feed.id +
+              " failed to send message: ",
+            err?.message ?? err,
+          );
+        }
+      }
+    });
+
+    websocketclientService.addListener("pp", async (data: any) => {
+      console.log(data);
+      const embed = PPDisplay.getEmbed(data);
+      if (!embed) return;
+
+      let feeds = await PPFeedService.getGlobalPPFeeds();
+      const player = await PlayerService.getPlayer(data.playerId);
+      if (player) {
+        feeds = feeds.concat(
+          await PPFeedService.getBlockStatsGlobalPPFeeds(),
+          await PPFeedService.getConnectedPPFeeds(player.id),
+        );
+      } else {
+        feeds = feeds.concat(
+          await PPFeedService.getConnectedPPFeeds(data.playerId),
+        );
+      }
+
+      for (const feed of feeds) {
+        try {
+          if (feed.channelType === "user") {
+            const user = await client.users.fetch(feed.userId || "");
+
+            if (user) {
+              await user.send({ embeds: [embed] });
+            }
+          } else if (feed.channelType === "guild") {
+            const channel = await client.channels.fetch(feed.channelId ?? "");
+            if (channel && channel instanceof TextChannel) {
+              channel.send({ embeds: [embed] });
+            }
+          }
+        } catch (err: any) {
+          console.warn(
+            "[WARN]: Discord: PP feed with id " +
               feed.id +
               " failed to send message: ",
             err?.message ?? err,
@@ -182,7 +227,7 @@ export default {
           }
         } catch (err: any) {
           console.warn(
-            "[WARN]: Discord: Score feed with id " +
+            "[WARN]: Discord: Snipe feed with id " +
               feed.id +
               " failed to send message: ",
             err?.message ?? err,

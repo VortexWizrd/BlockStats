@@ -10,16 +10,18 @@ export class SnipeFeedService {
     try {
       const existingRow =
         (await SnipeFeedsRepository.findByUserId(snipeFeed.userId ?? "0")) ??
-        (await SnipeFeedsRepository.findByUserId(snipeFeed.channelId ?? "0"));
+        (await SnipeFeedsRepository.findByChannelId(
+          snipeFeed.channelId ?? "0",
+        ));
       if (existingRow) {
         return;
       }
 
-      await SnipeFeedsRepository.insert(snipeFeed as SnipeFeedInsert).then(
-        () => {
-          return snipeFeed;
-        },
-      );
+      const { id, ...newFeed } = snipeFeed;
+
+      return (await SnipeFeedsRepository.insert(
+        newFeed as SnipeFeedInsert,
+      )) as SnipeFeed;
     } catch (err) {
       console.log("Error creating Snipe Feed: ", err);
     }

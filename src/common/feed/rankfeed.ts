@@ -1,45 +1,27 @@
-export default class RankFeed {
-  id: number | undefined;
+import type { RankFeedRow } from "../../db/schema.js";
 
-  type: string;
-  channelType: string;
-  displayType: string;
+export default class RankFeed implements RankFeedRow {
+  id!: number;
 
-  userId: string | null;
-  channelId: string | null;
-  guildId: string | null;
+  type!: string;
+  channelType!: string;
+  displayType!: string;
+  requestType!: "open" | "closed" | "request";
 
-  managerRoleId: string | null;
+  userId!: string | null;
+  channelId!: string | null;
+  guildId!: string | null;
 
-  playerIds: string[];
+  managerRoleId!: string | null;
 
-  hasFilters: boolean;
-  ssRanked: boolean | null;
-  blRanked: boolean | null;
-  asRanked: boolean | null;
-  minRank: number | null;
+  playerIds!: string[];
 
-  constructor(data: {
-    id: number | undefined;
+  hasFilters!: boolean;
+  ssRanked!: boolean | null;
+  blRanked!: boolean | null;
+  asRanked!: boolean | null;
 
-    type: string;
-    channelType: string;
-    displayType: string;
-
-    userId: string | null;
-    channelId: string | null;
-    guildId: string | null;
-
-    managerRoleId: string | null;
-
-    playerIds: string[];
-
-    hasFilters: boolean;
-    ssRanked: boolean | null;
-    blRanked: boolean | null;
-    asRanked: boolean | null;
-    minRank: number | null;
-  }) {
+  constructor(data: RankFeed) {
     this.id = data.id;
     this.type = data.type;
     this.channelType = data.channelType;
@@ -53,6 +35,6 @@ export default class RankFeed {
     this.ssRanked = data.ssRanked;
     this.blRanked = data.blRanked;
     this.asRanked = data.asRanked;
-    this.minRank = data.minRank;
+    this.requestType = data.requestType;
   }
 }

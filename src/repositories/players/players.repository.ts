@@ -195,6 +195,50 @@ export class PlayersRepository extends Repository {
     }
   }
 
+  public static async updateASPP(
+    id: string,
+    pp: number,
+    type: "Tech Acc" | "True Acc" | "Standard Acc" | "Overall",
+  ): Promise<typeof this.row | undefined> {
+    switch (type) {
+      case "Tech Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asTechPP: pp })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "True Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asTruePP: pp })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "Standard Acc": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asStandardPP: pp })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+
+      case "Overall": {
+        const [player] = await db
+          .update(playersTable)
+          .set({ asPP: pp })
+          .where(eq(playersTable.id, id))
+          .returning();
+        return player;
+      }
+    }
+  }
+
   public static async getTopBL(
     limit: number,
     offset: number,

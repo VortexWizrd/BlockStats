@@ -3,6 +3,7 @@ import { MapService } from "../../map.service.js";
 import { PlayerService } from "../../player.service.js";
 import { ScoreService } from "../../score.service.js";
 import websocketserverService from "../websocketserver.service.js";
+import WebSocketPPEvent from "./pp.js";
 import WebSocketRankEvent from "./rank.js";
 
 export default class WebSocketScoreEvent {
@@ -62,9 +63,20 @@ export default class WebSocketScoreEvent {
           );
         }
       } else {
+        // refresh player profile
         await PlayerService.refreshPlayer(player.id);
       }
-      // refresh player profile
+
+      // Handle rank updates
+      await WebSocketPPEvent.processBLPP();
+      if (score.ssStarRating && score.ssStarRating > 0) {
+        await WebSocketRankEvent.processSSRank();
+        await WebSocketPPEvent.processSSPP(true);
+      }
+      if (score.asComplexity && score.asComplexity > 0) {
+        await WebSocketRankEvent.processASRank();
+        await WebSocketPPEvent.processASPP(true);
+      }
 
       // Handle leaderboard creation (might make a better way to do this later)
       const ssFullMap = await MapService.createFromScoreSaber(

@@ -1,170 +1,169 @@
-import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
+import { PlayerPPHistoriesRepository } from "../../../repositories/players/playerpphistories.repository.js";
 import beatleaderApiService from "../../external/beatleader-api.service.js";
 import scoresaberApiService from "../../external/scoresaber-api.service.js";
 import { PlayerService } from "../../player.service.js";
 import websocketserverService from "../websocketserver.service.js";
 
-export default class WebSocketRankEvent {
+export default class WebSocketPPEvent {
   private static blRankedSubmissions = 0;
   private static ssRankedSubmissions = 0;
   private static asRankedSubmissions = 0;
 
-  public static async processBLRank(skipCooldown?: boolean) {
+  public static async processBLPP(skipCooldown?: boolean) {
     if (this.blRankedSubmissions >= 5 || skipCooldown) {
       this.blRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
-        const updatedPlayer = await PlayerService.updateBLRank(player, false);
+        const updatedPlayer = await PlayerService.updateBLPP(player, false);
         if (!updatedPlayer) continue;
-        const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
           player.id,
           "BeatLeader",
           2,
         );
-        if (!latestRanks || latestRanks.length < 2) continue;
+        if (!latestPPs || latestPPs.length < 2) continue;
 
         const abovePlayer = await beatleaderApiService.getUserFromRank(
           (updatedPlayer.blRank ?? -1) - 1,
         );
-        const rankUpdate = {
+        const ppUpdate = {
           playerName: updatedPlayer.name,
           playerAvatar: updatedPlayer.avatar,
           playerId: updatedPlayer.id,
           playerUrl: `https://beatleader.com/u/${updatedPlayer.alias ?? updatedPlayer.steamId ?? updatedPlayer.oculusId ?? updatedPlayer.questId ?? "undefined"}`,
           leaderboard: "BeatLeader",
-          pp: updatedPlayer.blPP ?? undefined,
-          oldRank: latestRanks[1]?.rank ?? 0,
-          newRank: updatedPlayer.blRank,
+          oldPP: latestPPs[1]?.pp ?? 0,
+          newPP: updatedPlayer.blPP,
           abovePlayerName: abovePlayer?.name ?? undefined,
           abovePlayerPP: abovePlayer?.pp ?? undefined,
           timestamp: Date.now(),
         };
-        this.sendRankUpdate(rankUpdate);
+        this.sendPPUpdate(ppUpdate);
       }
     } else {
       this.blRankedSubmissions++;
     }
   }
 
-  public static async processSSRank(skipCooldown?: boolean) {
+  public static async processSSPP(skipCooldown?: boolean) {
     if (this.ssRankedSubmissions >= 5 || skipCooldown) {
       this.ssRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.scoreSaberId) continue;
-        const updatedPlayer = await PlayerService.updateSSRank(player, false);
+        const updatedPlayer = await PlayerService.updateSSPP(player, false);
         if (!updatedPlayer) continue;
-        const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
           player.id,
           "ScoreSaber",
           2,
         );
-        if (!latestRanks || latestRanks.length < 2) continue;
+        if (!latestPPs || latestPPs.length < 2) continue;
 
         const abovePlayer = await scoresaberApiService.getUserFromRank(
           (updatedPlayer.ssRank ?? -1) - 1,
         );
 
-        const rankUpdate = {
+        const ppUpdate = {
           playerName: updatedPlayer.name,
           playerAvatar: updatedPlayer.avatar,
           playerId: updatedPlayer.id,
           playerUrl: `https://scoresaber.com/u/${updatedPlayer.scoreSaberAlias ?? updatedPlayer.scoreSaberId ?? "undefined"}`,
           leaderboard: "ScoreSaber",
           pp: updatedPlayer.ssPP ?? undefined,
-          oldRank: latestRanks[1]?.rank ?? 0,
-          newRank: updatedPlayer.ssRank,
+          oldPP: latestPPs[1]?.pp ?? 0,
+          newPP: updatedPlayer.ssPP,
           abovePlayerName: abovePlayer?.name ?? undefined,
           abovePlayerPP: abovePlayer?.stats?.totalPP ?? undefined,
           timestamp: Date.now(),
         };
-        this.sendRankUpdate(rankUpdate);
+        this.sendPPUpdate(ppUpdate);
       }
     } else {
       this.ssRankedSubmissions++;
     }
   }
 
-  public static async processASRank(skipCooldown?: boolean) {
+  public static async processASPP(skipCooldown?: boolean) {
     if (this.asRankedSubmissions >= 1 || skipCooldown) {
       this.asRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.accSaberId) continue;
-        const updatedPlayer = await PlayerService.updateASRank(player, false);
+        const updatedPlayer = await PlayerService.updateASPP(player, false);
         if (!updatedPlayer) continue;
-        if (updatedPlayer.asRank != player.asRank) {
-          const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        if (updatedPlayer.asPP != player.asPP) {
+          const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
             player.id,
             "AccSaber",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
-          const rankUpdate = {
+          if (!latestPPs || latestPPs.length < 2) continue;
+          const ppUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
             playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber",
-            oldRank: latestRanks[1]?.rank ?? 0,
-            newRank: updatedPlayer.asRank,
+            oldPP: latestPPs[1]?.pp ?? 0,
+            newPP: updatedPlayer.asPP,
             timestamp: Date.now(),
           };
-          this.sendRankUpdate(rankUpdate);
+          this.sendPPUpdate(ppUpdate);
         }
-        if (updatedPlayer.asTechRank != player.asTechRank) {
-          const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        if (updatedPlayer.asTechPP != player.asTechPP) {
+          const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
             player.id,
             "AccSaber (Tech Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
-          const rankUpdate = {
+          if (!latestPPs || latestPPs.length < 2) continue;
+          const ppUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
             playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (Tech Acc)",
-            oldRank: latestRanks[1]?.rank ?? 0,
-            newRank: updatedPlayer.asTechRank,
+            oldPP: latestPPs[1]?.pp ?? 0,
+            newPP: updatedPlayer.asTechPP,
             timestamp: Date.now(),
           };
-          this.sendRankUpdate(rankUpdate);
+          this.sendPPUpdate(ppUpdate);
         }
-        if (updatedPlayer.asStandardRank != player.asStandardRank) {
-          const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        if (updatedPlayer.asStandardPP != player.asStandardPP) {
+          const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
             player.id,
             "AccSaber (Standard Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
-          const rankUpdate = {
+          if (!latestPPs || latestPPs.length < 2) continue;
+          const ppUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
             playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (Standard Acc)",
-            oldRank: latestRanks[1]?.rank ?? 0,
-            newRank: updatedPlayer.asStandardRank,
+            oldPP: latestPPs[1]?.pp ?? 0,
+            newPP: updatedPlayer.asStandardPP,
             timestamp: Date.now(),
           };
-          this.sendRankUpdate(rankUpdate);
+          this.sendPPUpdate(ppUpdate);
         }
-        if (updatedPlayer.asTrueRank != player.asTrueRank) {
-          const latestRanks = await PlayerRankHistoriesRepository.getLatestRows(
+        if (updatedPlayer.asTruePP != player.asTruePP) {
+          const latestPPs = await PlayerPPHistoriesRepository.getLatestRows(
             player.id,
             "AccSaber (True Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
-          const rankUpdate = {
+          if (!latestPPs || latestPPs.length < 2) continue;
+          const ppUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
             playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (True Acc)",
-            oldRank: latestRanks[1]?.rank ?? 0,
-            newRank: updatedPlayer.asTrueRank,
+            oldPP: latestPPs[1]?.pp ?? 0,
+            newPP: updatedPlayer.asTruePP,
             timestamp: Date.now(),
           };
-          this.sendRankUpdate(rankUpdate);
+          this.sendPPUpdate(ppUpdate);
         }
       }
     } else {
@@ -172,10 +171,10 @@ export default class WebSocketRankEvent {
     }
   }
 
-  public static sendRankUpdate(rankUpdate: any) {
+  public static sendPPUpdate(ppUpdate: any) {
     const wrapper = {
-      type: "rank",
-      data: rankUpdate,
+      type: "pp",
+      data: ppUpdate,
     };
     websocketserverService.send(wrapper);
   }

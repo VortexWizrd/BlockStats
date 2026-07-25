@@ -1,31 +1,31 @@
 import {
   ChatInputCommandInteraction,
   EmbedBuilder,
+  GuildMember,
   MessageFlags,
+  PermissionFlagsBits,
   SlashCommandBuilder,
   TextChannel,
-  GuildMember,
-  PermissionFlagsBits,
 } from "discord.js";
-import { SnipeFeedsRepository } from "../../../repositories/feeds/snipefeeds.repository.js";
-import SnipeFeed from "../../../common/feed/snipefeed.js";
-import { SnipeFeedService } from "../../../service/feeds/snipefeed.service.js";
-import { PlayerService } from "../../../service/player.service.js";
+import { PPFeedsRepository } from "../../../repositories/feeds/ppfeeds.repository.js";
+import PPFeed from "../../../common/feed/ppfeed.js";
+import { PPFeedService } from "../../../service/feeds/ppfeed.service.js";
 import beatleaderApiService from "../../../service/external/beatleader-api.service.js";
+import { PlayerService } from "../../../service/player.service.js";
 import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName("snipefeed")
-    .setDescription("Create/manage snipe feeds")
+    .setName("ppfeed")
+    .setDescription("Create/manage pp feeds")
     .addSubcommand((cmd) =>
       cmd
         .setName("new")
-        .setDescription("Create a new snipe feed")
+        .setDescription("Create a new pp feed")
         .addStringOption((option) =>
           option
             .setName("type")
-            .setDescription("Snipe feed type")
+            .setDescription("pp feed type")
             .addChoices(
               { name: "default", value: "default" },
               {
@@ -43,14 +43,12 @@ export default {
         ),
     )
     .addSubcommand((cmd) =>
-      cmd
-        .setName("delete")
-        .setDescription("Deletes all snipe feeds in channel"),
+      cmd.setName("delete").setDescription("Deletes all pp feeds in channel"),
     )
     .addSubcommand((cmd) =>
       cmd
         .setName("link")
-        .setDescription("Add a player to the snipe feed")
+        .setDescription("Add a player to the pp feed")
         .addStringOption((option) =>
           option
             .setName("beatleaderid")
@@ -73,7 +71,7 @@ export default {
     .addSubcommand((cmd) =>
       cmd
         .setName("unlink")
-        .setDescription("Remove a player from the snipe feed")
+        .setDescription("Remove a player from the pp feed")
         .addStringOption((option) =>
           option
             .setName("beatleaderid")
@@ -102,18 +100,18 @@ export default {
     switch (subCommand) {
       case "new": {
         if (!interaction.guild) {
-          const existingFeed = await SnipeFeedsRepository.findByUserId(
+          const existingFeed = await PPFeedsRepository.findByUserId(
             interaction.user.id,
           );
 
           if (existingFeed) {
             return await interaction.reply({
-              content: "Personal snipe feed already set up!",
+              content: "Personal pp feed already set up!",
               flags: MessageFlags.Ephemeral,
             });
           }
 
-          const newFeed = new SnipeFeed({
+          const newFeed = new PPFeed({
             id: -1,
             type: interaction.options.getString("type") ?? "global",
             channelType: "user",
@@ -128,13 +126,12 @@ export default {
             asRanked: null,
             managerRoleId: null,
             requestType: "closed",
-            minRank: null,
           });
 
-          await SnipeFeedService.createSnipeFeed(newFeed);
+          await PPFeedService.createPPFeed(newFeed);
 
           return await interaction.reply({
-            content: `New \`${newFeed.type}\` snipe feed created!`,
+            content: `New \`${newFeed.type}\` pp feed created!`,
             flags: MessageFlags.Ephemeral,
           });
         } else {
@@ -146,17 +143,17 @@ export default {
               content: "You must be in a text channel to use this command!",
               flags: MessageFlags.Ephemeral,
             });
-          const existingFeed = await SnipeFeedsRepository.findByChannelId(
+          const existingFeed = await PPFeedsRepository.findByChannelId(
             interaction.channel.id,
           );
 
           if (existingFeed)
             return interaction.reply({
-              content: "Snipe feed already exists for this channel!",
+              content: "PP feed already exists for this channel!",
               flags: MessageFlags.Ephemeral,
             });
 
-          const newFeed = new SnipeFeed({
+          const newFeed = new PPFeed({
             id: -1,
             type: interaction.options.getString("type") ?? "global",
             channelType: "user",
@@ -171,35 +168,33 @@ export default {
             asRanked: null,
             managerRoleId: null,
             requestType: "closed",
-            minRank: null,
           });
 
-          await SnipeFeedService.createSnipeFeed(newFeed);
+          await PPFeedService.createPPFeed(newFeed);
           return await interaction.reply({
-            content: `New \`${newFeed.type}\` snipe feed created!`,
+            content: `New \`${newFeed.type}\` pp feed created!`,
             flags: MessageFlags.Ephemeral,
           });
         }
-        break;
       }
 
       case "delete": {
         if (!interaction.guild) {
-          const existingFeed = await SnipeFeedsRepository.findByUserId(
+          const existingFeed = await PPFeedsRepository.findByUserId(
             interaction.user.id,
           );
 
           if (!existingFeed) {
             return await interaction.reply({
-              content: "There are no snipe feeds in this channel!",
+              content: "There are no pp feeds in this channel!",
               flags: MessageFlags.Ephemeral,
             });
           }
 
-          await SnipeFeedService.deleteFromUser(interaction.user.id);
+          await PPFeedService.deleteFromUser(interaction.user.id);
 
           return await interaction.reply({
-            content: `Snipe feeds deleted!`,
+            content: `PP feeds deleted!`,
             flags: MessageFlags.Ephemeral,
           });
         } else {
@@ -211,30 +206,30 @@ export default {
               content: "You must be in a text channel to use this command!",
               flags: MessageFlags.Ephemeral,
             });
-          const existingFeed = await SnipeFeedsRepository.findByChannelId(
+          const existingFeed = await PPFeedsRepository.findByChannelId(
             interaction.channel.id,
           );
 
           if (!existingFeed)
             return interaction.reply({
-              content: "There are no snipe feeds in this channel!",
+              content: "There are no pp feeds in this channel!",
               flags: MessageFlags.Ephemeral,
             });
 
-          await SnipeFeedService.deleteFromChannel(interaction.channel.id);
+          await PPFeedService.deleteFromChannel(interaction.channel.id);
         }
         break;
       }
 
       case "link": {
         const existingFeed = !interaction.guild
-          ? await SnipeFeedsRepository.findOne([
+          ? await PPFeedsRepository.findOne([
               {
                 name: "userId",
                 value: interaction.user.id.toString(),
               },
             ])
-          : await SnipeFeedsRepository.findOne([
+          : await PPFeedsRepository.findOne([
               {
                 name: "channelId",
                 value: interaction.channel?.id.toString(),
@@ -243,14 +238,13 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a snipe feed channel to run this command!",
+            content: "You must be in a pp feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
         if (existingFeed.type !== "default")
           return await interaction.reply({
-            content:
-              "You can only link profiles to 'default' type snipe feeds!",
+            content: "You can only link profiles to 'default' type pp feeds!",
           });
 
         if (interaction.guild) {
@@ -288,9 +282,9 @@ export default {
         } else if (ids.length == 0) {
           const player = await PlayerService.getPlayer(interaction.user.id);
           if (player) {
-            SnipeFeedService.addPlayerId(existingFeed.id, player.id);
+            PPFeedService.addPlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Added BlockStats user **${player.name}** to the snipe feed!`,
+              content: `Added BlockStats user **${player.name}** to the pp feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -298,9 +292,9 @@ export default {
               interaction.user.id,
             );
             if (blProfile && blProfile.id) {
-              SnipeFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              PPFeedService.addPlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the snipe feed!`,
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -316,9 +310,9 @@ export default {
             (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
 
           if (player) {
-            SnipeFeedService.addPlayerId(existingFeed.id, player.id);
+            PPFeedService.addPlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Added BlockStats user **${player.name}** to the snipe feed!`,
+              content: `Added BlockStats user **${player.name}** to the pp feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -326,9 +320,9 @@ export default {
               (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
-              SnipeFeedService.addPlayerId(existingFeed.id, blProfile.id);
+              PPFeedService.addPlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the snipe feed!`,
+                content: `Added BeatLeader profile https://beatleader.com/u/${blProfile.id} to the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             } else {
@@ -336,10 +330,10 @@ export default {
                 scoreSaberId ?? "",
               );
               if (ssProfile && ssProfile.id) {
-                SnipeFeedService.addPlayerId(existingFeed.id, ssProfile.id);
+                PPFeedService.addPlayerId(existingFeed.id, ssProfile.id);
               }
               return await interaction.reply({
-                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the snipe feed!`,
+                content: `Added ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} to the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -349,13 +343,13 @@ export default {
 
       case "unlink": {
         const existingFeed = !interaction.guild
-          ? await SnipeFeedsRepository.findOne([
+          ? await PPFeedsRepository.findOne([
               {
                 name: "userId",
                 value: interaction.user.id.toString(),
               },
             ])
-          : await SnipeFeedsRepository.findOne([
+          : await PPFeedsRepository.findOne([
               {
                 name: "channelId",
                 value: interaction.channel?.id.toString(),
@@ -364,14 +358,13 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a snipe feed channel to run this command!",
+            content: "You must be in a pp feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
         if (existingFeed.type !== "default")
           return await interaction.reply({
-            content:
-              "You can only unlink profiles in 'default' type snipe feeds!",
+            content: "You can only unlink profiles in 'default' type pp feeds!",
           });
 
         if (interaction.guild) {
@@ -409,9 +402,9 @@ export default {
         } else if (ids.length == 0) {
           const player = await PlayerService.getPlayer(interaction.user.id);
           if (player) {
-            SnipeFeedService.removePlayerId(existingFeed.id, player.id);
+            PPFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** from the snipe feed!`,
+              content: `Removed BlockStats user **${player.name}** from the pp feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -419,9 +412,9 @@ export default {
               interaction.user.id,
             );
             if (blProfile && blProfile.id) {
-              SnipeFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              PPFeedService.removePlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the snipe feed!`,
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -437,9 +430,9 @@ export default {
             (await PlayerService.getPlayerFromScoreSaber(scoreSaberId ?? ""));
 
           if (player) {
-            SnipeFeedService.removePlayerId(existingFeed.id, player.id);
+            PPFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** from the snipe feed!`,
+              content: `Removed BlockStats user **${player.name}** from the pp feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {
@@ -447,9 +440,9 @@ export default {
               (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
-              SnipeFeedService.removePlayerId(existingFeed.id, blProfile.id);
+              PPFeedService.removePlayerId(existingFeed.id, blProfile.id);
               return await interaction.reply({
-                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the snipe feed!`,
+                content: `Removed BeatLeader profile https://beatleader.com/u/${blProfile.id} from the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             } else {
@@ -457,10 +450,10 @@ export default {
                 scoreSaberId ?? "",
               );
               if (ssProfile && ssProfile.id) {
-                SnipeFeedService.removePlayerId(existingFeed.id, ssProfile.id);
+                PPFeedService.removePlayerId(existingFeed.id, ssProfile.id);
               }
               return await interaction.reply({
-                content: `Removed ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} from the snipe feed!`,
+                content: `Removed ScoreSaber profile https://scoresaber.com/u/${ssProfile.id} from the pp feed!`,
                 flags: MessageFlags.Ephemeral,
               });
             }
@@ -471,13 +464,13 @@ export default {
 
       case "info": {
         const existingFeed = !interaction.guild
-          ? await SnipeFeedsRepository.findOne([
+          ? await PPFeedsRepository.findOne([
               {
                 name: "userId",
                 value: interaction.user.id.toString(),
               },
             ])
-          : await SnipeFeedsRepository.findOne([
+          : await PPFeedsRepository.findOne([
               {
                 name: "channelId",
                 value: interaction.channel?.id.toString(),
@@ -486,21 +479,19 @@ export default {
 
         if (!existingFeed)
           return await interaction.reply({
-            content: "You must be in a snipe feed channel to run this command!",
+            content: "You must be in a pp feed channel to run this command!",
             flags: MessageFlags.Ephemeral,
           });
 
         const embed = new EmbedBuilder();
         if (interaction.guild) {
           embed
-            .setTitle(
-              `${interaction.guild.name} Snipe Feed [${existingFeed.id}]`,
-            )
+            .setTitle(`${interaction.guild.name} PP Feed [${existingFeed.id}]`)
             .setThumbnail(interaction.guild.iconURL());
         } else {
           embed
             .setTitle(
-              `${interaction.user.displayName}'s Snipe Feed [${existingFeed.id}]`,
+              `${interaction.user.displayName}'s PP Feed [${existingFeed.id}]`,
             )
             .setThumbnail(interaction.user.displayAvatarURL());
         }
@@ -529,6 +520,7 @@ export default {
           value: existingFeed.type,
         });
         embed.setColor("Blue");
+
         return interaction.reply({ embeds: [embed] });
       }
     }

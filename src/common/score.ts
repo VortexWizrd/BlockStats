@@ -4,8 +4,7 @@ import beatleaderApiService from "../service/external/beatleader-api.service.js"
 import scoresaberApiService from "../service/external/scoresaber-api.service.js";
 import { MapService } from "../service/map.service.js";
 import { PlayerService } from "../service/player.service.js";
-
-export type ProviderType = "BeatLeader" | "ScoreSaber";
+import type { ProviderType } from "./provider.js";
 
 export default class Score implements ScoreRow {
   id!: number;

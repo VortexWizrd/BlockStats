@@ -115,7 +115,7 @@ export default {
           }
 
           const newFeed = new ScoreFeed({
-            id: undefined,
+            id: -1,
             type: interaction.options.getString("type") ?? "global",
             channelType: "user",
             displayType: "embed",
@@ -128,6 +128,7 @@ export default {
             blRanked: null,
             asRanked: null,
             managerRoleId: null,
+            requestType: "closed",
             minRank: null,
           });
 
@@ -157,20 +158,20 @@ export default {
             });
 
           const newFeed = new ScoreFeed({
-            id: undefined,
+            id: -1,
             type: interaction.options.getString("type") ?? "global",
-            channelType: "guild",
+            channelType: "user",
             displayType: "embed",
-            userId: null,
-            guildId: interaction.guild.id,
-            channelId: interaction.channel.id,
+            userId: interaction.user.id,
+            guildId: null,
+            channelId: null,
             playerIds: [],
             hasFilters: false,
             ssRanked: null,
             blRanked: null,
             asRanked: null,
-            managerRoleId:
-              interaction.options.getRole("manager-role")?.id ?? null,
+            managerRoleId: null,
+            requestType: "closed",
             minRank: null,
           });
 
@@ -446,7 +447,7 @@ export default {
           if (player) {
             ScoreFeedService.removePlayerId(existingFeed.id, player.id);
             return await interaction.reply({
-              content: `Removed BlockStats user **${player.name}** to the score feed!`,
+              content: `Removed BlockStats user **${player.name}** from the score feed!`,
               flags: MessageFlags.Ephemeral,
             });
           } else {

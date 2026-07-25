@@ -19,6 +19,7 @@ import { PlayerRankHistoriesRepository } from "../../../repositories/players/pla
 import type Player from "../../../common/player.js";
 import { ScoreService } from "../../../service/score.service.js";
 import { link } from "node:fs";
+import { PlayerPPHistoriesRepository } from "../../../repositories/players/playerpphistories.repository.js";
 
 export default {
   data: new SlashCommandBuilder()

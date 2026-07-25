@@ -22,8 +22,20 @@ export const difficultyEnum = pgEnum("difficulty", [
   "Normal",
   "Easy",
 ]);
-export const providerEnum = pgEnum("provider", ["BeatLeader", "ScoreSaber"]);
+export const providerEnum = pgEnum("provider", [
+  "BeatLeader",
+  "ScoreSaber",
+  "AccSaber",
+  "AccSaber (Tech Acc)",
+  "AccSaber (True Acc)",
+  "AccSaber (Standard Acc)",
+]);
 export const voteEnum = pgEnum("vote", ["up", "down"]);
+export const feedRequestEnum = pgEnum("feedrequest", [
+  "open",
+  "closed",
+  "request",
+]);
 
 // [[ Tables ]]
 export const playersTable = pgTable(
@@ -115,6 +127,50 @@ export const playersTable = pgTable(
       (${table.overallPP} IS NULL OR ${table.overallPP} > 0)
     `,
     ),
+  ],
+);
+
+export const playerRankHistoryTable = pgTable(
+  "playerrankhistories",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    playerId: varchar({ length: 32 })
+      .notNull()
+      .references(() => playersTable.id, { onDelete: "cascade" }),
+    provider: providerEnum().notNull(),
+    timestamp: timestamp().notNull(),
+    rank: integer().notNull(),
+  },
+  (table) => [
+    check(
+      "rankhistory_rank_check",
+      sql`
+      (${table.rank} IS NULL OR ${table.rank} > 0)`,
+    ),
+    index("rankhistory_timestamp_idx").on(table.timestamp),
+    index("rankhistory_rank_idx").on(table.rank),
+  ],
+);
+
+export const playerPPHistoryTable = pgTable(
+  "playerpphistories",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    playerId: varchar({ length: 32 })
+      .notNull()
+      .references(() => playersTable.id, { onDelete: "cascade" }),
+    provider: providerEnum().notNull(),
+    timestamp: timestamp().notNull(),
+    pp: doublePrecision().notNull(),
+  },
+  (table) => [
+    check(
+      "pphistory_pp_check",
+      sql`
+      (${table.pp} IS NULL OR ${table.pp} > 0)`,
+    ),
+    index("pphistory_timestamp_idx").on(table.timestamp),
+    index("pphistory_rank_idx").on(table.pp),
   ],
 );
 
@@ -226,94 +282,6 @@ export const scoreMessagesTable = pgTable("scoremessages", {
   guildId: varchar({ length: 32 }),
 });
 
-export const scoreFeedsTable = pgTable("scorefeeds", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
-
-  type: varchar({ length: 32 }).notNull(),
-  channelType: varchar({ length: 32 }).notNull(),
-  displayType: varchar({ length: 32 }).notNull(),
-
-  userId: varchar({ length: 32 }),
-  channelId: varchar({ length: 32 }),
-  guildId: varchar({ length: 32 }),
-
-  managerRoleId: varchar({ length: 32 }),
-
-  playerIds: varchar({ length: 32 }).array().notNull(),
-
-  hasFilters: boolean().notNull(),
-  ssRanked: boolean(),
-  blRanked: boolean(),
-  asRanked: boolean(),
-  minRank: integer(),
-});
-
-export const rankFeedsTable = pgTable("rankfeeds", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
-
-  type: varchar({ length: 32 }).notNull(),
-  channelType: varchar({ length: 32 }).notNull(),
-  displayType: varchar({ length: 32 }).notNull(),
-
-  userId: varchar({ length: 32 }),
-  channelId: varchar({ length: 32 }),
-  guildId: varchar({ length: 32 }),
-
-  managerRoleId: varchar({ length: 32 }),
-
-  playerIds: varchar({ length: 32 }).array().notNull(),
-
-  hasFilters: boolean().notNull(),
-  ssRanked: boolean(),
-  blRanked: boolean(),
-  asRanked: boolean(),
-  minRank: integer(),
-});
-
-export const snipeFeedsTable = pgTable("snipefeeds", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
-
-  type: varchar({ length: 32 }).notNull(),
-  channelType: varchar({ length: 32 }).notNull(),
-  displayType: varchar({ length: 32 }).notNull(),
-
-  userId: varchar({ length: 32 }),
-  channelId: varchar({ length: 32 }),
-  guildId: varchar({ length: 32 }),
-
-  managerRoleId: varchar({ length: 32 }),
-
-  playerIds: varchar({ length: 32 }).array().notNull(),
-
-  hasFilters: boolean().notNull(),
-  ssRanked: boolean(),
-  blRanked: boolean(),
-  asRanked: boolean(),
-  minRank: integer(),
-});
-
-export const playerRankHistoryTable = pgTable(
-  "playerrankhistories",
-  {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    playerId: varchar({ length: 32 })
-      .notNull()
-      .references(() => playersTable.id, { onDelete: "cascade" }),
-    provider: varchar({ length: 32 }).notNull(),
-    timestamp: timestamp().notNull(),
-    rank: integer().notNull(),
-  },
-  (table) => [
-    check(
-      "rankhistory_rank_check",
-      sql`
-      (${table.rank} IS NULL OR ${table.rank} > 0)`,
-    ),
-    index("rankhistory_timestamp_idx").on(table.timestamp),
-    index("rankhistory_rank_idx").on(table.rank),
-  ],
-);
-
 export const mapsTable = pgTable(
   "maps",
   {
@@ -338,6 +306,7 @@ export const mapsTable = pgTable(
     leaderboardIds: integer().array().notNull(),
 
     // timestamps
+    outdated: boolean().notNull().default(true),
     uploadedTime: timestamp(),
     savedTime: timestamp().notNull().defaultNow(),
     updatedTime: timestamp().notNull().defaultNow(),
@@ -394,18 +363,69 @@ export const leaderboardsTable = pgTable(
     asCategoryCode: varchar({ length: 32 }),
     asComplexity: doublePrecision(),
 
+    outdated: boolean().notNull().default(true),
     savedTime: timestamp().notNull(),
     updatedTime: timestamp().notNull(),
   },
   (table) => [index("leaderboards_map_id_idx").on(table.mapId)],
 );
 
+// Feeds
+const baseFeed = {
+  // Basic feed information
+  id: integer().primaryKey().generatedAlwaysAsIdentity().notNull(),
+  type: varchar({ length: 32 }).notNull(),
+  channelType: varchar({ length: 32 }).notNull(),
+  displayType: varchar({ length: 32 }).notNull(),
+
+  // Discord information
+  userId: varchar({ length: 32 }),
+  channelId: varchar({ length: 32 }),
+  guildId: varchar({ length: 32 }),
+
+  managerRoleId: varchar({ length: 32 }),
+};
+
+const playerFeed = {
+  ...baseFeed,
+  requestType: feedRequestEnum().notNull().default("closed"),
+
+  playerIds: varchar({ length: 32 }).array().notNull(),
+
+  hasFilters: boolean().notNull(),
+  ssRanked: boolean(),
+  blRanked: boolean(),
+  asRanked: boolean(),
+};
+
+export const scoreFeedsTable = pgTable("scorefeeds", {
+  ...playerFeed,
+
+  minRank: integer(),
+});
+
+export const rankFeedsTable = pgTable("rankfeeds", {
+  ...playerFeed,
+});
+
+export const snipeFeedsTable = pgTable("snipefeeds", {
+  ...playerFeed,
+  minRank: integer(),
+});
+
+export const ppFeedsTable = pgTable("ppFeeds", {
+  ...playerFeed,
+});
+
 export type PlayerRow = typeof playersTable.$inferSelect;
 export type ScoreRow = typeof scoresTable.$inferSelect;
 export type ScoreMessageRow = typeof scoreMessagesTable.$inferInsert;
+export type ScoreVoteRow = typeof scoreVotesTable.$inferInsert;
+export type PlayerPPHistoryRow = typeof playerPPHistoryTable.$inferInsert;
 export type ScoreFeedRow = typeof scoreFeedsTable.$inferSelect;
 export type RankFeedRow = typeof rankFeedsTable.$inferSelect;
 export type SnipeFeedRow = typeof snipeFeedsTable.$inferSelect;
+export type PPFeedRow = typeof ppFeedsTable.$inferSelect;
 export type PlayerRankHistoryRow = typeof playerRankHistoryTable.$inferSelect;
 export type MapRow = typeof mapsTable.$inferInsert;
 export type LeaderboardRow = typeof leaderboardsTable.$inferInsert;

@@ -10,16 +10,18 @@ export class ScoreFeedService {
     try {
       const existingRow =
         (await ScoreFeedsRepository.findByUserId(scoreFeed.userId ?? "0")) ??
-        (await ScoreFeedsRepository.findByUserId(scoreFeed.channelId ?? "0"));
+        (await ScoreFeedsRepository.findByChannelId(
+          scoreFeed.channelId ?? "0",
+        ));
       if (existingRow) {
         return;
       }
 
-      await ScoreFeedsRepository.insert(scoreFeed as ScoreFeedInsert).then(
-        () => {
-          return scoreFeed;
-        },
-      );
+      const { id, ...newFeed } = scoreFeed;
+
+      return (await ScoreFeedsRepository.insert(
+        newFeed as ScoreFeedInsert,
+      )) as ScoreFeed;
     } catch (err) {
       console.log("Error creating Score Feed: ", err);
     }
