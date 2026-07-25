@@ -116,7 +116,7 @@ export default {
           const newFeed = new SnipeFeed({
             id: -1,
             type: interaction.options.getString("type") ?? "global",
-            channelType: "user",
+            channelType: "guild",
             displayType: "embed",
             userId: interaction.user.id,
             guildId: null,
