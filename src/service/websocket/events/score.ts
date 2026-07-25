@@ -57,9 +57,10 @@ export default class WebSocketScoreEvent {
             `[LOG]: Changed ${player.name}'s ScoreSaber ID to ${score.playerScoreSaberId}`,
           );
         }
+      } else {
+        await PlayerService.refreshPlayer(player.id);
       }
       // refresh player profile
-      await PlayerService.refreshPlayer(player.id);
 
       // Handle leaderboard creation (might make a better way to do this later)
       const ssFullMap = await MapService.createFromScoreSaber(

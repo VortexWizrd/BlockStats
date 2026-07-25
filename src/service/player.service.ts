@@ -155,9 +155,9 @@ export class PlayerService {
       let scoreSaberData: any;
       if (
         existingRow.scoreSaberId &&
-        !Object.values(beatLeaderData.linkedIds).includes(
-          existingRow.scoreSaberId,
-        )
+        !Object.values(
+          beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id.toString() },
+        ).includes(existingRow.scoreSaberId)
       ) {
         scoreSaberData = await scoresaberApiService.getUserFromId(
           existingRow.scoreSaberId,
