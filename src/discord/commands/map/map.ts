@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { MapService } from "../../../service/map.service.js";
 import Map from "../../../common/map/map.js";
+import { LeaderboardsRepository } from "../../../repositories/maps/leaderboards.repository.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -105,7 +106,9 @@ export default {
                     },
                     {
                       name: "Difficulties",
-                      value: map.leaderboardIds.length.toString(),
+                      value: (
+                        (await LeaderboardsRepository.countFromMap(map.id)) ?? 0
+                      ).toString(),
                       inline: true,
                     },
                     {

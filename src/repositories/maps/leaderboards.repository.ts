@@ -1,5 +1,5 @@
 import { db } from "../../db/index.js";
-import { ilike, and, eq } from "drizzle-orm";
+import { ilike, and, eq, count } from "drizzle-orm";
 import {
   leaderboardsTable,
   difficultyEnum,
@@ -58,5 +58,13 @@ export class LeaderboardsRepository extends Repository {
     mapId: number,
   ): Promise<(typeof this.row)[] | undefined> {
     return await this.find([{ name: "mapId", value: mapId }]);
+  }
+
+  public static async countFromMap(mapId: number): Promise<number | undefined> {
+    const [data] = await db
+      .select({ count: count() })
+      .from(this.table)
+      .where(eq(this.table.mapId, mapId));
+    return data?.count ?? 0;
   }
 }

@@ -289,6 +289,8 @@ export const mapsTable = pgTable(
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     beatSaverId: varchar({ length: 32 }),
     hash: varchar({ length: 64 }).notNull().unique(),
+    scoreSaberId: integer().unique(),
+    beatLeaderId: varchar({ length: 32 }).unique(),
 
     // map basic information
     songName: text().notNull(),
@@ -301,9 +303,6 @@ export const mapsTable = pgTable(
     // detailed information
     songDuration: integer(),
     songBPM: doublePrecision(),
-
-    // leaderboards
-    leaderboardIds: integer().array().notNull(),
 
     // timestamps
     outdated: boolean().notNull().default(true),

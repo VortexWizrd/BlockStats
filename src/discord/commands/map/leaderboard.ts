@@ -186,6 +186,17 @@ export default {
                     .setStyle(ButtonStyle.Link),
                 );
               }
+              if (map.scoreSaberId && leaderboard.ssLeaderboardId) {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setLabel("ScoreSaber")
+                    .setURL(
+                      `https://scoresaber.com/map/${map.scoreSaberId}/difficulty/${leaderboard.ssLeaderboardId}`,
+                    )
+                    .setEmoji("1492695389634035823")
+                    .setStyle(ButtonStyle.Link),
+                );
+              }
               if (leaderboard.asLeaderboardId) {
                 buttons.addComponents(
                   new ButtonBuilder()

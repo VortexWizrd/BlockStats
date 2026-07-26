@@ -93,10 +93,6 @@ export class MapService {
     return (await LeaderboardsRepository.findByScoreSaberId(id)) as Leaderboard;
   }
 
-  public static async addLeaderboardId(id: number, leaderboardId: number) {
-    return await MapsRepository.addLeaderboardId(id, leaderboardId);
-  }
-
   public static async getLeaderboardFromMap(
     mapId: number,
     difficulty: DifficultyType,
@@ -149,7 +145,6 @@ export class MapService {
         songAuthor: scoreSaberMap.songAuthorName,
         mapAuthor: scoreSaberMap.levelAuthorName,
         songCover: scoreSaberMap.coverUrl,
-        leaderboardIds: [],
         savedTime: new Date(),
         updatedTime: new Date(),
         beatSaverId: scoreSaberMap.bsid ?? null,
@@ -160,6 +155,8 @@ export class MapService {
           ? new Date(beatSaverMap.lastPublishedAt)
           : null,
         outdated: !(beatSaverMap.versions[0].hash == hash.toLowerCase()),
+        scoreSaberId: scoreSaberMap.id,
+        beatLeaderId: null,
       });
       if (!map) {
         console.error(
@@ -182,6 +179,7 @@ export class MapService {
         uploadedTime: beatSaverMap?.lastPublishedAt
           ? new Date(beatSaverMap.lastPublishedAt)
           : null,
+        scoreSaberId: scoreSaberMap.id,
       });
     }
 
@@ -251,7 +249,6 @@ export class MapService {
         continue;
       }
       leaderboards.push(newLeaderboard);
-      await this.addLeaderboardId(map.id, newLeaderboard.id);
     }
     return {
       map: map,
@@ -296,7 +293,6 @@ export class MapService {
           songAuthor: selectedLeaderboard.song.author,
           mapAuthor: selectedLeaderboard.song.mapper,
           songCover: selectedLeaderboard.song.coverImage,
-          leaderboardIds: [],
           savedTime: new Date(),
           updatedTime: new Date(),
           beatSaverId: beatSaverMap?.id ?? null,
@@ -309,6 +305,8 @@ export class MapService {
           outdated: !(
             beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
           ),
+          scoreSaberId: null,
+          beatLeaderId: selectedLeaderboard.song.id,
         });
         if (!map) {
           console.error(
@@ -329,6 +327,7 @@ export class MapService {
           outdated: !(
             beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
           ),
+          beatLeaderId: selectedLeaderboard.song.id,
         });
       }
 
@@ -412,7 +411,6 @@ export class MapService {
         if (!newLeaderboard) {
           continue;
         }
-        await this.addLeaderboardId(map.id, newLeaderboard.id);
       }
     }
   }
@@ -442,7 +440,6 @@ export class MapService {
         songAuthor: accSaberMap.songAuthor ?? "",
         mapAuthor: accSaberMap.mapAuthor ?? "",
         songCover: accSaberMap.coverUrl ?? "",
-        leaderboardIds: [],
         savedTime: new Date(),
         updatedTime: new Date(),
         beatSaverId: accSaberMap.beatsaverCode ?? null,
@@ -451,6 +448,8 @@ export class MapService {
         songBPM: null,
         uploadedTime: null,
         outdated: false,
+        scoreSaberId: null,
+        beatLeaderId: null,
       });
       if (!map) {
         console.error(
@@ -549,7 +548,6 @@ export class MapService {
       if (!newLeaderboard) {
         continue;
       }
-      await this.addLeaderboardId(map.id, newLeaderboard.id);
     }
   }
 
@@ -569,7 +567,6 @@ export class MapService {
           songAuthor: accSaberMap.songAuthor ?? "",
           mapAuthor: accSaberMap.mapAuthor ?? "",
           songCover: accSaberMap.coverUrl ?? "",
-          leaderboardIds: [],
           savedTime: new Date(),
           updatedTime: new Date(),
           beatSaverId: accSaberMap.beatsaverCode ?? null,
@@ -578,6 +575,8 @@ export class MapService {
           songBPM: null,
           uploadedTime: null,
           outdated: false,
+          scoreSaberId: null,
+          beatLeaderId: null,
         });
         if (!map) {
           console.error(
@@ -657,7 +656,6 @@ export class MapService {
         if (!newLeaderboard) {
           continue;
         }
-        await this.addLeaderboardId(map.id, newLeaderboard.id);
       }
     }
   }

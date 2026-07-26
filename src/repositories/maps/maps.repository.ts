@@ -29,18 +29,6 @@ export class MapsRepository extends Repository {
     return await this.findOne([{ name: "hash", value: hash }]);
   }
 
-  public static async addLeaderboardId(
-    id: number,
-    leaderboardId: number,
-  ): Promise<void> {
-    await db
-      .update(this.table)
-      .set({
-        leaderboardIds: sql`array_append(${this.table.leaderboardIds}, ${leaderboardId})`,
-      })
-      .where(eq(this.table.id, id));
-  }
-
   public static async insert(
     row: typeof this.row,
     updateOnConflict?: boolean,
