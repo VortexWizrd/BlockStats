@@ -19,7 +19,7 @@ app.listen(port, () => {
 
 await runMigrations();
 await setOutdatedScores();
-await updateMaps();
+//await updateMaps();
 await ScoresRepository.fixDifficulties();
 
 startDiscord();
