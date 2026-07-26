@@ -132,7 +132,7 @@ export class MapService {
     }
     if (!beatSaverMap) {
       console.error(
-        `[ERROR]: MapService: Failed to create map from ScoreSaber with hash ${hash}: BeatSaver returned ${beatSaverMap.toString()}`,
+        `[ERROR]: MapService: Failed to create map from ScoreSaber with hash ${hash}: BeatSaver returned ${beatSaverMap}`,
       );
       return undefined;
     }
