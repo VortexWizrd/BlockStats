@@ -662,5 +662,9 @@ export class MapService {
     }
   }
 
+  public static async searchMap(query: string, limit: number) {
+    return (await MapsRepository.search(query, limit)) as Map[];
+  }
+
   public static async fixDifficulties() {}
 }

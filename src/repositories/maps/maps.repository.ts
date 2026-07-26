@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq, ilike, sql, or } from "drizzle-orm";
 import { mapsTable } from "../../db/schema.js";
 import { Repository } from "../baserepository.js";
 import { db } from "../../db/index.js";
@@ -70,5 +70,24 @@ export class MapsRepository extends Repository {
         .returning();
       return newRow;
     }
+  }
+
+  public static async search(
+    query: string,
+    limit: number,
+  ): Promise<(typeof this.row)[]> {
+    const searchTerm = `%${query}%`;
+
+    return await db
+      .select()
+      .from(this.table)
+      .where(
+        or(
+          ilike(this.table.songName, searchTerm),
+          ilike(this.table.songAuthor, searchTerm),
+          ilike(this.table.mapAuthor, searchTerm),
+        ),
+      )
+      .limit(limit);
   }
 }

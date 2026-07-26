@@ -22,7 +22,7 @@ export default {
         )
         .addStringOption((option) =>
           option
-            .setName("title")
+            .setName("search")
             .setDescription("Search by song title")
             .setRequired(false),
         )
@@ -41,6 +41,7 @@ export default {
         await interaction.deferReply();
 
         let maps: Map[] = [];
+        let mapCount = 0;
 
         const beatsaverId = interaction.options.getString("beatsaverid");
         if (beatsaverId) {
@@ -48,10 +49,10 @@ export default {
             (await MapService.getMapFromBeatSaverId(beatsaverId)) ?? [],
           );
         } else {
-          const search = interaction.options.getString("title");
+          const search = interaction.options.getString("search");
           if (!search)
             return await interaction.editReply("Missing search parameter");
-          return await interaction.editReply("Not implemented");
+          maps = await MapService.searchMap(search, 10);
         }
 
         let embeds = [];
@@ -61,6 +62,7 @@ export default {
             map.outdated
           )
             continue;
+          mapCount++;
           let description =
             ("" + map.mapAuthor ? `**Mapped by ${map.mapAuthor}**\n\n` : "") +
             map.songDescription;
@@ -141,7 +143,9 @@ export default {
           }
         }
 
-        await interaction.editReply("Done!");
+        await interaction.editReply(
+          `Found ${mapCount} map${mapCount == 1 ? "" : "s"}!`,
+        );
       }
     }
   },
