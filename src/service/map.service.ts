@@ -20,7 +20,8 @@ export class MapService {
     try {
       const { id, ...newMap } = map;
 
-      const mapInsert = await MapsRepository.insert(newMap as MapInsert);
+      const mapInsert = await MapsRepository.insert(newMap as MapInsert, true);
+      if (!mapInsert) throw new Error("mapInsert is undefined");
       console.log(
         `[LOG]: MapService: Created new map for "${mapInsert.songName}" (hash: ${mapInsert.hash})`,
       );
@@ -158,6 +159,7 @@ export class MapService {
         uploadedTime: beatSaverMap?.lastPublishedAt
           ? new Date(beatSaverMap.lastPublishedAt)
           : null,
+        outdated: !(beatSaverMap.versions[0].hash == hash.toLowerCase()),
       });
       if (!map) {
         console.error(
@@ -167,7 +169,6 @@ export class MapService {
       }
     } else {
       await MapsRepository.update(map.id, {
-        hash: hash.toLowerCase(),
         songName: scoreSaberMap.songName,
         songSubName: scoreSaberMap.songSubName,
         songAuthor: scoreSaberMap.songAuthorName,
@@ -244,6 +245,7 @@ export class MapService {
         offset: null,
         nps: null,
         ssMaxPP: null,
+        outdated: !(beatSaverMap.versions[0].hash == hash.toLowerCase()),
       });
       if (!newLeaderboard) {
         continue;
@@ -304,6 +306,9 @@ export class MapService {
           uploadedTime: beatSaverMap?.lastPublishedAt
             ? new Date(beatSaverMap.lastPublishedAt)
             : null,
+          outdated: !(
+            beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
+          ),
         });
         if (!map) {
           console.error(
@@ -313,7 +318,6 @@ export class MapService {
         }
       } else {
         await MapsRepository.update(map.id, {
-          hash: leaderboard.song.hash.toLowerCase(),
           songName: leaderboard.song.name,
           songSubName: leaderboard.song.subName,
           songAuthor: leaderboard.song.author,
@@ -322,6 +326,9 @@ export class MapService {
           updatedTime: new Date(),
           songDuration: selectedLeaderboard.duration,
           songBPM: selectedLeaderboard.bpm,
+          outdated: !(
+            beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
+          ),
         });
       }
 
@@ -354,6 +361,9 @@ export class MapService {
             nps: diff.nps,
             updatedTime: new Date(),
             maxScore: diff.maxScore,
+            outdated: !(
+              beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
+            ),
           };
           await LeaderboardsRepository.update(
             existingLeaderboard.id,
@@ -395,6 +405,9 @@ export class MapService {
           offset: diff.noteJumpStartBeatOffset,
           nps: diff.nps,
           ssMaxPP: null,
+          outdated: !(
+            beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
+          ),
         });
         if (!newLeaderboard) {
           continue;
@@ -437,10 +450,33 @@ export class MapService {
         songDuration: null,
         songBPM: null,
         uploadedTime: null,
+        outdated: false,
       });
       if (!map) {
         console.error(
           `[ERROR]: MapService: Failed to create map from AccSaber with hash ${hash}: Map failed to be found or created on DB`,
+        );
+        return undefined;
+      }
+    } else {
+      map = await MapsRepository.update(map.id, {
+        songName: accSaberMap.songName ?? "",
+        songSubName: accSaberMap.songSubName ?? "",
+        songAuthor: accSaberMap.songAuthor ?? "",
+        mapAuthor: accSaberMap.mapAuthor ?? "",
+        songCover: accSaberMap.coverUrl ?? "",
+        savedTime: new Date(),
+        updatedTime: new Date(),
+        beatSaverId: accSaberMap.beatsaverCode ?? null,
+        songDescription: "",
+        songDuration: null,
+        songBPM: null,
+        uploadedTime: null,
+        outdated: false,
+      });
+      if (!map) {
+        console.error(
+          `[ERROR]: MapService: Failed to update map from AccSaber with hash ${hash}: Map failed to be found or updated on DB`,
         );
         return undefined;
       }
@@ -508,6 +544,7 @@ export class MapService {
         offset: null,
         nps: null,
         ssMaxPP: null,
+        outdated: false,
       });
       if (!newLeaderboard) {
         continue;
@@ -540,6 +577,7 @@ export class MapService {
           songDuration: null,
           songBPM: null,
           uploadedTime: null,
+          outdated: false,
         });
         if (!map) {
           console.error(
@@ -614,6 +652,7 @@ export class MapService {
           offset: null,
           nps: null,
           ssMaxPP: null,
+          outdated: false,
         });
         if (!newLeaderboard) {
           continue;

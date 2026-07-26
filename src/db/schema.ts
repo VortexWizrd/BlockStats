@@ -288,7 +288,7 @@ export const mapsTable = pgTable(
     // map id
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     beatSaverId: varchar({ length: 32 }),
-    hash: varchar({ length: 64 }).notNull(),
+    hash: varchar({ length: 64 }).notNull().unique(),
 
     // map basic information
     songName: text().notNull(),

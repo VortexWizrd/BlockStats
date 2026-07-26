@@ -16,6 +16,7 @@ export default class Map implements MapRow {
   songDuration!: number | null;
   songBPM!: number | null;
   uploadedTime!: Date | null;
+  outdated!: boolean;
 
   constructor(data: Map) {
     Object.assign(this, data);

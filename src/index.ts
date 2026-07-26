@@ -1,6 +1,6 @@
 import express, { type Request, type Response } from "express";
 import { startDiscord } from "./discord/index.js";
-import { runMigrations, setOutdatedScores } from "./db/migrate.js";
+import { runMigrations, setOutdatedScores, updateMaps } from "./db/migrate.js";
 import websocketserverService from "./service/websocket/websocketserver.service.js";
 import { PlayerService } from "./service/player.service.js";
 import { MapService } from "./service/map.service.js";
@@ -19,7 +19,7 @@ app.listen(port, () => {
 
 await runMigrations();
 await setOutdatedScores();
-//await MapService.createAccSaberRankedMaps(); // temp
+await updateMaps();
 await ScoresRepository.fixDifficulties();
 
 startDiscord();

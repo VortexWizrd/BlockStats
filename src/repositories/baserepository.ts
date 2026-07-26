@@ -41,7 +41,11 @@ export abstract class Repository {
   public static async insert(
     row: typeof this.row,
   ): Promise<typeof this.row | undefined> {
-    const [newRow] = await db.insert(this.table).values(row).returning();
+    const [newRow] = await db
+      .insert(this.table)
+      .values(row)
+      .onConflictDoNothing()
+      .returning();
     return newRow;
   }
 

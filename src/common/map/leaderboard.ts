@@ -41,6 +41,7 @@ export default class Leaderboard implements LeaderboardRow {
   offset!: number | null;
   nps!: number | null;
   ssMaxPP!: number | null;
+  outdated!: boolean;
 
   constructor(data: Leaderboard) {
     Object.assign(this, data);

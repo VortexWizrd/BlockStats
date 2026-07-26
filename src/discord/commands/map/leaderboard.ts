@@ -29,6 +29,12 @@ export default {
             .setName("title")
             .setDescription("Search by song title")
             .setRequired(false),
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("includeoutdated")
+            .setDescription("Include outdated leaderboards")
+            .setRequired(false),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
@@ -53,6 +59,11 @@ export default {
         }
 
         for (const map of maps) {
+          if (
+            !interaction.options.getBoolean("includeoutdated") &&
+            map.outdated
+          )
+            continue;
           for (const leaderboard of (await MapService.getLeaderboardsFromMap(
             map.id,
           )) ?? []) {
@@ -141,7 +152,21 @@ export default {
                         : "unranked",
                     inline: true,
                   },
+                  {
+                    name: "Hash",
+                    value: map.hash,
+                    inline: true,
+                  },
+                  {
+                    name: "Outdated",
+                    value:
+                      map.outdated != null
+                        ? map.outdated.toString()
+                        : "Not stored",
+                    inline: true,
+                  },
                 )
+
                 .setFooter({
                   text: `ID: ${leaderboard.id} • Map ID: ${map.id}`,
                 })

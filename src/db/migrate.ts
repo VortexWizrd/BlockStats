@@ -5,6 +5,8 @@ import { db } from "./index.js";
 import dotenv from "dotenv";
 import { scoresTable } from "./schema.js";
 import { and, eq, ne, notInArray, sql } from "drizzle-orm";
+import { MapService } from "../service/map.service.js";
+import { MapsRepository } from "../repositories/maps/maps.repository.js";
 dotenv.config();
 
 function resolveMigrationsFolder(): string {
@@ -46,4 +48,19 @@ export async function setOutdatedScores(): Promise<void> {
         notInArray(scoresTable.id, selectedScores),
       ),
     );
+}
+
+export async function updateMaps(): Promise<void> {
+  await MapService.createAccSaberRankedMaps();
+  const maps = await MapsRepository.getAll();
+  if (!maps)
+    return console.error(
+      `[ERROR]: Migrate: Failed to update all maps: MapsRepository.getAll() returned undefined`,
+    );
+  for (const map of maps) {
+    const ssFullMap = await MapService.createFromScoreSaber(map.hash, true);
+    if (ssFullMap && ssFullMap.map.beatSaverId) {
+      await MapService.createFromBeatLeader(ssFullMap.map.beatSaverId, true);
+    }
+  }
 }

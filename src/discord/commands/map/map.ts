@@ -25,6 +25,12 @@ export default {
             .setName("title")
             .setDescription("Search by song title")
             .setRequired(false),
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("includeoutdated")
+            .setDescription("Include outdated leaderboards")
+            .setRequired(false),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
@@ -50,6 +56,11 @@ export default {
 
         let embeds = [];
         for (const map of maps) {
+          if (
+            !interaction.options.getBoolean("includeoutdated") &&
+            map.outdated
+          )
+            continue;
           let description =
             ("" + map.mapAuthor ? `**Mapped by ${map.mapAuthor}**\n\n` : "") +
             map.songDescription;
@@ -100,6 +111,19 @@ export default {
                       value: map.uploadedTime
                         ? `<t:${Math.floor(new Date(map.uploadedTime).getTime() / 1000)}:R>`
                         : "Not stored",
+                      inline: true,
+                    },
+                    {
+                      name: "Outdated",
+                      value:
+                        map.outdated != null
+                          ? map.outdated.toString()
+                          : "Not stored",
+                      inline: true,
+                    },
+                    {
+                      name: "Hash",
+                      value: map.hash,
                       inline: true,
                     },
                   )
