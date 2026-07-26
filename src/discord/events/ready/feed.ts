@@ -131,7 +131,7 @@ export default {
           } else if (feed.channelType === "guild") {
             const channel = await client.channels.fetch(feed.channelId ?? "");
             if (channel && channel instanceof TextChannel) {
-              channel.send({ embeds: [embed] });
+              await channel.send({ embeds: [embed] });
             }
           }
         } catch (err: any) {
@@ -174,7 +174,7 @@ export default {
           } else if (feed.channelType === "guild") {
             const channel = await client.channels.fetch(feed.channelId ?? "");
             if (channel && channel instanceof TextChannel) {
-              channel.send({ embeds: [embed] });
+              await channel.send({ embeds: [embed] });
             }
           }
         } catch (err: any) {
