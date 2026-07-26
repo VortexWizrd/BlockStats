@@ -101,7 +101,7 @@ export default class WebSocketRankEvent {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
-            playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
+            playerUrl: `https://accsaber.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber",
             oldRank: latestRanks[1]?.rank ?? 0,
             newRank: updatedPlayer.asRank,
