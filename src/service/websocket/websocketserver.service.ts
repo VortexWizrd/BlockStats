@@ -16,8 +16,6 @@ class WebSocketServerService {
 
   private ws: WebSocket | undefined;
 
-  private asRankedSubmissions = 0;
-
   constructor() {
     this.server.on("connection", (ws) => {
       if (this.ws === undefined) {
@@ -55,66 +53,6 @@ class WebSocketServerService {
   public async send(wrapper: { type: string; data: any }) {
     if (this.ws === undefined) throw new Error("WebSocket not initialized");
     this.ws.send(JSON.stringify(wrapper));
-  }
-
-  public async sendScore(score: Score): Promise<void> {
-    const wrapper = {
-      type: "score",
-      data: score,
-    };
-
-    // BlockStats features
-    const player = await PlayerService.getPlayer(score.playerId);
-    if (player) {
-      // refresh player profile
-      await PlayerService.refreshPlayer(player.id);
-
-      // Handle leaderboard creation (might make a better way to do this later)
-      const ssFullMap = await MapService.createFromScoreSaber(
-        score.songHash,
-        true,
-      );
-      if (ssFullMap && ssFullMap.map.beatSaverId) {
-        await MapService.createFromBeatLeader(ssFullMap.map.beatSaverId, true);
-      }
-
-      // handle outdated markings
-      score.outdated = false;
-      if (score.blRank && score.blRank == 0 && !score.ssRank) {
-        score.outdated = true;
-      } else {
-        await ScoreService.setOutdated(
-          player.id,
-          score.songHash,
-          score.songDifficulty,
-          score.songCharacteristic,
-        );
-      }
-      const updatedScore = await ScoreService.createScore(score);
-      if (updatedScore !== undefined) {
-        wrapper.data = updatedScore;
-      }
-    }
-    // handle snipes
-    for (const select of await ScoreService.getCurrentScoresFromMap(
-      score.songHash,
-      score.songDifficulty,
-      score.songCharacteristic,
-    )) {
-      if (
-        (select.blRank && select.blRank > 0) ||
-        (select.ssRank && select.ssRank > 0)
-      ) {
-        if (select.accuracy < score.accuracy) {
-          const data = {
-            score: score,
-            snipedScore: select,
-          };
-          this.sendSnipe(data);
-        }
-      }
-    }
-    this.send(wrapper);
   }
 
   public sendSnipe(snipeUpdate: any) {

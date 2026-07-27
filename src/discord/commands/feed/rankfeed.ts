@@ -317,7 +317,7 @@ export default {
             });
           } else {
             const blProfile =
-              (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
+              (await beatleaderApiService.getUserFromId(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
               RankFeedService.addPlayerId(existingFeed.id, blProfile.id);
@@ -438,7 +438,7 @@ export default {
             });
           } else {
             const blProfile =
-              (await beatleaderApiService.getUser(beatLeaderId ?? "")) ??
+              (await beatleaderApiService.getUserFromId(beatLeaderId ?? "")) ??
               (await beatleaderApiService.getUserFromDiscord(discordId ?? ""));
             if (blProfile && blProfile.id) {
               RankFeedService.removePlayerId(existingFeed.id, blProfile.id);

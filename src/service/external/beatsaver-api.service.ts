@@ -1,9 +1,13 @@
-import EventEmitter from "events";
-import { APCalculator } from "../../common/ppcalculator.js";
+import { WebSocketClientService } from "../websocket/websocketclient.service.js";
 
-class BeatSaverApiService extends EventEmitter {
+class BeatSaverApiService extends WebSocketClientService {
+  protected readonly checkDelay = 30 * 30;
   constructor() {
-    super();
+    super("wss://ws.beatsaver.com/maps");
+  }
+
+  public onMessage(data: any): void {
+    this.emit(data.type, data.msg);
   }
 
   /**
@@ -22,11 +26,6 @@ class BeatSaverApiService extends EventEmitter {
    */
   public async getMapFromId(id: string) {
     return await this.fetch<any>(`maps/id/${id}`);
-  }
-
-  public getAP(complexity: number, acc: number): number {
-    if (complexity == 0) return 0;
-    return APCalculator.getAP(complexity, acc);
   }
 
   private async fetch<T>(path: string): Promise<T | null> {

@@ -1,6 +1,5 @@
-import type { RankHistory } from "../common/player.js";
 import Player from "../common/player.js";
-import { playerRankHistoryTable, type PlayerRow } from "../db/schema.js";
+import { type PlayerRow } from "../db/schema.js";
 import { PlayerPPHistoriesRepository } from "../repositories/players/playerpphistories.repository.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
@@ -14,32 +13,29 @@ export class PlayerService {
     discordId: string,
   ): Promise<Player | undefined> {
     try {
-      const existingRow = await PlayersRepository.findById(discordId);
-      if (existingRow) {
-        return;
-      }
+      if (await PlayersRepository.findById(discordId)) return;
 
       const beatLeaderData =
         await beatleaderApiService.getUserFromDiscord(discordId);
       if (!beatLeaderData) return;
 
-      let scoreSaberData = await scoresaberApiService.getUserFromLinkedIds(
-        beatLeaderData.linkedIds ?? { steamId: beatLeaderData.id },
-      );
+      let scoreSaberData = beatLeaderData.linkedIds
+        ? await scoresaberApiService.getUserFromLinkedIds(
+            beatLeaderData.linkedIds,
+          )
+        : await scoresaberApiService.getUserFromId(
+            beatLeaderData.id.toString(),
+          );
 
-      if (scoreSaberData && scoreSaberData.inactive) {
-        const altScoreSaberData =
-          await scoresaberApiService.getUserFromLinkedIds({
-            oculusPCId: beatLeaderData.linkedIds?.oculusPCId ?? "",
-          });
-        if (altScoreSaberData && !altScoreSaberData.inactive) {
-          scoreSaberData = altScoreSaberData;
-        }
+      if (scoreSaberData?.inactive && beatLeaderData.linkedIds?.oculusPCId) {
+        const altData = await scoresaberApiService.getUserFromLinkedIds({
+          oculusPCId: beatLeaderData.linkedIds.oculusPCId,
+        });
+        if (altData && !altData.inactive) scoreSaberData = altData;
       }
 
       const playerInsert: PlayerRow = {
         id: discordId,
-
         steamId: (beatLeaderData.linkedIds?.steamId as string) ?? null,
         oculusId: (beatLeaderData.linkedIds?.oculusPCId as string) ?? null,
         questId: beatLeaderData.linkedIds?.questId
@@ -407,7 +403,8 @@ export class PlayerService {
     asData?: any,
   ): Promise<Player | undefined> {
     const asUser =
-      asData ?? (await accsaberApiService.getPlayer(player.accSaberId ?? "-1"));
+      asData ??
+      (await accsaberApiService.getUserFromId(player.accSaberId ?? "-1"));
     if (!skipValidation) {
       if (!asUser) return;
     }
@@ -490,7 +487,8 @@ export class PlayerService {
     asData?: any,
   ): Promise<Player | undefined> {
     const asUser =
-      asData ?? (await accsaberApiService.getPlayer(player.accSaberId ?? "-1"));
+      asData ??
+      (await accsaberApiService.getUserFromId(player.accSaberId ?? "-1"));
     if (!skipValidation) {
       if (!asUser) return;
     }

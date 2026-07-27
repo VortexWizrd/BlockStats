@@ -1,5 +1,4 @@
-import EventEmitter from "events";
-import { WebSocket } from "ws";
+import { WebSocketClientService } from "../websocket/websocketclient.service.js";
 
 export type LinkedIds = {
   steamId?: string;
@@ -7,43 +6,13 @@ export type LinkedIds = {
   questId?: number;
 };
 
-class BeatLeaderApiService extends EventEmitter {
-  private _socket = new WebSocket("wss://sockets.api.beatleader.com/scores");
-  private _lastSocketUpdate: Date = new Date();
-
+class BeatLeaderApiService extends WebSocketClientService {
   constructor() {
-    super();
-
-    // Listen to score uploads on websocket
-    this._socket.addEventListener("message", (message: any) => {
-      this.emit("score", JSON.parse(message.data));
-      this._lastSocketUpdate = new Date();
-    });
-
-    // Listen to close / errors and reconnect
-    this._socket.addEventListener("close", () => {
-      this.reconnectWebSocket();
-    });
-    this._socket.addEventListener("error", () => {
-      this.reconnectWebSocket();
-    });
-
-    // Wait for potential socket disconnects
-    setInterval(() => {
-      const now = new Date();
-
-      if (now.getTime() - this._lastSocketUpdate.getTime() > 60000) {
-        console.log(
-          "[BeatLeader] No updates in the last 60 seconds, reconnecting...",
-        );
-        this._socket.close();
-      }
-    }, 30000);
+    super("wss://sockets.api.beatleader.com/scores");
   }
 
-  /** Get the last recorded BeatLeader socket update time */
-  public get lastSocketUpdate(): Date {
-    return this._lastSocketUpdate;
+  public onMessage(data: any) {
+    this.emit("score", data);
   }
 
   public async getMapFromBeatSaverId(id: string): Promise<any> {
@@ -55,7 +24,7 @@ class BeatLeaderApiService extends EventEmitter {
    * @param id - BeatLeader profile ID
    * @returns BeatLeader profile data, if found
    */
-  public async getUser(id: string | number): Promise<any> {
+  public async getUserFromId(id: string | number): Promise<any> {
     return await this.fetch<any>(`player/${id}`);
   }
 
@@ -84,12 +53,6 @@ class BeatLeaderApiService extends EventEmitter {
       );
       return null;
     }
-  }
-
-  private reconnectWebSocket() {
-    setTimeout(() => {
-      this._socket = new WebSocket("wss://sockets.api.beatleader.com/scores");
-    }, 5000);
   }
 }
 

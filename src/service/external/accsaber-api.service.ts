@@ -1,11 +1,14 @@
-import EventEmitter from "events";
 import { APCalculator } from "../../common/ppcalculator.js";
+import { WebSocketClientService } from "../websocket/websocketclient.service.js";
 
-class AccSaberAPI extends EventEmitter {
-  private _RankedMaps: any;
-
+class AccSaberAPI extends WebSocketClientService {
+  protected readonly checkDelay = 30 * 5;
   constructor() {
-    super();
+    super("wss://api.accsaber.com/ws/scores");
+  }
+
+  public onMessage(data: any): void {
+    this.emit("score", data);
   }
 
   public async getRankedMaps() {
@@ -33,23 +36,6 @@ class AccSaberAPI extends EventEmitter {
     return await this.fetch<any>(`v1/maps/${id}`);
   }
 
-  public getComplexity(mapHash: string, difficulty: string): number {
-    try {
-      for (const map of this._RankedMaps) {
-        if (
-          map.songHash == mapHash &&
-          map.difficulty.toLowerCase() == difficulty.toLowerCase()
-        ) {
-          return map.complexity;
-        }
-      }
-      return 0;
-    } catch (err) {
-      console.log("Error: failed to fetch accsaber complexity: ", err);
-      return 0;
-    }
-  }
-
   public getAP(complexity: number, acc: number): number {
     if (complexity == 0) return 0;
     return APCalculator.getAP(complexity, acc);
@@ -58,7 +44,7 @@ class AccSaberAPI extends EventEmitter {
    * @param id - Player ID
    * @returns AccSaber player data, if found
    */
-  public async getPlayer(id: string) {
+  public async getUserFromId(id: string) {
     return await this.fetch<any>(`v1/users/${id}?statistics=true`);
   }
 
@@ -80,6 +66,11 @@ class AccSaberAPI extends EventEmitter {
     }
   }
 
+  /**
+   * Convert AccSaber category ID to its category code
+   * @param id - Category id
+   * @returns AccSaber category name ("Standard Acc", "Tech Acc", "True Acc", "Overall")
+   */
   public getCategoryNameFromId(id: string) {
     switch (id) {
       case "b0000000-0000-0000-0000-000000000001":

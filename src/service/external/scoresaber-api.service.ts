@@ -1,33 +1,14 @@
-import EventEmitter from "events";
-import { WebSocket } from "ws";
 import { SSPPCalulator } from "../../common/ppcalculator.js";
 import type { LinkedIds } from "./beatleader-api.service.js";
+import { WebSocketClientService } from "../websocket/websocketclient.service.js";
 
-class ScoreSaberApiService extends EventEmitter {
-  private _socket = new WebSocket("wss://scoresaber.com/ws");
-  private _lastSocketUpdate: Date = new Date();
-
+class ScoreSaberApiService extends WebSocketClientService {
   constructor() {
-    super();
-
-    this.createListeners();
-
-    // Wait for potential socket disconnects
-    setInterval(() => {
-      const now = new Date();
-
-      if (now.getTime() - this._lastSocketUpdate.getTime() > 60000) {
-        console.warn(
-          "[WARN]: ScoreSaber API: No updates in the last 60 seconds, reconnecting...",
-        );
-        this._socket.close();
-      }
-    }, 30000);
+    super("wss://scoresaber.com/ws");
   }
 
-  /** Get the last recorded ScoreSaber socket update time */
-  public get lastSocketUpdate(): Date {
-    return this._lastSocketUpdate;
+  public onMessage(data: any) {
+    this.emit(data.commandName, data.commandData);
   }
 
   /**
@@ -157,25 +138,6 @@ class ScoreSaberApiService extends EventEmitter {
     );
   }
 
-  private createListeners() {
-    // Listen to score uploads on websocket
-    this._socket.addEventListener("message", (message: any) => {
-      if (message.data == "Connected to the ScoreSaber WSS") return;
-      const messageData = JSON.parse(message.data);
-      if (messageData.commandName !== "score") return;
-      this.emit("score", messageData.commandData);
-      this._lastSocketUpdate = new Date();
-    });
-
-    // Listen to close / errors and reconnect
-    this._socket.addEventListener("close", () => {
-      this.reconnectWebSocket();
-    });
-    this._socket.addEventListener("error", () => {
-      this.reconnectWebSocket();
-    });
-  }
-
   private async fetch<T>(path: string): Promise<T | null> {
     const url = `https://scoresaber.com/api/${path}`;
     try {
@@ -187,13 +149,6 @@ class ScoreSaberApiService extends EventEmitter {
       );
       return null;
     }
-  }
-
-  private reconnectWebSocket() {
-    setTimeout(() => {
-      this._socket = new WebSocket("wss://scoresaber.com/ws");
-      this.createListeners();
-    }, 5000);
   }
 }
 
