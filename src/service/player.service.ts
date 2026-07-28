@@ -408,23 +408,25 @@ export class PlayerService {
     if (!skipValidation) {
       if (!asUser) return;
     }
+    let updatedPlayer: Player | undefined = undefined;
 
     for (const stat of asUser.statistics) {
       const categoryName = accsaberApiService.getCategoryNameFromId(
         stat.categoryId,
       );
+
       switch (categoryName) {
         case "Tech Acc":
           if (!player.asTechRank || player.asTechRank != stat.ap) {
-            await PlayerRankHistoriesRepository.insert({
+            await PlayerPPHistoriesRepository.insert({
               playerId: player.id,
               provider: `AccSaber (${categoryName})`,
               timestamp: new Date(),
-              rank: stat.ap,
+              pp: stat.ap,
             });
-            return (await PlayersRepository.updateASPP(
+            player = (await PlayersRepository.updateASPP(
               player.id,
-              stat.pp,
+              stat.ap,
               categoryName,
             )) as Player;
           }
@@ -432,15 +434,15 @@ export class PlayerService {
 
         case "Standard Acc":
           if (!player.asStandardRank || player.asStandardRank != stat.ranking) {
-            await PlayerRankHistoriesRepository.insert({
+            await PlayerPPHistoriesRepository.insert({
               playerId: player.id,
               provider: `AccSaber (${categoryName})`,
               timestamp: new Date(),
-              rank: stat.ap,
+              pp: stat.ap,
             });
-            return (await PlayersRepository.updateASPP(
+            player = (await PlayersRepository.updateASPP(
               player.id,
-              stat.pp,
+              stat.ap,
               categoryName,
             )) as Player;
           }
@@ -448,15 +450,15 @@ export class PlayerService {
 
         case "True Acc":
           if (!player.asTrueRank || player.asTrueRank != stat.ranking) {
-            await PlayerRankHistoriesRepository.insert({
+            await PlayerPPHistoriesRepository.insert({
               playerId: player.id,
               provider: `AccSaber (${categoryName})`,
               timestamp: new Date(),
-              rank: stat.ap,
+              pp: stat.ap,
             });
-            return (await PlayersRepository.updateASPP(
+            player = (await PlayersRepository.updateASPP(
               player.id,
-              stat.pp,
+              stat.ap,
               categoryName,
             )) as Player;
           }
@@ -464,21 +466,22 @@ export class PlayerService {
 
         case "Overall":
           if (!player.asRank || player.asRank != stat.ranking) {
-            await PlayerRankHistoriesRepository.insert({
+            await PlayerPPHistoriesRepository.insert({
               playerId: player.id,
               provider: `AccSaber`,
               timestamp: new Date(),
-              rank: stat.ap,
+              pp: stat.ap,
             });
-            return (await PlayersRepository.updateASPP(
+            player = (await PlayersRepository.updateASPP(
               player.id,
-              stat.pp,
+              stat.ap,
               categoryName,
             )) as Player;
           }
           break;
       }
     }
+    return updatedPlayer;
   }
 
   public static async updateASRank(

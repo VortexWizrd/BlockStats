@@ -88,7 +88,7 @@ export class WebSocketClientService extends EventEmitter {
         this.checkDelay * 2 * 1000
       ) {
         console.warn(
-          `[WARN]: ${this.constructor.name}: No WebSocket updates in the last 60 seconds, reconnecting...`,
+          `[WARN]: ${this.constructor.name}: No WebSocket updates in the last ${this.checkDelay * 2} seconds, reconnecting...`,
         );
         if (this._socket) {
           this._socket.terminate();
@@ -117,7 +117,9 @@ export class WebSocketClientService extends EventEmitter {
       this._socket.terminate();
       this.cleanupSocket();
     }
-    console.log("[Socket] Disconnected intentionally.");
+    console.log(
+      `[LOG] ${this.constructor.name}: WebSocket disconnected intentionally.`,
+    );
   }
 }
 

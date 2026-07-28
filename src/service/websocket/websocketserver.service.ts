@@ -1,11 +1,6 @@
 import { WebSocketServer, WebSocket } from "ws";
-import Score from "../../common/score.js";
 import beatleaderApiService from "../external/beatleader-api.service.js";
 import scoresaberApiService from "../external/scoresaber-api.service.js";
-import { PlayerService } from "../player.service.js";
-import { ScoreService } from "../score.service.js";
-import { PlayerRankHistoriesRepository } from "../../repositories/players/playerrankhistories.repository.js";
-import { MapService } from "../map.service.js";
 import WebSocketScoreEvent from "./events/score.js";
 import WebSocketRankEvent from "./events/rank.js";
 

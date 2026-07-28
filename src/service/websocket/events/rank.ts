@@ -6,11 +6,16 @@ import websocketserverService from "../websocketserver.service.js";
 
 export default class WebSocketRankEvent {
   private static blRankedSubmissions = 0;
+  private static blUpdating = false;
   private static ssRankedSubmissions = 0;
+  private static ssUpdating = false;
   private static asRankedSubmissions = 0;
+  private static asUpdating = false;
 
   public static async processBLRank(skipCooldown?: boolean) {
+    if (this.blUpdating) return;
     if (this.blRankedSubmissions >= 5 || skipCooldown) {
+      this.blUpdating = true;
       this.blRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         const updatedPlayer = await PlayerService.updateBLRank(player, false);
@@ -20,7 +25,12 @@ export default class WebSocketRankEvent {
           "BeatLeader",
           2,
         );
-        if (!latestRanks || latestRanks.length < 2) continue;
+        if (
+          !latestRanks ||
+          latestRanks.length < 2 ||
+          latestRanks[1]?.rank == updatedPlayer.blRank
+        )
+          continue;
 
         const abovePlayer = await beatleaderApiService.getUserFromRank(
           (updatedPlayer.blRank ?? -1) - 1,
@@ -40,13 +50,16 @@ export default class WebSocketRankEvent {
         };
         this.sendRankUpdate(rankUpdate);
       }
+      this.blUpdating = false;
     } else {
       this.blRankedSubmissions++;
     }
   }
 
   public static async processSSRank(skipCooldown?: boolean) {
+    if (this.ssUpdating) return;
     if (this.ssRankedSubmissions >= 5 || skipCooldown) {
+      this.ssUpdating = true;
       this.ssRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.scoreSaberId) continue;
@@ -57,7 +70,12 @@ export default class WebSocketRankEvent {
           "ScoreSaber",
           2,
         );
-        if (!latestRanks || latestRanks.length < 2) continue;
+        if (
+          !latestRanks ||
+          latestRanks.length < 2 ||
+          latestRanks[1]?.rank == updatedPlayer.ssRank
+        )
+          continue;
 
         const abovePlayer = await scoresaberApiService.getUserFromRank(
           (updatedPlayer.ssRank ?? -1) - 1,
@@ -78,13 +96,16 @@ export default class WebSocketRankEvent {
         };
         this.sendRankUpdate(rankUpdate);
       }
+      this.ssUpdating = false;
     } else {
       this.ssRankedSubmissions++;
     }
   }
 
   public static async processASRank(skipCooldown?: boolean) {
+    if (this.asUpdating) return;
     if (this.asRankedSubmissions >= 1 || skipCooldown) {
+      this.asUpdating = true;
       this.asRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.accSaberId) continue;
@@ -96,7 +117,12 @@ export default class WebSocketRankEvent {
             "AccSaber",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
+          if (
+            !latestRanks ||
+            latestRanks.length < 2 ||
+            latestRanks[1]?.rank == updatedPlayer.asRank
+          )
+            continue;
           const rankUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
@@ -115,12 +141,17 @@ export default class WebSocketRankEvent {
             "AccSaber (Tech Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
+          if (
+            !latestRanks ||
+            latestRanks.length < 2 ||
+            latestRanks[1]?.rank == updatedPlayer.asTechRank
+          )
+            continue;
           const rankUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
-            playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
+            playerUrl: `https://accsaber.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (Tech Acc)",
             oldRank: latestRanks[1]?.rank ?? 0,
             newRank: updatedPlayer.asTechRank,
@@ -134,12 +165,17 @@ export default class WebSocketRankEvent {
             "AccSaber (Standard Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
+          if (
+            !latestRanks ||
+            latestRanks.length < 2 ||
+            latestRanks[1]?.rank == updatedPlayer.asStandardRank
+          )
+            continue;
           const rankUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
-            playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
+            playerUrl: `https://accsaber.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (Standard Acc)",
             oldRank: latestRanks[1]?.rank ?? 0,
             newRank: updatedPlayer.asStandardRank,
@@ -153,12 +189,17 @@ export default class WebSocketRankEvent {
             "AccSaber (True Acc)",
             2,
           );
-          if (!latestRanks || latestRanks.length < 2) continue;
+          if (
+            !latestRanks ||
+            latestRanks.length < 2 ||
+            latestRanks[1]?.rank == updatedPlayer.asTrueRank
+          )
+            continue;
           const rankUpdate = {
             playerName: updatedPlayer.name,
             playerAvatar: updatedPlayer.avatar,
             playerId: updatedPlayer.id,
-            playerUrl: `https://accsaber.com.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
+            playerUrl: `https://accsaber.com/players/${updatedPlayer.accSaberId ?? "undefined"}`,
             leaderboard: "AccSaber (True Acc)",
             oldRank: latestRanks[1]?.rank ?? 0,
             newRank: updatedPlayer.asTrueRank,
@@ -167,6 +208,7 @@ export default class WebSocketRankEvent {
           this.sendRankUpdate(rankUpdate);
         }
       }
+      this.asUpdating = false;
     } else {
       this.asRankedSubmissions++;
     }

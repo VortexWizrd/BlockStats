@@ -6,11 +6,16 @@ import websocketserverService from "../websocketserver.service.js";
 
 export default class WebSocketPPEvent {
   private static blRankedSubmissions = 0;
+  private static blUpdating = false;
   private static ssRankedSubmissions = 0;
+  private static ssUpdating = false;
   private static asRankedSubmissions = 0;
+  private static asUpdating = false;
 
   public static async processBLPP(skipCooldown?: boolean) {
+    if (this.blUpdating) return;
     if (this.blRankedSubmissions >= 5 || skipCooldown) {
+      this.blUpdating = true;
       this.blRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         const updatedPlayer = await PlayerService.updateBLPP(player, false);
@@ -39,13 +44,16 @@ export default class WebSocketPPEvent {
         };
         this.sendPPUpdate(ppUpdate);
       }
+      this.blUpdating = false;
     } else {
       this.blRankedSubmissions++;
     }
   }
 
   public static async processSSPP(skipCooldown?: boolean) {
+    if (this.ssUpdating) return;
     if (this.ssRankedSubmissions >= 5 || skipCooldown) {
+      this.ssUpdating = true;
       this.ssRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.scoreSaberId) continue;
@@ -77,13 +85,16 @@ export default class WebSocketPPEvent {
         };
         this.sendPPUpdate(ppUpdate);
       }
+      this.ssUpdating = false;
     } else {
       this.ssRankedSubmissions++;
     }
   }
 
   public static async processASPP(skipCooldown?: boolean) {
+    if (this.asUpdating) return;
     if (this.asRankedSubmissions >= 1 || skipCooldown) {
+      this.asUpdating = true;
       this.asRankedSubmissions = 0;
       for (const player of await PlayerService.getAllPlayers()) {
         if (!player.accSaberId) continue;
@@ -166,6 +177,7 @@ export default class WebSocketPPEvent {
           this.sendPPUpdate(ppUpdate);
         }
       }
+      this.asUpdating = false;
     } else {
       this.asRankedSubmissions++;
     }
