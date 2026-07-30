@@ -44,19 +44,22 @@ export class PlayerService {
         alias: beatLeaderData.alias ?? null,
         beatLeaderId: beatLeaderData.id,
 
-        scoreSaberId: scoreSaberData.id ?? null,
-        scoreSaberAlias: scoreSaberData.vanity ?? null,
+        scoreSaberId: scoreSaberData?.id ?? null,
+        scoreSaberAlias: scoreSaberData?.vanity ?? null,
         scoreSaberChange: false,
 
-        accSaberId: scoreSaberData.id ?? null,
+        accSaberId: scoreSaberData?.id ?? null,
 
         hitBloqId:
-          (await hitbloqApiService.getUserFromScoreSaber(scoreSaberData?.id)) ??
-          null,
+          (await hitbloqApiService.getUserFromScoreSaber(
+            scoreSaberData?.id ?? "",
+          )) ?? null,
 
         blRank: beatLeaderData.rank > 0 ? beatLeaderData.rank : null,
         ssRank:
-          scoreSaberData.stats?.rank > 0 ? scoreSaberData.stats.rank : null,
+          scoreSaberData?.stats?.rank && scoreSaberData.stat?.rank > 0
+            ? scoreSaberData.stats.rank
+            : null,
         asRank: null,
         overallRank: null,
 
