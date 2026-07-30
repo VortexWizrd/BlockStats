@@ -23,6 +23,11 @@ export default class ScoreDisplay {
       .setAuthor({
         name: score.playerName,
         iconURL: score.playerAvatar,
+        url: score.playerBeatLeaderId
+          ? `https://beatleader.com/u/${score.playerBeatLeaderId}`
+          : score.playerScoreSaberId
+            ? `https://scoresaber.com/u/${score.playerScoreSaberId}`
+            : "",
       })
       .setTitle(
         `New score on **${score.songName}** [${score.songCharacteristic === "Standard" ? "" : score.songCharacteristic + " "}${score.songDifficulty}]`,
