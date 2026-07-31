@@ -181,10 +181,31 @@ export class SSPPCalulator extends PPCalculator {
 
   public static getPP(accuracy: number, stars: number, failed?: boolean) {
     const ppValue = parseFloat(((stars * 450) / 10.685333512).toFixed(2));
+
     let multiplier = getCurveMultiplier(this.curve, this.slopes, accuracy);
     if (failed) {
       multiplier * 0.5;
     }
     return ppValue * multiplier;
+  }
+
+  public static getPPDetailed(
+    accuracy: number,
+    stars: number,
+    failed?: boolean,
+  ) {
+    const ppValue = parseFloat(((stars * 450) / 10.685333512).toFixed(2));
+
+    let multiplier = getCurveMultiplier(this.curve, this.slopes, accuracy);
+    if (failed) {
+      multiplier * 0.5;
+    }
+    return {
+      maxPP: ppValue,
+      maxPPUnrounded: (stars * 450) / 10.685333512,
+      multiplier: multiplier,
+      estimatedPP: ppValue * multiplier,
+      estimatedPPUnrounded: ((stars * 450) / 10.685333512) * multiplier,
+    };
   }
 }

@@ -102,7 +102,9 @@ export default class Score implements ScoreRow {
       ppSS: scoreSaberLeaderboard?.stars
         ? scoresaberApiService.getPP(
             blScore.accuracy,
-            scoreSaberLeaderboard.stars,
+            (await scoresaberApiService.getPreciseStarValueFromLeaderboard(
+              scoreSaberLeaderboard.id,
+            )) ?? scoreSaberLeaderboard?.stars,
             blScore.failed,
           )
         : 0,

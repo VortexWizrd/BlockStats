@@ -42,6 +42,19 @@ export default {
             .setName("leaderboardid")
             .setDescription("Map leaderboard id (optional)"),
         ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("scoresaberppdiff")
+        .setDescription(
+          "Get detailed information about the bot's ScoreSaber pp estimation using a ScoreSaber score",
+        )
+        .addStringOption((option) =>
+          option
+            .setName("scoreid")
+            .setDescription("ScoreSaber score ID")
+            .setRequired(true),
+        ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
@@ -79,6 +92,39 @@ export default {
             );
           }
         }
+
+        break;
+      }
+      case "scoresaberppdiff": {
+        const scoreId = interaction.options.getString("scoreid");
+        if (!scoreId) return await interaction.reply("Provide a score ID");
+
+        const ssData = await scoresaberApiService.getScoreFromId(scoreId);
+        const score = ssData?.score;
+        if (!score || !score.pp) {
+          return await interaction.reply("Invalid score");
+        }
+
+        const data = SSPPCalulator.getPPDetailed(
+          score.accuracy,
+          ssData.leaderboard.realm.stars,
+        );
+
+        return await interaction.reply(
+          `
+          estimate.maxPP=${data.maxPP}
+          estimate.maxPPUnrounded=${data.maxPPUnrounded}
+          estimate.multiplier=${data.multiplier}
+          estimate.pp=${data.estimatedPP}
+          estimate.ppunrounded=${data.estimatedPPUnrounded}
+          score.stars=${ssData.leaderboard.realm.stars}
+          score.pp=${score.pp}
+          diff=${score.pp - data.estimatedPP}
+          unroundedDiff=${score.pp - data.estimatedPPUnrounded}
+          estimate.preciseStarValue=${(score.pp * 10.685333512) / (450 * data.multiplier)}
+          estimate.preciseStarValueTest1=${await scoresaberApiService.getPreciseStarValueFromLeaderboard(ssData.leaderboard.id)}
+          estimate.preciseStarValueTest2=${await scoresaberApiService.getPreciseStarValueFromScore(score.id)}`,
+        );
 
         break;
       }

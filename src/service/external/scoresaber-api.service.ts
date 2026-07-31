@@ -8,7 +8,7 @@ class ScoreSaberApiService extends WebSocketClientService {
   }
 
   public onMessage(data: any) {
-    this.emit(data.commandName, data.commandData);
+    //this.emit(data.commandName, data.commandData);
   }
 
   /**
@@ -75,6 +75,51 @@ class ScoreSaberApiService extends WebSocketClientService {
     return await this.fetch<any>(`v2/maps/hash/${hash}`);
   }
 
+  public async getPreciseStarValueFromScore(
+    scoreId: string,
+  ): Promise<Number | undefined> {
+    const scoreData = await this.getScoreFromId(scoreId);
+    if (!scoreData) return;
+
+    const estimate = SSPPCalulator.getPPDetailed(
+      scoreData.score.accuracy,
+      scoreData.leaderboard.realm.stars,
+    );
+
+    return parseFloat(
+      (
+        (scoreData.score.pp * 10.685333512) /
+        (450 * estimate.multiplier)
+      ).toFixed(6),
+    );
+  }
+
+  public async getPreciseStarValueFromLeaderboard(
+    leaderboardId: string,
+  ): Promise<Number | undefined> {
+    const ssData = {
+      score: await this.getTopLeaderboardScore(leaderboardId),
+      leaderboard: await this.getLeaderboard(leaderboardId),
+    };
+
+    const estimate = SSPPCalulator.getPPDetailed(
+      ssData.score.accuracy,
+      ssData.leaderboard.realm.stars,
+    );
+
+    return parseFloat(
+      ((ssData.score.pp * 10.685333512) / (450 * estimate.multiplier)).toFixed(
+        6,
+      ),
+    );
+  }
+
+  public async getTopLeaderboardScore(leaderboardId: string) {
+    return (
+      await this.fetch<any>(`v2/leaderboards/${leaderboardId}/scores?limit=1`)
+    )?.data[0];
+  }
+
   /**
    * Get maximum PP from ScoreSaber leaderboard
    * @param id ScoreSaber leaderboard ID
@@ -85,6 +130,15 @@ class ScoreSaberApiService extends WebSocketClientService {
     if (!leaderboard) return 0;
 
     return leaderboard.maxPP;
+  }
+
+  /**
+   * Get ScoreSaber score
+   * @param id ScoreSaber score ID
+   * @returns ScoreSaber score data, if found
+   */
+  public async getScoreFromId(id: string): Promise<any> {
+    return await this.fetch<any>(`v2/scores/${id}`);
   }
 
   /**
