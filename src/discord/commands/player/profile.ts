@@ -18,8 +18,6 @@ import { PlayersRepository } from "../../../repositories/players/players.reposit
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 import type Player from "../../../common/player.js";
 import { ScoreService } from "../../../service/score.service.js";
-import { link } from "node:fs";
-import { PlayerPPHistoriesRepository } from "../../../repositories/players/playerpphistories.repository.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -341,7 +339,7 @@ export default {
           let players: Player[] = [];
           let title = "Players";
           let playersIndex = 1 + offset;
-          let playersText = `\`\`\``;
+          let playersText = `\`\`\`ansi\n`;
           if (sort == "sort_blrank") {
             players = await PlayerService.getTopBL(10, offset);
             if (players.length == 0) {
@@ -355,26 +353,62 @@ export default {
             for (const player of players) {
               if (playersText != "") playersText += "\n";
               const indexText = `${playersIndex}. `;
+              const rankHistory =
+                await PlayerRankHistoriesRepository.getFromRange(
+                  player.id,
+                  "BeatLeader",
+                  Date.now() - 1000 * 60 * 60 * 24,
+                  Date.now(),
+                );
+
+              let rankDifference = 0;
+              if (!rankHistory || rankHistory.length === 0) {
+                rankDifference = 0;
+              } else if (rankHistory.length === 1) {
+                const latestRows =
+                  (await PlayerRankHistoriesRepository.getLatestRows(
+                    player.id,
+                    "BeatLeader",
+                    2,
+                  )) ?? [];
+                const previousRank = latestRows[1]?.rank ?? 0;
+                rankDifference = (rankHistory[0]?.rank ?? 0) - previousRank;
+              } else {
+                rankDifference =
+                  (rankHistory[0]?.rank ?? 0) -
+                  (rankHistory[rankHistory.length - 1]?.rank ?? 0);
+              }
+              const rankDifferenceText = `${rankDifference < 0 ? `+${Math.abs(rankDifference)}` : rankDifference > 0 ? `-${Math.abs(rankDifference)}` : ""}`;
+              const rankDifferenceColorText = `${rankDifference < 0 ? `[32m${rankDifferenceText}[0m` : rankDifference > 0 ? `[31m${rankDifferenceText}[0m` : ""}`;
               const rankText = `#${player.blRank}`;
+
               let spacing = "";
               let playerName = player.name;
-              if (playerName.length + indexText.length + rankText.length > 30) {
-                playerName = playerName.substring(
-                  0,
-                  35 - indexText.length - rankText.length,
-                );
+              if (
+                playerName.length +
+                  indexText.length +
+                  rankDifferenceText.length +
+                  rankText.length >
+                27
+              ) {
+                playerName =
+                  playerName.substring(
+                    0,
+                    27 - indexText.length - rankText.length,
+                  ) + "...";
               }
               do {
                 spacing += " ";
               } while (
                 playerName.length +
                   indexText.length +
+                  rankDifferenceText.length +
                   rankText.length +
                   spacing.length <
-                40
+                33
               );
 
-              playersText += `${indexText}${playerName}${spacing}${rankText}`;
+              playersText += `${indexText}${playerName}${spacing}${rankDifferenceColorText} ${rankText}`;
               playersIndex++;
             }
             playersText += `\`\`\``;
@@ -391,26 +425,62 @@ export default {
             for (const player of players) {
               if (playersText != "") playersText += "\n";
               const indexText = `${playersIndex}. `;
+              const rankHistory =
+                await PlayerRankHistoriesRepository.getFromRange(
+                  player.id,
+                  "ScoreSaber",
+                  Date.now() - 1000 * 60 * 60 * 24,
+                  Date.now(),
+                );
+
+              let rankDifference = 0;
+              if (!rankHistory || rankHistory.length === 0) {
+                rankDifference = 0;
+              } else if (rankHistory.length === 1) {
+                const latestRows =
+                  (await PlayerRankHistoriesRepository.getLatestRows(
+                    player.id,
+                    "ScoreSaber",
+                    2,
+                  )) ?? [];
+                const previousRank = latestRows[1]?.rank ?? 0;
+                rankDifference = (rankHistory[0]?.rank ?? 0) - previousRank;
+              } else {
+                rankDifference =
+                  (rankHistory[0]?.rank ?? 0) -
+                  (rankHistory[rankHistory.length - 1]?.rank ?? 0);
+              }
+              const rankDifferenceText = `${rankDifference < 0 ? `+${Math.abs(rankDifference)}` : rankDifference > 0 ? `-${Math.abs(rankDifference)}` : ""}`;
+              const rankDifferenceColorText = `${rankDifference < 0 ? `[32m${rankDifferenceText}[0m` : rankDifference > 0 ? `[31m${rankDifferenceText}[0m` : ""}`;
               const rankText = `#${player.ssRank}`;
+
               let spacing = "";
               let playerName = player.name;
-              if (playerName.length + indexText.length + rankText.length > 30) {
-                playerName = playerName.substring(
-                  0,
-                  35 - indexText.length - rankText.length,
-                );
+              if (
+                playerName.length +
+                  indexText.length +
+                  rankDifferenceText.length +
+                  rankText.length >
+                27
+              ) {
+                playerName =
+                  playerName.substring(
+                    0,
+                    27 - indexText.length - rankText.length,
+                  ) + "...";
               }
               do {
                 spacing += " ";
               } while (
                 playerName.length +
                   indexText.length +
+                  rankDifferenceText.length +
                   rankText.length +
                   spacing.length <
-                40
+                33
               );
 
-              playersText += `${indexText}${playerName}${spacing}${rankText}`;
+              playersText += `${indexText}${playerName}${spacing}${rankDifferenceColorText} ${rankText}`;
               playersIndex++;
             }
             playersText += `\`\`\``;
@@ -459,11 +529,3 @@ export default {
     }
   },
 };
-
-function getIds(beatLeaderData: any): Promise<Object> {
-  const linkedIds = beatLeaderData.linkedIds;
-  if (beatLeaderData.alias) {
-    linkedIds["alias"] = beatLeaderData.alias;
-  }
-  return linkedIds;
-}

@@ -138,6 +138,15 @@ class ScoreSaberApiService extends WebSocketClientService {
     );
   }
 
+  /**
+   *  Fetch a ScoreSaber player's history
+   * @param id Player ID
+   * @returns ScoreSaber player history data, if found
+   */
+  public async getHistory(id: string, limit: number) {
+    return await this.fetchReloaded<any>(`player/history/${id}?count=${limit}`);
+  }
+
   private async fetch<T>(path: string): Promise<T | null> {
     const url = `https://scoresaber.com/api/${path}`;
     try {
@@ -146,6 +155,19 @@ class ScoreSaberApiService extends WebSocketClientService {
     } catch (err) {
       console.warn(
         `[WARN]: ScoreSaber API: failed to fetch resource "${url}": ${err}`,
+      );
+      return null;
+    }
+  }
+
+  private async fetchReloaded<T>(path: string): Promise<T | null> {
+    const url = `https://ssr-api.fascinated.cc/${path}`;
+    try {
+      const res = await fetch(url);
+      return res.ok ? (res.json() as T) : null;
+    } catch (err) {
+      console.warn(
+        `[WARN]: ScoreSaber API: failed to fetch resource from "${url}": ${err}`,
       );
       return null;
     }

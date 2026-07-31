@@ -140,42 +140,42 @@ export class APCalculator extends PPCalculator {
 export class SSPPCalulator extends PPCalculator {
   private static curve = [
     new CurvePoint(0.0, 0.0),
-    new CurvePoint(0.6, 0.182232335),
-    new CurvePoint(0.65, 0.586601),
-    new CurvePoint(0.7, 0.6125566),
-    new CurvePoint(0.75, 0.6451808),
-    new CurvePoint(0.8, 0.6872269),
-    new CurvePoint(0.825, 0.7150466),
-    new CurvePoint(0.85, 0.746229053),
-    new CurvePoint(0.875, 0.781693459),
-    new CurvePoint(0.9, 0.825756133),
-    new CurvePoint(0.91, 0.8488376),
-    new CurvePoint(0.92, 0.872871041),
-    new CurvePoint(0.93, 0.9039994),
-    new CurvePoint(0.94, 0.9417363),
+    new CurvePoint(0.6, 0.18223233667439062),
+    new CurvePoint(0.65, 0.5866010012767576),
+    new CurvePoint(0.7, 0.6125565959114954),
+    new CurvePoint(0.75, 0.6451808210101443),
+    new CurvePoint(0.8, 0.6872268862950283),
+    new CurvePoint(0.825, 0.7150465663454271),
+    new CurvePoint(0.85, 0.7462290664143185),
+    new CurvePoint(0.875, 0.7816934560296046),
+    new CurvePoint(0.9, 0.825756123560842),
+    new CurvePoint(0.91, 0.8488375988124467),
+    new CurvePoint(0.92, 0.8728710341448851),
+    new CurvePoint(0.93, 0.9039994071865736),
+    new CurvePoint(0.94, 0.9417362980580238),
     new CurvePoint(0.95, 1.0),
-    new CurvePoint(0.955, 1.0388633),
-    new CurvePoint(0.96, 1.08718836),
-    new CurvePoint(0.965, 1.155212),
-    new CurvePoint(0.97, 1.24858081),
-    new CurvePoint(0.9725, 1.30903327),
-    new CurvePoint(0.975, 1.38071024),
-    new CurvePoint(0.9775, 1.46647263),
-    new CurvePoint(0.98, 1.570241),
-    new CurvePoint(0.9825, 1.69753623),
-    new CurvePoint(0.985, 1.85638881),
-    new CurvePoint(0.9875, 2.058947),
-    new CurvePoint(0.99, 2.32450628),
-    new CurvePoint(0.99125, 2.49029064),
-    new CurvePoint(0.9925, 2.68566775),
-    new CurvePoint(0.99375, 2.91901565),
-    new CurvePoint(0.995, 3.20220184),
-    new CurvePoint(0.99625, 3.55261445),
-    new CurvePoint(0.9975, 3.99679351),
-    new CurvePoint(0.99825, 4.32502747),
-    new CurvePoint(0.999, 4.715471),
-    new CurvePoint(0.9995, 5.01954365),
-    new CurvePoint(1.0, 5.36739445),
+    new CurvePoint(0.955, 1.0388633331418984),
+    new CurvePoint(0.96, 1.0871883573850478),
+    new CurvePoint(0.965, 1.1552120359501035),
+    new CurvePoint(0.97, 1.2485807759957321),
+    new CurvePoint(0.9725, 1.3090333065057616),
+    new CurvePoint(0.975, 1.3807102743105126),
+    new CurvePoint(0.9775, 1.4664726399289512),
+    new CurvePoint(0.98, 1.5702410055532239),
+    new CurvePoint(0.9825, 1.697536248647543),
+    new CurvePoint(0.985, 1.8563887693647105),
+    new CurvePoint(0.9875, 2.058947159052738),
+    new CurvePoint(0.99, 2.324506282149922),
+    new CurvePoint(0.99125, 2.4902905794106913),
+    new CurvePoint(0.9925, 2.685667856592722),
+    new CurvePoint(0.99375, 2.9190155639254955),
+    new CurvePoint(0.995, 3.2022017597337955),
+    new CurvePoint(0.99625, 3.5526145337555373),
+    new CurvePoint(0.9975, 3.996793606763322),
+    new CurvePoint(0.99825, 4.325027383589547),
+    new CurvePoint(0.999, 4.715470646416203),
+    new CurvePoint(0.9995, 5.019543595874787),
+    new CurvePoint(1.0, 5.367394282890631),
   ];
   private static slopes = getSlopes(this.curve);
 
@@ -191,5 +191,11 @@ export class SSPPCalulator extends PPCalculator {
     return (
       rawPP * getCurveMultiplier(this.curve, this.slopes, accuracy * multiplier)
     );
+  }
+
+  public static getPPalt(accuracy: number, stars: number) {
+    const ppValue = (stars * 450) / 10.685333512;
+    const multiplier = getCurveMultiplier(this.curve, this.slopes, accuracy);
+    return ppValue * multiplier;
   }
 }

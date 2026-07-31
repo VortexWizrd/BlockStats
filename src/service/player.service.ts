@@ -1,5 +1,5 @@
 import Player from "../common/player.js";
-import { type PlayerRow } from "../db/schema.js";
+import { type PlayerRankHistoryRow, type PlayerRow } from "../db/schema.js";
 import { PlayerPPHistoriesRepository } from "../repositories/players/playerpphistories.repository.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
@@ -57,7 +57,7 @@ export class PlayerService {
 
         blRank: beatLeaderData.rank > 0 ? beatLeaderData.rank : null,
         ssRank:
-          scoreSaberData?.stats?.rank && scoreSaberData.stat?.rank > 0
+          scoreSaberData?.stats?.rank && scoreSaberData.stats?.rank > 0
             ? scoreSaberData.stats.rank
             : null,
         asRank: null,
@@ -98,12 +98,7 @@ export class PlayerService {
         });
       }
       if (newPlayer.ssRank) {
-        await PlayerRankHistoriesRepository.insert({
-          playerId: newPlayer.id,
-          provider: "ScoreSaber",
-          timestamp: new Date(),
-          rank: playerInsert.ssRank,
-        });
+        await this.createSSRankHistory(newPlayer.id);
       }
       if (newPlayer.asRank) {
         await PlayerRankHistoriesRepository.insert({
@@ -117,6 +112,63 @@ export class PlayerService {
       return newPlayer as Player;
     } catch (err) {
       console.error("[ERROR] PlayerService: Failed to create player: ", err);
+    }
+  }
+
+  public static async createBLRankHistory(playerId: string) {
+    try {
+      if (await PlayersRepository.findById(playerId)) return;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  public static async createSSRankHistory(playerId: string) {
+    try {
+      const player = await PlayersRepository.findById(playerId);
+      if (!player || !player.scoreSaberId) return;
+      const history = await scoresaberApiService.getHistory(
+        player.scoreSaberId,
+        1000,
+      );
+      if (!history) return;
+
+      const earliestRankHistoryDate =
+        (
+          await PlayerRankHistoriesRepository.getOldestRow(
+            player.id,
+            "ScoreSaber",
+          )
+        )?.timestamp ?? new Date();
+      const earliestPPHistoryDate =
+        (
+          await PlayerPPHistoriesRepository.getOldestRow(
+            player.id,
+            "ScoreSaber",
+          )
+        )?.timestamp ?? new Date();
+
+      for (const key in history) {
+        const keyDate = new Date(key);
+        if (keyDate < earliestRankHistoryDate && history[key].rank) {
+          PlayerRankHistoriesRepository.insert({
+            playerId: player.id,
+            provider: "ScoreSaber",
+            timestamp: keyDate,
+            rank: history[key].rank,
+          });
+        }
+        if (keyDate < earliestPPHistoryDate && history[key].pp) {
+          PlayerPPHistoriesRepository.insert({
+            playerId: player.id,
+            provider: "ScoreSaber",
+            timestamp: keyDate,
+            pp: history[key].pp,
+          });
+        }
+      }
+    } catch (err) {
+      console.log(err);
     }
   }
 
