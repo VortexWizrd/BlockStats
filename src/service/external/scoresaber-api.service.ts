@@ -18,8 +18,8 @@ class ScoreSaberApiService extends WebSocketClientService {
    * @param failed Score failed value
    * @returns ScoreSaber PP value
    */
-  public getPP(maxPP: number, accuracy: number, failed: false) {
-    return SSPPCalulator.getPP(maxPP, accuracy, failed);
+  public getPP(accuracy: number, stars: number, failed?: boolean) {
+    return SSPPCalulator.getPP(accuracy, stars, failed);
   }
 
   /**
@@ -120,7 +120,7 @@ class ScoreSaberApiService extends WebSocketClientService {
    * @returns ScoreSaber leaderboard v1 data, if found
    */
   public async getV1Leaderboard(id: string): Promise<any> {
-    return await this.fetch<any>(`v1/leaderboard/by-id${id}/info`);
+    return await this.fetch<any>(`v1/leaderboard/by-id/${id}/info`);
   }
 
   /**

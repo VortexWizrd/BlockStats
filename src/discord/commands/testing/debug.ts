@@ -5,6 +5,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 import { SSPPCalulator } from "../../../common/ppcalculator.js";
+import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -17,10 +18,7 @@ export default {
         .setName("calculatesspp")
         .setDescription("Estimate ScoreSaber pp")
         .addNumberOption((option) =>
-          option
-            .setName("stars")
-            .setDescription("Star value")
-            .setRequired(true),
+          option.setName("stars").setDescription("Star value"),
         )
         .addNumberOption((option) =>
           option
@@ -38,35 +36,48 @@ export default {
             .setDescription(
               "Map max score (must be provided if score is provided)",
             ),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("leaderboardid")
+            .setDescription("Map leaderboard id (optional)"),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
     switch (subCommand) {
       case "calculatesspp": {
-        const stars = interaction.options.getNumber("stars");
         const accuracy = interaction.options.getNumber("accuracy");
-
-        if (!stars)
-          return await interaction.reply("Please provide a star rating");
+        const leaderboardId = interaction.options.getString("leaderboardid");
+        const leaderboard = leaderboardId
+          ? await scoresaberApiService.getV1Leaderboard(leaderboardId)
+          : undefined;
+        const stars =
+          interaction.options.getNumber("stars") ?? leaderboard?.stars ?? 0;
 
         if (accuracy) {
           return await interaction.reply(
-            `${SSPPCalulator.getPPalt(accuracy, stars)}pp`,
+            `${SSPPCalulator.getPP(accuracy, stars)}pp`,
           );
         } else {
           const score = interaction.options.getInteger("score");
           const maxScore = interaction.options.getInteger("maxscore");
 
-          if (!score || !maxScore) {
+          if (!score || (!maxScore && !leaderboardId)) {
             return await interaction.reply(
               "Please provide either an accuracy value or both score and maxscore value",
             );
           }
 
-          return await interaction.reply(
-            `${SSPPCalulator.getPPalt(score / maxScore, stars)}pp`,
-          );
+          if (maxScore) {
+            return await interaction.reply(
+              `${SSPPCalulator.getPP(score / maxScore, stars)}pp`,
+            );
+          } else if (leaderboard) {
+            return await interaction.reply(
+              `${SSPPCalulator.getPP(score / (leaderboard?.maxScore ?? 1), stars)}pp`,
+            );
+          }
         }
 
         break;

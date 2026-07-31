@@ -179,23 +179,12 @@ export class SSPPCalulator extends PPCalculator {
   ];
   private static slopes = getSlopes(this.curve);
 
-  public static getPP(
-    rawPP: number,
-    accuracy: number,
-    failed: boolean,
-  ): number {
-    let multiplier = 1;
+  public static getPP(accuracy: number, stars: number, failed?: boolean) {
+    const ppValue = parseFloat(((stars * 450) / 10.685333512).toFixed(2));
+    let multiplier = getCurveMultiplier(this.curve, this.slopes, accuracy);
     if (failed) {
-      multiplier = 0.5;
+      multiplier * 0.5;
     }
-    return (
-      rawPP * getCurveMultiplier(this.curve, this.slopes, accuracy * multiplier)
-    );
-  }
-
-  public static getPPalt(accuracy: number, stars: number) {
-    const ppValue = (stars * 450) / 10.685333512;
-    const multiplier = getCurveMultiplier(this.curve, this.slopes, accuracy);
     return ppValue * multiplier;
   }
 }

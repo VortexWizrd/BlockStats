@@ -99,10 +99,10 @@ export default class Score implements ScoreRow {
       bombHits: blScore.bombHits,
       wallHits: blScore.wallHits,
       ppBL: blScore.pp,
-      ppSS: scoreSaberLeaderboard?.maxPP
+      ppSS: scoreSaberLeaderboard?.stars
         ? scoresaberApiService.getPP(
-            scoreSaberLeaderboard.maxPP,
             blScore.accuracy,
+            scoreSaberLeaderboard.stars,
             blScore.failed,
           )
         : 0,
