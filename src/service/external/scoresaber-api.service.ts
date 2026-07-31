@@ -8,7 +8,7 @@ class ScoreSaberApiService extends WebSocketClientService {
   }
 
   public onMessage(data: any) {
-    //this.emit(data.commandName, data.commandData);
+    this.emit(data.commandName, data.commandData);
   }
 
   /**
