@@ -1,4 +1,7 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
@@ -6,6 +9,9 @@ import {
 import { MapService } from "../../../service/map.service.js";
 import Map from "../../../common/map/map.js";
 import { LeaderboardsRepository } from "../../../repositories/maps/leaderboards.repository.js";
+import crypto from "crypto";
+import * as unzipper from "unzipper";
+import { PlayerService } from "../../../service/player.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -32,6 +38,17 @@ export default {
             .setName("includeoutdated")
             .setDescription("Include outdated leaderboards")
             .setRequired(false),
+        ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("upload")
+        .setDescription("Upload a deleted map")
+        .addStringOption((option) =>
+          option.setName("maplink").setDescription("Map download link"),
+        )
+        .addAttachmentOption((option) =>
+          option.setName("mapfile").setDescription("Map zip file"),
         ),
     ),
   async execute(interaction: ChatInputCommandInteraction) {
@@ -71,6 +88,16 @@ export default {
             if (!interaction.channel?.isSendable()) {
               return await interaction.editReply(
                 "You must be a in a text channel to run this command!",
+              );
+            }
+            const buttons = new ActionRowBuilder<ButtonBuilder>();
+            const download = await MapService.getMapDownloadLink(map.id);
+            if (download) {
+              buttons.addComponents(
+                new ButtonBuilder()
+                  .setLabel("Download")
+                  .setURL(download)
+                  .setStyle(ButtonStyle.Link),
               );
             }
             interaction.channel.send({
@@ -137,6 +164,7 @@ export default {
                   })
                   .setTimestamp(),
               ],
+              components: [buttons],
             });
           } catch (err) {
             console.error(
@@ -150,14 +178,121 @@ export default {
           `Found ${mapCount} map${mapCount == 1 ? "" : "s"}!`,
         );
       }
+
+      case "upload": {
+        const player = await PlayerService.getPlayer(interaction.user.id);
+        if (!player)
+          return await interaction.reply(
+            "Make a BlockStats profile using **/profile link** before using this command!",
+          );
+
+        const link = interaction.options.getString("maplink") ?? "";
+
+        const file = await (async () => {
+          const response = await fetch(link ?? "");
+          if (response.ok) {
+            return response;
+          }
+        })();
+
+        if (!file) return;
+
+        const arrayBuffer = await file.arrayBuffer();
+        const zipBuffer = Buffer.from(arrayBuffer);
+
+        const hash = await getMapHash(zipBuffer);
+        console.log(hash);
+
+        if (!hash) {
+          return await interaction.reply("Invalid map");
+        }
+
+        const map = await MapService.getMapFromHash(hash);
+        if (!map) {
+          return await interaction.reply(
+            "Please submit a new score on the map before uplading!",
+          );
+        }
+
+        const mapDownload = await MapService.createMapDownload({
+          mapId: map.id,
+          url: link,
+          uploaderId: player.id,
+        });
+
+        if (!mapDownload)
+          return await interaction.reply("An unknown error occurred");
+
+        return await interaction.reply({
+          content: `Saved download link for **${map.songAuthor} - ${map.songName} by ${map.mapAuthor}** (hash: ${hash})`,
+          files: [
+            {
+              attachment: mapDownload.url,
+            },
+          ],
+        });
+
+        async function getMapHash(
+          zipBuffer: Buffer,
+        ): Promise<string | undefined> {
+          const directory = await unzipper.Open.buffer(zipBuffer);
+
+          const infoDatEntry = directory.files.find((f) =>
+            f.path.toLowerCase().endsWith("info.dat"),
+          );
+
+          if (!infoDatEntry) {
+            return;
+          }
+
+          const infoDatBuffer = await infoDatEntry.buffer();
+          const infoDatContent = infoDatBuffer.toString("utf8");
+
+          const infoJson = JSON.parse(infoDatContent);
+
+          const hashDataBuffer = await extractHashData(directory, infoJson);
+
+          const hash = crypto.createHash("sha1");
+          hash.update(infoDatBuffer);
+          hash.update(hashDataBuffer);
+          const mapHash = hash.digest("hex").padStart(40, "0");
+
+          return mapHash;
+        }
+
+        async function extractHashData(
+          directory: unzipper.CentralDirectory,
+          infoJson: any,
+        ): Promise<Buffer> {
+          const diffBuffers: Buffer[] = [];
+
+          const beatmapSets =
+            infoJson._difficultyBeatmapSets ||
+            infoJson.difficultyBeatmapSets ||
+            [];
+
+          for (const set of beatmapSets) {
+            const diffs =
+              set._difficultyBeatmaps || set.difficultyBeatmaps || [];
+
+            for (const diff of diffs) {
+              const filename = diff._beatmapFilename || diff.beatmapFilename;
+              if (!filename) continue;
+
+              const diffEntry = directory.files.find((f) =>
+                f.path.toLowerCase().endsWith(filename.toLowerCase()),
+              );
+
+              if (diffEntry) {
+                const buffer = await diffEntry.buffer();
+                diffBuffers.push(buffer);
+              }
+            }
+          }
+
+          return Buffer.concat(diffBuffers);
+        }
+      }
     }
   },
 };
-
-function getIds(beatLeaderData: any): Promise<Object> {
-  const linkedIds = beatLeaderData.linkedIds;
-  if (beatLeaderData.alias) {
-    linkedIds["alias"] = beatLeaderData.alias;
-  }
-  return linkedIds;
-}

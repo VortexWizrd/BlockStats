@@ -228,11 +228,3 @@ export default {
     }
   },
 };
-
-function getIds(beatLeaderData: any): Promise<Object> {
-  const linkedIds = beatLeaderData.linkedIds;
-  if (beatLeaderData.alias) {
-    linkedIds["alias"] = beatLeaderData.alias;
-  }
-  return linkedIds;
-}

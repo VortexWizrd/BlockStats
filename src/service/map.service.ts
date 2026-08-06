@@ -1,4 +1,8 @@
-import type { leaderboardsTable, mapsTable } from "../db/schema.js";
+import type {
+  leaderboardsTable,
+  mapsTable,
+  mapDownloadsTable,
+} from "../db/schema.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
 import Map from "../common/map/map.js";
@@ -8,6 +12,7 @@ import type Leaderboard from "../common/map/leaderboard.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
 import beatsaverApiService from "./external/beatsaver-api.service.js";
 import type { DifficultyType } from "../common/map/leaderboard.js";
+import { MapDownloadsRepository } from "../repositories/maps/mapdownloads.repository.js";
 
 type MapInsert = typeof mapsTable.$inferInsert;
 type LeaderboardInsert = typeof leaderboardsTable.$inferInsert;
@@ -665,4 +670,31 @@ export class MapService {
   }
 
   public static async fixDifficulties() {}
+
+  public static async createMapDownload(
+    data: typeof mapDownloadsTable.$inferInsert,
+  ) {
+    return await MapDownloadsRepository.insert(data);
+  }
+
+  public static async getMapDownloadLink(
+    mapId: number,
+  ): Promise<string | undefined> {
+    const map = await this.getMap(mapId);
+    if (!map) return undefined;
+
+    if (map.outdated || !map.beatSaverId) {
+      const mapDownloads = await MapDownloadsRepository.findByMapId(mapId);
+      if (!mapDownloads || mapDownloads.length == 0) return undefined;
+      for (const mapDownload of mapDownloads) {
+        const response = await fetch(mapDownload.url);
+        if (response.ok) {
+          return mapDownload.url;
+        }
+      }
+      return undefined;
+    } else {
+      return "r2cdn.beatsaver.com/" + map.hash + ".zip";
+    }
+  }
 }

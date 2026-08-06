@@ -316,6 +316,22 @@ export const mapsTable = pgTable(
   ],
 );
 
+export const mapDownloadsTable = pgTable("mapdownloads", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  mapId: integer()
+    .notNull()
+    .references(() => mapsTable.id, {
+      onDelete: "cascade",
+    }),
+  url: text().notNull(),
+  uploaderId: varchar({ length: 32 })
+    .notNull()
+    .references(() => playersTable.id, {
+      onDelete: "cascade",
+    }),
+  timestamp: timestamp().notNull().defaultNow(),
+});
+
 export const leaderboardsTable = pgTable(
   "leaderboards",
   {
@@ -427,4 +443,5 @@ export type SnipeFeedRow = typeof snipeFeedsTable.$inferSelect;
 export type PPFeedRow = typeof ppFeedsTable.$inferSelect;
 export type PlayerRankHistoryRow = typeof playerRankHistoryTable.$inferSelect;
 export type MapRow = typeof mapsTable.$inferInsert;
+export type MapDownloadRow = typeof mapDownloadsTable.$inferInsert;
 export type LeaderboardRow = typeof leaderboardsTable.$inferInsert;
