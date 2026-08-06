@@ -694,7 +694,7 @@ export class MapService {
       }
       return undefined;
     } else {
-      return "r2cdn.beatsaver.com/" + map.hash + ".zip";
+      return "https://r2cdn.beatsaver.com/" + map.hash + ".zip";
     }
   }
 }
