@@ -99,7 +99,7 @@ export default {
                   .setURL(download)
                   .setStyle(ButtonStyle.Link),
               );
-            }
+            } 
             interaction.channel.send({
               embeds: [
                 new EmbedBuilder()
@@ -164,7 +164,7 @@ export default {
                   })
                   .setTimestamp(),
               ],
-              components: [buttons],
+              components: buttons.components.length > 0 ? [buttons] : [],
             });
           } catch (err) {
             console.error(

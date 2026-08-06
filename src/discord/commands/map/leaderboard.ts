@@ -210,7 +210,7 @@ export default {
               }
               interaction.channel.send({
                 embeds: [embed],
-                components: [buttons],
+                components: buttons.components.length > 0 ? [buttons] : [],
               });
             } catch (err) {
               console.error(
