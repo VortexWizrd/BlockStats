@@ -7,7 +7,7 @@ export class WebSocketClientService extends EventEmitter {
   private _intentionalClose = false;
   private _checkInterval: NodeJS.Timeout | null = null;
   private readonly _url: string;
-  protected readonly checkDelay: number = 30;
+  protected readonly checkDelay: number = 150;
 
   constructor(url: string) {
     super();
