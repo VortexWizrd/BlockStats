@@ -4,7 +4,7 @@ import {
   scoresTable,
   type ScoreRow,
 } from "../../db/schema.js";
-import { and, eq, sql, desc, count, or } from "drizzle-orm";
+import { and, eq, sql, desc, count, or, gt } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 import type { DifficultyType } from "../../common/map/leaderboard.js";
 
@@ -105,6 +105,46 @@ export class ScoresRepository extends Repository {
           eq(this.table.songCharacteristic, songCharacteristic),
         ),
       );
+  }
+
+  public static async getPlayerTopScoreSaber(
+    playerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.outdated, false),
+          gt(this.table.ppSS, 0),
+        ),
+      )
+      .orderBy(desc(this.table.ppSS))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  public static async getPlayerTopBeatLeader(
+    playerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<(typeof this.row)[]> {
+    return await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.outdated, false),
+          gt(this.table.ppBL, 0),
+        ),
+      )
+      .orderBy(desc(this.table.ppBL))
+      .limit(limit)
+      .offset(offset);
   }
 
   public static async getPlayerCurrentFromMap(

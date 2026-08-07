@@ -80,11 +80,11 @@ export default class Score implements ScoreRow {
       provider: ["BeatLeader"],
       playerName: player?.name ?? blScore.player.name,
       playerAvatar: player?.avatar ?? blScore.player.avatar,
-      songName: blScore.leaderboard.song.name,
-      songSubName: blScore.leaderboard.song.subName,
-      songAuthor: blScore.leaderboard.song.author,
-      mapAuthor: blScore.leaderboard.song.mapper,
-      songCover: blScore.leaderboard.song.coverImage,
+      songName: blScore.leaderboard.song.name ?? "",
+      songSubName: blScore.leaderboard.song.subName ?? "",
+      songAuthor: blScore.leaderboard.song.author ?? "",
+      mapAuthor: blScore.leaderboard.song.mapper ?? "",
+      songCover: blScore.leaderboard.song.coverImage ?? "",
       songHash: blScore.leaderboard.song.hash,
       improvement: null,
       songDifficulty:
@@ -162,11 +162,11 @@ export default class Score implements ScoreRow {
       playerName: player?.name ?? ssScore.score.leaderboardPlayerInfo.name,
       playerAvatar:
         player?.avatar ?? ssScore.score.leaderboardPlayerInfo.profilePicture,
-      songName: ssScore.leaderboard.songName,
-      songSubName: ssScore.leaderboard.songSubName,
-      songAuthor: ssScore.leaderboard.songAuthorName,
-      mapAuthor: ssScore.leaderboard.levelAuthorName,
-      songCover: ssScore.leaderboard.coverImage,
+      songName: ssScore.leaderboard.songName ?? "",
+      songSubName: ssScore.leaderboard.songSubName ?? "",
+      songAuthor: ssScore.leaderboard.songAuthorName ?? "",
+      mapAuthor: ssScore.leaderboard.levelAuthorName ?? "",
+      songCover: ssScore.leaderboard.coverImage ?? "",
       songHash: ssScore.leaderboard.songHash.toLowerCase(),
       songDifficulty:
         leaderboard?.difficulty ??

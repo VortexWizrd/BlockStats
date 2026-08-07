@@ -18,7 +18,9 @@ import { PlayersRepository } from "../../../repositories/players/players.reposit
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 import type Player from "../../../common/player.js";
 import { ScoreService } from "../../../service/score.service.js";
-import { emojiMap } from "../../common/format.js";
+import { emojiMap, typesMap } from "../../common/format.js";
+import { MapService } from "../../../service/map.service.js";
+import scoresaberApiService from "../../../service/external/scoresaber-api.service.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -322,22 +324,156 @@ export default {
         }
 
         switch (interaction.options.getString("type")) {
-          case "beatleader": {
+          case "show_beatleader": {
             const blData = await beatleaderApiService.getUserFromId(
               player.beatLeaderId ?? "",
             );
             if (!blData)
-              return await interaction.reply("Failed to get BeatLeader data");
+              return await interaction.editReply(
+                "Failed to get BeatLeader data",
+              );
+
+            // Get skillset
+            let mapTypeGain: Record<string, number> = {
+              acc: 0,
+              tech: 0,
+              midspeed: 0,
+              speed: 0,
+              fitbeat: 0,
+              linear: 0,
+              bombReset: 0,
+            };
+            let total = 0;
+            const topScores = await ScoreService.getPlayerTopBeatLeader(
+              player.id,
+              100,
+              0,
+            );
+            for (const score of topScores) {
+              if (score.blLeaderboardId) {
+                const leaderboard =
+                  await MapService.getLeaderboardFromBeatLeader(
+                    parseInt(score.blLeaderboardId),
+                  );
+                if (leaderboard) {
+                  if (leaderboard.blMapType) {
+                    for (const [key, value] of Object.entries(typesMap)) {
+                      if ((leaderboard.blMapType & value) !== 0) {
+                        if (key in mapTypeGain) {
+                          mapTypeGain[key]! += score.ppBL;
+                          total += score.ppSS;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            const sortedSkillsets = Object.entries(mapTypeGain).sort(
+              (a, b) => b[1] - a[1],
+            );
+            const mapTypeNotCounted = Object.values(mapTypeGain).every(
+              (value) => value === 0,
+            );
+            const primarySkillset = sortedSkillsets[0]?.[0];
+            const primarySkillsetPercent =
+              ((sortedSkillsets[0]?.[1] ?? 0) * 100) / total;
+            const secondarySkillset = sortedSkillsets[1]?.[0];
+            const secondarySkillsetPercent =
+              ((sortedSkillsets[1]?.[1] ?? 0) * 100) / total;
+
             const embed = new EmbedBuilder()
               .setTitle(player.name)
               .setThumbnail(player.avatar)
               .setDescription(
-                `# \u200B${player.blRank ? `${emojiMap.BeatLeader} #${player.blRank}` : ""}${blData.country && blData.countryRank ? `:flag_${blData.country.toLowerCase()}: #${blData.countryRank}` : ""}`,
+                `# \u200B${player.blRank ? `${emojiMap.BeatLeader} #${player.blRank}` : ""}${blData.country && blData.countryRank ? ` • :flag_${blData.country.toLowerCase()}: #${blData.countryRank}` : ""}`,
               )
               .setColor(color)
               .addFields({
                 name: "Skillset",
-                value: "Not tracked",
+                value: mapTypeNotCounted
+                  ? "Not tracked"
+                  : `${primarySkillset} (${primarySkillsetPercent.toFixed(2)}%)${(secondarySkillset ?? 0 > 0) ? `\n${secondarySkillset} (${secondarySkillsetPercent.toFixed(2)}%)` : ""}`,
+                inline: true,
+              })
+              .setTimestamp();
+
+            return interaction.editReply({
+              embeds: [embed],
+            });
+          }
+          case "show_scoresaber": {
+            const ssData = await scoresaberApiService.getUserFromId(
+              player.scoreSaberId ?? "",
+            );
+            if (!ssData)
+              return await interaction.editReply(
+                "Failed to get ScoreSaber data",
+              );
+
+            // Get skillset
+            let mapTypeGain: Record<string, number> = {
+              acc: 0,
+              tech: 0,
+              midspeed: 0,
+              speed: 0,
+              fitbeat: 0,
+              linear: 0,
+              bombReset: 0,
+            };
+            let total = 0;
+            const topScores = await ScoreService.getPlayerTopScoreSaber(
+              player.id,
+              10000,
+              0,
+            );
+            for (const score of topScores) {
+              if (score.ssLeaderboardId) {
+                const leaderboard =
+                  await MapService.getLeaderboardFromScoreSaber(
+                    score.ssLeaderboardId,
+                  );
+                if (leaderboard && leaderboard.ssRankedStatus == "RANKED") {
+                  if (leaderboard.blMapType) {
+                    for (const [key, value] of Object.entries(typesMap)) {
+                      if ((leaderboard.blMapType & value) !== 0) {
+                        if (key in mapTypeGain) {
+                          mapTypeGain[key]! += score.ppSS;
+                          total += score.ppSS;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            const sortedSkillsets = Object.entries(mapTypeGain).sort(
+              (a, b) => b[1] - a[1],
+            );
+            const mapTypeNotCounted = Object.values(mapTypeGain).every(
+              (value) => value === 0,
+            );
+            const primarySkillset = sortedSkillsets[0]?.[0];
+            const primarySkillsetPercent =
+              ((sortedSkillsets[0]?.[1] ?? 0) * 100) / total;
+            const secondarySkillset = sortedSkillsets[1]?.[0];
+            const secondarySkillsetPercent =
+              ((sortedSkillsets[1]?.[1] ?? 0) * 100) / total;
+
+            const embed = new EmbedBuilder()
+              .setTitle(player.name)
+              .setThumbnail(player.avatar)
+              .setDescription(
+                `# \u200B${player.ssRank ? `${emojiMap.ScoreSaber} #${player.ssRank}` : ""}${ssData.country && ssData.stats.countryRank ? ` • :flag_${ssData.country.toLowerCase()}: #${ssData.stats.countryRank}` : ""}`,
+              )
+              .setColor(color)
+              .addFields({
+                name: "Skillset",
+                value: mapTypeNotCounted
+                  ? "Not tracked"
+                  : `${primarySkillset} (${primarySkillsetPercent.toFixed(2)}%)${(secondarySkillset ?? 0 > 0) ? `\n${secondarySkillset} (${secondarySkillsetPercent.toFixed(2)}%)` : ""}`,
                 inline: true,
               })
               .setTimestamp();
@@ -387,8 +523,11 @@ export default {
             return interaction.editReply({
               embeds: [embed],
             });
+
+            break;
           }
         }
+        break;
       }
 
       case "refresh": {

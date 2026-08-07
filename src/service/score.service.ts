@@ -140,6 +140,30 @@ export class ScoreService {
     )) as Score[];
   }
 
+  public static async getPlayerTopBeatLeader(
+    playerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<Score[]> {
+    return (await ScoresRepository.getPlayerTopBeatLeader(
+      playerId,
+      limit,
+      offset,
+    )) as Score[];
+  }
+
+  public static async getPlayerTopScoreSaber(
+    playerId: string,
+    limit: number,
+    offset: number,
+  ): Promise<Score[]> {
+    return (await ScoresRepository.getPlayerTopScoreSaber(
+      playerId,
+      limit,
+      offset,
+    )) as Score[];
+  }
+
   public static async getPlayerCurrentFromMap(
     playerId: string,
     songHash: string,

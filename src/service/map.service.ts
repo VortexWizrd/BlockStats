@@ -366,6 +366,7 @@ export class MapService {
             nps: diff.nps,
             updatedTime: new Date(),
             maxScore: diff.maxScore,
+            blMapType: diff.type,
             outdated: !(
               beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
             ),
