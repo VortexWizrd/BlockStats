@@ -186,6 +186,13 @@ export class PlayerService {
     }
   }
 
+  public static async searchPlayer(
+    query: string,
+    limit: number,
+  ): Promise<Player[]> {
+    return (await PlayersRepository.search(query, limit)) as Player[];
+  }
+
   public static async markScoreSaberChange(id: string) {
     return await PlayersRepository.markScoreSaberChange(id);
   }

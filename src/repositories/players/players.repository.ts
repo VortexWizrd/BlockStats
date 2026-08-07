@@ -1,7 +1,7 @@
 import type { RankTimestamp } from "../../common/player.js";
 import { db } from "../../db/index.js";
 import { playersTable } from "../../db/schema.js";
-import { eq, sql, desc, isNotNull, asc, and, ne, or } from "drizzle-orm";
+import { eq, sql, desc, isNotNull, asc, and, ne, or, ilike } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 
 export class PlayersRepository extends Repository {
@@ -286,5 +286,24 @@ export class PlayersRepository extends Repository {
       .where(eq(playersTable.id, id))
       .returning();
     return player;
+  }
+
+  public static async search(
+    query: string,
+    limit: number,
+  ): Promise<(typeof this.row)[]> {
+    const searchTerm = `%${query}%`;
+
+    return await db
+      .select()
+      .from(this.table)
+      .where(
+        or(
+          ilike(this.table.name, searchTerm),
+          ilike(this.table.alias, searchTerm),
+          ilike(this.table.scoreSaberAlias, searchTerm),
+        ),
+      )
+      .limit(limit);
   }
 }

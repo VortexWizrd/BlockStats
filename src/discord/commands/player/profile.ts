@@ -49,7 +49,13 @@ export default {
         .addUserOption((option) =>
           option
             .setName("user")
-            .setDescription("The user to view")
+            .setDescription("Discord user")
+            .setRequired(false),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("search")
+            .setDescription("Search for a profile")
             .setRequired(false),
         )
         .addBooleanOption((option) =>
@@ -239,9 +245,19 @@ export default {
       case "show": {
         await interaction.deferReply();
 
-        const userId =
-          interaction.options.getUser("user")?.id ?? interaction.user.id;
-        const player = await PlayerService.getPlayer(userId);
+        let player: Player | undefined;
+
+        const userId = interaction.options.getUser("user")?.id;
+        const searchQuery = interaction.options.getString("search");
+
+        if (userId) {
+          player = await PlayerService.getPlayer(userId);
+        } else if (searchQuery) {
+          const playerList = await PlayerService.searchPlayer(searchQuery, 1);
+          player = playerList[0];
+        } else {
+          player = await PlayerService.getPlayer(interaction.user.id);
+        }
 
         if (!player) {
           return await interaction.editReply("Profile not found");
