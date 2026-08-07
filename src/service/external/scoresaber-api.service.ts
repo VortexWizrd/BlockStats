@@ -168,6 +168,30 @@ class ScoreSaberApiService extends WebSocketClientService {
     return (await this.fetch<any>(`v2/players?page=${rank}&limit=1`))?.data[0];
   }
 
+  public async getUserScores(
+    id: string | number,
+    page: number,
+    count: number,
+  ): Promise<any> {
+    return (
+      await this.fetch<any>(
+        `v2/players/${id}/scores?page=${page}&limit=${count}&sort=oldest`,
+      )
+    )?.data;
+  }
+
+  public async getUserV1Scores(
+    id: string | number,
+    page: number,
+    count: number,
+  ): Promise<any> {
+    return (
+      await this.fetch<any>(
+        `v1/player/${id}/scores?page=${page}&limit=${count}&sort=recent`,
+      )
+    )?.playerScores;
+  }
+
   /**
    *  Fetch a ScoreSaber leaderboard using ID
    * @param id ScoreSaber leaderboard ID

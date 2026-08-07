@@ -64,14 +64,25 @@ export const playersTable = pgTable(
     accentColor: varchar({ length: 7 }),
     status: varchar({ length: 32 }),
 
+    // Location
+    blCountry: varchar({ length: 2 }),
+    ssCountry: varchar({ length: 2 }),
+    subdivision: varchar({ length: 6 }),
+
     // Rank
     blRank: integer(),
+    blCountryRank: integer(),
+    blSubdivisionRank: integer(),
     ssRank: integer(),
+    ssCountryRank: integer(),
+    ssSubdivisionRank: integer(),
     asRank: integer(),
     asTechRank: integer(),
     asTrueRank: integer(),
     asStandardRank: integer(),
     overallRank: integer(),
+    overallCountryRank: integer(),
+    overallSubdivisionRank: integer(),
 
     // PP
     blPP: doublePrecision(),
@@ -228,6 +239,8 @@ export const scoresTable = pgTable(
     blStarRating: doublePrecision(),
     blModifiedStarRating: doublePrecision(),
     blRank: integer(),
+    hmd: integer(),
+    controller: integer(),
     ssLeaderboardId: integer(),
     ssScoreId: integer(),
     ssStarRating: doublePrecision(),
@@ -364,6 +377,7 @@ export const leaderboardsTable = pgTable(
     blTechRating: doublePrecision(),
     blAccRating: doublePrecision(),
     blPassRating: doublePrecision(),
+    blMapType: integer(),
 
     // scoresaber
     ssLeaderboardId: integer(),

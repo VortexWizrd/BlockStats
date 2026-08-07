@@ -145,11 +145,11 @@ export class MapService {
       map = await this.createMap({
         id: -1,
         hash: hash.toLowerCase(),
-        songName: scoreSaberMap.songName,
-        songSubName: scoreSaberMap.songSubName,
-        songAuthor: scoreSaberMap.songAuthorName,
-        mapAuthor: scoreSaberMap.levelAuthorName,
-        songCover: scoreSaberMap.coverUrl,
+        songName: scoreSaberMap.songName ?? "",
+        songSubName: scoreSaberMap.songSubName ?? "",
+        songAuthor: scoreSaberMap.songAuthorName ?? "",
+        mapAuthor: scoreSaberMap.levelAuthorName ?? "",
+        songCover: scoreSaberMap.coverUrl ?? "",
         savedTime: new Date(),
         updatedTime: new Date(),
         beatSaverId: scoreSaberMap.bsid ?? null,
@@ -171,11 +171,11 @@ export class MapService {
       }
     } else {
       await MapsRepository.update(map.id, {
-        songName: scoreSaberMap.songName,
-        songSubName: scoreSaberMap.songSubName,
-        songAuthor: scoreSaberMap.songAuthorName,
-        mapAuthor: scoreSaberMap.levelAuthorName,
-        songCover: scoreSaberMap.coverUrl,
+        songName: scoreSaberMap.songName ?? "",
+        songSubName: scoreSaberMap.songSubName ?? "",
+        songAuthor: scoreSaberMap.songAuthorName ?? "",
+        mapAuthor: scoreSaberMap.levelAuthorName ?? "",
+        songCover: scoreSaberMap.coverUrl ?? "",
         updatedTime: new Date(),
         beatSaverId: scoreSaberMap.bsid ?? null,
         songDescription: beatSaverMap.description ?? "",
@@ -249,6 +249,7 @@ export class MapService {
         nps: null,
         ssMaxPP: null,
         outdated: !(beatSaverMap.versions[0].hash == hash.toLowerCase()),
+        blMapType: null,
       });
       if (!newLeaderboard) {
         continue;
@@ -293,11 +294,11 @@ export class MapService {
         map = await this.createMap({
           id: -1,
           hash: selectedLeaderboard.song.hash.toLowerCase(),
-          songName: selectedLeaderboard.song.name,
-          songSubName: selectedLeaderboard.song.subName,
-          songAuthor: selectedLeaderboard.song.author,
-          mapAuthor: selectedLeaderboard.song.mapper,
-          songCover: selectedLeaderboard.song.coverImage,
+          songName: selectedLeaderboard.song.name ?? "",
+          songSubName: selectedLeaderboard.song.subName ?? "",
+          songAuthor: selectedLeaderboard.song.author ?? "",
+          mapAuthor: selectedLeaderboard.song.mapper ?? "",
+          songCover: selectedLeaderboard.song.coverImage ?? "",
           savedTime: new Date(),
           updatedTime: new Date(),
           beatSaverId: beatSaverMap?.id ?? null,
@@ -321,11 +322,11 @@ export class MapService {
         }
       } else {
         await MapsRepository.update(map.id, {
-          songName: leaderboard.song.name,
-          songSubName: leaderboard.song.subName,
-          songAuthor: leaderboard.song.author,
-          mapAuthor: leaderboard.song.mapper,
-          songCover: leaderboard.song.coverImage,
+          songName: leaderboard.song.name ?? "",
+          songSubName: leaderboard.song.subName ?? "",
+          songAuthor: leaderboard.song.author ?? "",
+          mapAuthor: leaderboard.song.mapper ?? "",
+          songCover: leaderboard.song.coverImage ?? "",
           updatedTime: new Date(),
           songDuration: selectedLeaderboard.duration,
           songBPM: selectedLeaderboard.bpm,
@@ -412,6 +413,7 @@ export class MapService {
           outdated: !(
             beatSaverMap.versions[0].hash == selectedLeaderboard.song.hash
           ),
+          blMapType: diff.type,
         });
         if (!newLeaderboard) {
           continue;
@@ -549,6 +551,7 @@ export class MapService {
         nps: null,
         ssMaxPP: null,
         outdated: false,
+        blMapType: null,
       });
       if (!newLeaderboard) {
         continue;
@@ -657,6 +660,7 @@ export class MapService {
           nps: null,
           ssMaxPP: null,
           outdated: false,
+          blMapType: null,
         });
         if (!newLeaderboard) {
           continue;

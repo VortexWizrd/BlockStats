@@ -1,12 +1,16 @@
 import Player from "../common/player.js";
+import Score from "../common/score.js";
 import { type PlayerRankHistoryRow, type PlayerRow } from "../db/schema.js";
 import { PlayerPPHistoriesRepository } from "../repositories/players/playerpphistories.repository.js";
 import { PlayerRankHistoriesRepository } from "../repositories/players/playerrankhistories.repository.js";
 import { PlayersRepository } from "../repositories/players/players.repository.js";
+import { ScoresRepository } from "../repositories/scores/scores.repository.js";
 import accsaberApiService from "./external/accsaber-api.service.js";
 import beatleaderApiService from "./external/beatleader-api.service.js";
 import hitbloqApiService from "./external/hitbloq-api.service.js";
 import scoresaberApiService from "./external/scoresaber-api.service.js";
+import { MapService } from "./map.service.js";
+import { ScoreService } from "./score.service.js";
 
 export class PlayerService {
   public static async createPlayer(
@@ -62,6 +66,22 @@ export class PlayerService {
             : null,
         asRank: null,
         overallRank: null,
+
+        blCountry: beatLeaderData.country.toUpperCase(),
+        ssCountry: scoreSaberData?.country
+          ? scoreSaberData.country.toUpperCase()
+          : null,
+        subdivision: null,
+        blCountryRank: beatLeaderData.countryRank,
+        blSubdivisionRank: null,
+        ssCountryRank:
+          scoreSaberData?.stats?.countryRank &&
+          scoreSaberData.stats?.countryRank > 0
+            ? scoreSaberData.stats.countryRank
+            : null,
+        ssSubdivisionRank: null,
+        overallCountryRank: null,
+        overallSubdivisionRank: null,
 
         totalScores: 0,
         name: beatLeaderData.name,
@@ -650,5 +670,141 @@ export class PlayerService {
     await PlayersRepository.update(id, {
       accentColor: color,
     });
+  }
+
+  public static async saveOldScores(id: string) {
+    const player = await this.getPlayer(id);
+    if (!player) return;
+
+    // BeatLeader
+    if (player.beatLeaderId) {
+      let done = false;
+      let page = 1;
+      do {
+        const scores = await beatleaderApiService.getUserScores(
+          player.beatLeaderId,
+          page,
+          100,
+        );
+        if (!scores || scores.length == 0) {
+          done = true;
+        } else {
+          for (const score of scores) {
+            try {
+              if (await ScoreService.getScoreFromBeatLeader(score.id)) continue;
+              const blConvertedScore = await Score.fromBeatLeader(score);
+              blConvertedScore.playerId = player.id;
+
+              if (!blConvertedScore || !blConvertedScore.blScoreId) continue;
+              const latestSavedScore =
+                await ScoreService.getPlayerCurrentFromMap(
+                  player.id,
+                  score.songHash,
+                  score.songDifficulty,
+                  score.songCharacteristic,
+                );
+
+              if (
+                latestSavedScore &&
+                latestSavedScore.timestamp > blConvertedScore.timestamp
+              ) {
+                blConvertedScore.outdated = true;
+              } else {
+                await ScoreService.setOutdated(
+                  player.id,
+                  score.songHash,
+                  score.songDifficulty,
+                  score.songCharacteristic,
+                );
+                blConvertedScore.outdated = false;
+              }
+              console.log(blConvertedScore);
+              await ScoreService.createScore(blConvertedScore);
+              if (blConvertedScore.blLeaderboardId) {
+                await MapService.createFromBeatLeader(
+                  blConvertedScore.blLeaderboardId,
+                  true,
+                );
+              }
+            } catch (err) {
+              console.log(err);
+            }
+          }
+        }
+        page++;
+      } while (!done);
+    }
+
+    // ScoreSaber
+    if (player.scoreSaberId) {
+      let done = false;
+      let page = 1;
+      do {
+        const scores = await scoresaberApiService.getUserV1Scores(
+          player.scoreSaberId,
+          page,
+          100,
+        );
+        if (!scores || scores.length == 0) {
+          done = true;
+        } else {
+          for (const score of scores) {
+            if (await ScoreService.getScoreFromBeatLeader(score.id)) continue;
+            const ssConvertedScore = await Score.fromScoreSaber(score);
+            ssConvertedScore.playerId = player.id;
+            if (!ssConvertedScore || !ssConvertedScore.ssScoreId) continue;
+            const similarScore = await ScoreService.getSimilarScore(
+              ssConvertedScore.playerId,
+              ssConvertedScore.songHash,
+              ssConvertedScore.songDifficulty,
+              ssConvertedScore.songCharacteristic,
+              ssConvertedScore.modifiers,
+              ssConvertedScore.score,
+            );
+            if (similarScore) {
+              ScoresRepository.update(similarScore.id, {
+                ssLeaderboardId: ssConvertedScore.ssLeaderboardId,
+                ssRank: ssConvertedScore.ssRank,
+                ssScoreId: ssConvertedScore.ssScoreId,
+                ssStarRating: ssConvertedScore.ssStarRating,
+                ppSS: ssConvertedScore.ppSS,
+                provider: ["BeatLeader", "ScoreSaber"],
+                playerScoreSaberId: ssConvertedScore.playerScoreSaberId,
+              });
+            } else {
+              const latestSavedScore =
+                await ScoreService.getPlayerCurrentFromMap(
+                  player.id,
+                  score.songHash,
+                  score.songDifficulty,
+                  score.songCharacteristic,
+                );
+
+              if (
+                latestSavedScore &&
+                latestSavedScore.timestamp > ssConvertedScore.timestamp
+              ) {
+                ssConvertedScore.outdated = true;
+              } else {
+                await ScoreService.setOutdated(
+                  player.id,
+                  score.songHash,
+                  score.songDifficulty,
+                  score.songCharacteristic,
+                );
+                ssConvertedScore.outdated = false;
+              }
+              console.log(ssConvertedScore);
+              await ScoreService.createScore(ssConvertedScore);
+              await MapService.createFromScoreSaber(
+                ssConvertedScore.songHash,
+                true,
+              );
+            }
+          }
+        }
+        page++;
+      } while (!done);
+    }
   }
 }

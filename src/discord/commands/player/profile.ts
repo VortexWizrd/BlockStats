@@ -18,6 +18,7 @@ import { PlayersRepository } from "../../../repositories/players/players.reposit
 import { PlayerRankHistoriesRepository } from "../../../repositories/players/playerrankhistories.repository.js";
 import type Player from "../../../common/player.js";
 import { ScoreService } from "../../../service/score.service.js";
+import { emojiMap } from "../../common/format.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -46,6 +47,22 @@ export default {
       cmd
         .setName("show")
         .setDescription("View a BlockStats profile")
+        .addStringOption((option) =>
+          option
+            .setName("type")
+            .setDescription("Type of profile embed to show")
+            .addChoices(
+              { name: "default", value: "show_default" },
+              {
+                name: "beatleader",
+                value: "show_beatleader",
+              },
+              {
+                name: "scoresaber",
+                value: "show_scoresaber",
+              },
+            ),
+        )
         .addUserOption((option) =>
           option
             .setName("user")
@@ -115,7 +132,15 @@ export default {
             .setDescription("Hex color value (format example: #3498DB)")
             .setRequired(true),
         ),
+    )
+    .addSubcommand((cmd) =>
+      cmd
+        .setName("getoldscores")
+        .setDescription(
+          "Get all of your BeatLeader and ScoreSaber scores not saved on BlockStats",
+        ),
     ),
+
   async execute(interaction: ChatInputCommandInteraction) {
     const subCommand = interaction.options.getSubcommand();
 
@@ -137,7 +162,18 @@ export default {
         if (!player) {
           try {
             await PlayerService.createPlayer(interaction.user.id);
+            const newPlayer = await PlayerService.getPlayer(
+              interaction.user.id,
+            );
+            if (!newPlayer) {
+              return await interaction.reply({
+                content: "Failed to create profile",
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+            await PlayerService.saveOldScores(newPlayer.id);
           } catch (err) {
+            console.log(err);
             return await interaction.reply({
               content: "Failed to create profile",
               flags: MessageFlags.Ephemeral,
@@ -285,46 +321,74 @@ export default {
           color = "Blue";
         }
 
-        const linkText = `[[ <:beatleader:1492695343345832102> BeatLeader ](https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId}) | [ <:discord:1492695870343221323> Discord ](https://discord.com/users/${player.id})${player.scoreSaberId ? ` | [ <:scoresaber:1492695389634035823> ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
+        switch (interaction.options.getString("type")) {
+          case "beatleader": {
+            const blData = await beatleaderApiService.getUserFromId(
+              player.beatLeaderId ?? "",
+            );
+            if (!blData)
+              return await interaction.reply("Failed to get BeatLeader data");
+            const embed = new EmbedBuilder()
+              .setTitle(player.name)
+              .setThumbnail(player.avatar)
+              .setDescription(
+                `# \u200B${player.blRank ? `${emojiMap.BeatLeader} #${player.blRank}` : ""}${blData.country && blData.countryRank ? `:flag_${blData.country.toLowerCase()}: #${blData.countryRank}` : ""}`,
+              )
+              .setColor(color)
+              .addFields({
+                name: "Skillset",
+                value: "Not tracked",
+                inline: true,
+              })
+              .setTimestamp();
 
-        const embed = new EmbedBuilder()
-          .setTitle(player.name)
-          .setThumbnail(player.avatar)
-          .setDescription(
-            `${linkText}\n# ${player.ssRank ? `<:scoresaber:1492695389634035823> #${player.ssRank} • ` : ""}${player.blRank ? `<:beatleader:1492695343345832102> #${player.blRank}` : ""}`,
-          )
-          .setColor(color)
-          .addFields(
-            {
-              name: "Current Scores",
-              value: (
-                (await ScoreService.countPlayerScores(player.id, true)) ?? 0
-              ).toString(),
-              inline: true,
-            },
-            {
-              name: "Lifetime Scores",
-              value: (
-                (await ScoreService.countPlayerScores(player.id, false)) ?? 0
-              ).toString(),
-              inline: true,
-            },
-          )
-          .setFooter({
-            text: `ID: ${player.id}`,
-          })
-          .setTimestamp();
-        if (interaction.options.getBoolean("debuginfo")) {
-          embed.addFields({
-            name: "Linked IDs",
-            value: linkedIdsString,
-            inline: true,
-          });
+            return interaction.editReply({
+              embeds: [embed],
+            });
+          }
+          default: {
+            const linkText = `[[ ${emojiMap.BeatLeader} BeatLeader ](https://beatleader.com/u/${player.alias ?? player.steamId ?? player.oculusId ?? player.questId}) | [ ${emojiMap.Discord} Discord ](https://discord.com/users/${player.id})${player.scoreSaberId ? ` | [ ${emojiMap.ScoreSaber} ScoreSaber ](https://scoresaber.com/u/${player.scoreSaberId})` : ""}]`;
+            const embed = new EmbedBuilder()
+              .setTitle(player.name)
+              .setThumbnail(player.avatar)
+              .setDescription(
+                `${linkText}\n# ${player.ssRank ? `${emojiMap.ScoreSaber} #${player.ssRank} • ` : ""}${player.blRank ? `${emojiMap.BeatLeader} #${player.blRank}` : ""}`,
+              )
+              .setColor(color)
+              .addFields(
+                {
+                  name: "Current Scores",
+                  value: (
+                    (await ScoreService.countPlayerScores(player.id, true)) ?? 0
+                  ).toString(),
+                  inline: true,
+                },
+                {
+                  name: "Lifetime Scores",
+                  value: (
+                    (await ScoreService.countPlayerScores(player.id, false)) ??
+                    0
+                  ).toString(),
+                  inline: true,
+                },
+              )
+              .setFooter({
+                text: `ID: ${player.id}`,
+              })
+              .setTimestamp();
+            if (interaction.options.getBoolean("debuginfo")) {
+              embed.addFields({
+                name: "Linked IDs",
+                value: linkedIdsString,
+                inline: true,
+              });
+            }
+
+            return interaction.editReply({
+              embeds: [embed],
+            });
+          }
         }
-
-        return interaction.editReply({
-          embeds: [embed],
-        });
       }
 
       case "refresh": {
@@ -541,6 +605,19 @@ export default {
           content: "Accent color updated successfully!",
           flags: MessageFlags.Ephemeral,
         });
+      }
+
+      case "getoldscores": {
+        const player = await PlayerService.getPlayer(interaction.user.id);
+        if (!player)
+          return await interaction.reply(
+            "Please link your profile using **/profile link** before running this command!",
+          );
+        interaction.reply(
+          "Fetching scores... (to check progress, use /profile show)",
+        );
+        await PlayerService.saveOldScores(player.id);
+        interaction.editReply("Done!");
       }
     }
   },

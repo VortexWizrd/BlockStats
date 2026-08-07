@@ -79,12 +79,14 @@ export default class WebSocketScoreEvent {
       }
 
       // Handle leaderboard creation (might make a better way to do this later)
-      const ssFullMap = await MapService.createFromScoreSaber(
-        score.songHash,
-        true,
-      );
-      if (ssFullMap && ssFullMap.map.beatSaverId) {
-        await MapService.createFromBeatLeader(ssFullMap.map.beatSaverId, true);
+      if (score.songHash) {
+        const ssFullMap = await MapService.createFromScoreSaber(
+          score.songHash,
+          true,
+        );
+      }
+      if (score.blLeaderboardId) {
+        await MapService.createFromBeatLeader(score.blLeaderboardId, true);
       }
 
       // handle outdated markings

@@ -42,6 +42,18 @@ class BeatLeaderApiService extends WebSocketClientService {
       ?.data[0];
   }
 
+  public async getUserScores(
+    id: string | number,
+    page: number,
+    count: number,
+  ): Promise<any> {
+    return (
+      await this.fetch<any>(
+        `player/${id}/scores?sortBy=date&order=asc&page=${page}&count=${count}`,
+      )
+    )?.data;
+  }
+
   private async fetch<T>(path: string): Promise<T | null> {
     const url = `https://api.beatleader.com/${path}`;
     try {

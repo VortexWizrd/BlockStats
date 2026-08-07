@@ -4,7 +4,7 @@ import {
   scoresTable,
   type ScoreRow,
 } from "../../db/schema.js";
-import { and, eq, sql, desc, count } from "drizzle-orm";
+import { and, eq, sql, desc, count, or } from "drizzle-orm";
 import { Repository } from "../baserepository.js";
 import type { DifficultyType } from "../../common/map/leaderboard.js";
 
@@ -32,6 +32,60 @@ export class ScoresRepository extends Repository {
     ]);
   }
 
+  public static async findByBeatLeaderScoreId(
+    id: number,
+  ): Promise<typeof this.row | undefined> {
+    return await this.findOne([
+      {
+        name: "blScoreId",
+        value: id,
+      },
+    ]);
+  }
+
+  public static async findByScoreSaberScoreId(
+    id: number,
+  ): Promise<typeof this.row | undefined> {
+    return await this.findOne([
+      {
+        name: "ssScoreId",
+        value: id,
+      },
+    ]);
+  }
+
+  public static async getSimilarScore(
+    playerId: string,
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+    modifiers: string[],
+    score: number,
+  ): Promise<typeof this.row | undefined> {
+    return await this.findOne([
+      {
+        name: "songHash",
+        value: songHash,
+      },
+      {
+        name: "songDifficulty",
+        value: songDifficulty,
+      },
+      {
+        name: "songCharacteristic",
+        value: songCharacteristic,
+      },
+      {
+        name: "modifiers",
+        value: modifiers,
+      },
+      {
+        name: "score",
+        value: score,
+      },
+    ]);
+  }
+
   public static async setOutdated(
     playerId: string,
     songHash: string,
@@ -51,6 +105,30 @@ export class ScoresRepository extends Repository {
           eq(this.table.songCharacteristic, songCharacteristic),
         ),
       );
+  }
+
+  public static async getPlayerCurrentFromMap(
+    playerId: string,
+    songHash: string,
+    songDifficulty: DifficultyType,
+    songCharacteristic: string,
+  ): Promise<typeof this.row | undefined> {
+    const [row] = await db
+      .select()
+      .from(this.table)
+      .where(
+        and(
+          eq(this.table.playerId, playerId),
+          eq(this.table.songHash, songHash),
+          eq(this.table.songDifficulty, songDifficulty),
+          eq(this.table.songCharacteristic, songCharacteristic),
+          eq(this.table.outdated, false),
+        ),
+      )
+      .orderBy(desc(this.table.timestamp))
+      .limit(1);
+
+    return row;
   }
 
   public static async getCurrentFromMap(

@@ -38,6 +38,15 @@ export default class Player implements PlayerRow {
   createdTime!: Date;
   updatedTime!: Date;
   scoreSaberChange!: boolean | null;
+  blCountry!: string | null;
+  ssCountry!: string | null;
+  subdivision!: string | null;
+  blCountryRank!: number | null;
+  blSubdivisionRank!: number | null;
+  ssCountryRank!: number | null;
+  ssSubdivisionRank!: number | null;
+  overallCountryRank!: number | null;
+  overallSubdivisionRank!: number | null;
 
   constructor(data: Player) {
     Object.assign(this, data);

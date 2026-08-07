@@ -55,6 +55,8 @@ export default class Score implements ScoreRow {
   upVotes!: number;
   downVotes!: number;
   asCategoryCode!: string | null;
+  hmd!: number | null;
+  controller!: number | null;
 
   constructor(data: Score) {
     Object.assign(this, data);
@@ -62,7 +64,7 @@ export default class Score implements ScoreRow {
 
   static async fromBeatLeader(blScore: any) {
     const player = await PlayerService.getPlayerByAllIds(
-      blScore.player.id.toString(),
+      blScore.playerId.toString(),
     );
     const leaderboard = await MapService.getLeaderboardFromBeatLeader(
       blScore.leaderboardId,
@@ -130,7 +132,7 @@ export default class Score implements ScoreRow {
       asLeaderboardId: leaderboard?.asLeaderboardId ?? null,
       asComplexity: leaderboard?.asComplexity ?? null,
       asCategoryCode: leaderboard?.asCategoryCode ?? null,
-      playerBeatLeaderId: blScore.player.id.toString(),
+      playerBeatLeaderId: blScore.playerId.toString(),
       playerScoreSaberId: null,
       leaderboardId: leaderboard?.id ?? null,
       blModifiedStarRating: null,
@@ -138,6 +140,8 @@ export default class Score implements ScoreRow {
       maxScore: blScore.leaderboard.difficulty.maxScore,
       upVotes: 0,
       downVotes: 0,
+      hmd: blScore.hmd,
+      controller: blScore.controller,
     });
   }
 
@@ -211,6 +215,8 @@ export default class Score implements ScoreRow {
       maxScore: ssScore.leaderboard.maxScore ?? 0,
       upVotes: 0,
       downVotes: 0,
+      hmd: null,
+      controller: null,
     });
   }
 }

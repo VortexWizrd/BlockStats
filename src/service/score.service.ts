@@ -39,6 +39,18 @@ export class ScoreService {
     return (await ScoresRepository.findById(id)) as Score;
   }
 
+  public static async getScoreFromBeatLeader(
+    id: number,
+  ): Promise<Score | undefined> {
+    return (await ScoresRepository.findByBeatLeaderScoreId(id)) as Score;
+  }
+
+  public static async getScoreFromScoreSaber(
+    id: number,
+  ): Promise<Score | undefined> {
+    return (await ScoresRepository.findByScoreSaberScoreId(id)) as Score;
+  }
+
   public static async count(): Promise<number> {
     return await ScoresRepository.countRows();
   }
@@ -128,10 +140,42 @@ export class ScoreService {
     )) as Score[];
   }
 
+  public static async getPlayerCurrentFromMap(
+    playerId: string,
+    songHash: string,
+    songDifficulty: DifficultyType,
+    songCharacteristic: string,
+  ): Promise<Score> {
+    return (await ScoresRepository.getPlayerCurrentFromMap(
+      playerId,
+      songHash,
+      songDifficulty,
+      songCharacteristic,
+    )) as Score;
+  }
+
   public static async countPlayerScores(
     playerId: string,
     notOutdated: boolean,
   ): Promise<number> {
     return await ScoresRepository.countPlayerScores(playerId, notOutdated);
+  }
+
+  public static async getSimilarScore(
+    playerId: string,
+    songHash: string,
+    songDifficulty: string,
+    songCharacteristic: string,
+    modifiers: string[],
+    score: number,
+  ) {
+    return (await ScoresRepository.getSimilarScore(
+      playerId,
+      songHash,
+      songDifficulty,
+      songCharacteristic,
+      modifiers,
+      score,
+    )) as Score;
   }
 }
