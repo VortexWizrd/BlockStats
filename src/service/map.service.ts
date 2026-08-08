@@ -692,9 +692,13 @@ export class MapService {
       const mapDownloads = await MapDownloadsRepository.findByMapId(mapId);
       if (!mapDownloads || mapDownloads.length == 0) return undefined;
       for (const mapDownload of mapDownloads) {
-        const response = await fetch(mapDownload.url);
-        if (response.ok) {
+        if (mapDownload.url.includes("discord")) {
           return mapDownload.url;
+        } else {
+          const response = await fetch(mapDownload.url);
+          if (response.ok) {
+            return mapDownload.url;
+          }
         }
       }
       return undefined;
