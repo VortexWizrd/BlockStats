@@ -361,7 +361,7 @@ export default {
                       if ((leaderboard.blMapType & value) !== 0) {
                         if (key in mapTypeGain) {
                           mapTypeGain[key]! += score.ppBL;
-                          total += score.ppSS;
+                          total += score.ppBL;
                         }
                       }
                     }
