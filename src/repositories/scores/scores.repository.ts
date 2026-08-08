@@ -132,17 +132,17 @@ export class ScoresRepository extends Repository {
     limit: number,
     offset: number,
   ): Promise<(typeof this.row)[]> {
-    return await db
+    const baseQuery = db
       .select()
       .from(this.table)
-      .where(
-        and(
-          eq(this.table.playerId, playerId),
-          eq(this.table.outdated, false),
-          gt(this.table.ppBL, 0),
-        ),
-      )
-      .orderBy(desc(this.table.ppBL))
+      .where(and(eq(this.table.playerId, playerId), gt(this.table.ppBL, 0)))
+      .orderBy(this.table.blLeaderboardId, desc(this.table.ppBL))
+      .as("base_query");
+
+    return await db
+      .selectDistinctOn([baseQuery.blLeaderboardId])
+      .from(baseQuery)
+      .orderBy(baseQuery.blLeaderboardId, desc(baseQuery.ppBL))
       .limit(limit)
       .offset(offset);
   }

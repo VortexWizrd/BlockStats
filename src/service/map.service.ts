@@ -87,7 +87,7 @@ export class MapService {
   }
 
   public static async getLeaderboardFromBeatLeader(
-    id: number,
+    id: string,
   ): Promise<Leaderboard | undefined> {
     return (await LeaderboardsRepository.findByBeatLeaderId(id)) as Leaderboard;
   }

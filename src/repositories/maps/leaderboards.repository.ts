@@ -25,7 +25,7 @@ export class LeaderboardsRepository extends Repository {
   }
 
   public static async findByBeatLeaderId(
-    id: number,
+    id: string,
   ): Promise<typeof this.row | undefined> {
     return await this.findOne([{ name: "blLeaderboardId", value: id }]);
   }

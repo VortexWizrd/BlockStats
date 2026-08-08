@@ -346,14 +346,15 @@ export default {
             let total = 0;
             const topScores = await ScoreService.getPlayerTopBeatLeader(
               player.id,
-              100,
+              10000,
               0,
             );
+
             for (const score of topScores) {
               if (score.blLeaderboardId) {
                 const leaderboard =
                   await MapService.getLeaderboardFromBeatLeader(
-                    parseInt(score.blLeaderboardId),
+                    score.blLeaderboardId,
                   );
                 if (leaderboard) {
                   if (leaderboard.blMapType) {
@@ -425,7 +426,7 @@ export default {
             let total = 0;
             const topScores = await ScoreService.getPlayerTopScoreSaber(
               player.id,
-              10000,
+              100,
               0,
             );
             for (const score of topScores) {
