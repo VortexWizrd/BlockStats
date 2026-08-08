@@ -99,8 +99,7 @@ export default {
                 buttons.addComponents(
                   new ButtonBuilder()
                     .setCustomId("map-download-discord")
-                    .setLabel("Download (Discord)")
-                    .setURL(download),
+                    .setLabel("Download (Discord)"),
                 );
               } else if (download.includes("https://r2cdn.beatsaver.com/")) {
                 buttons.addComponents(
