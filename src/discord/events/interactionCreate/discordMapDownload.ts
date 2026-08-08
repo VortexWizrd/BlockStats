@@ -31,7 +31,7 @@ export default {
     if (!mapDownload) return;
     if (mapDownload.includes("https://cdn.discordapp.com/attachments")) {
       return await interaction.reply({
-        files: [new AttachmentBuilder(mapDownload)],
+        content: mapDownload,
         flags: MessageFlags.Ephemeral,
       });
     } else {
