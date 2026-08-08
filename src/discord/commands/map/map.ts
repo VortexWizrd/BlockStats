@@ -93,13 +93,31 @@ export default {
             const buttons = new ActionRowBuilder<ButtonBuilder>();
             const download = await MapService.getMapDownloadLink(map.id);
             if (download) {
-              buttons.addComponents(
-                new ButtonBuilder()
-                  .setLabel("Download")
-                  .setURL(download)
-                  .setStyle(ButtonStyle.Link),
-              );
-            } 
+              if (
+                download.includes("https://cdn.discordapp.com/attachments/")
+              ) {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setCustomId("map-download-discord")
+                    .setLabel("Download (Discord)")
+                    .setURL(download),
+                );
+              } else if (download.includes("https://r2cdn.beatsaver.com/")) {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setLabel("Download (BeatSaver)")
+                    .setURL(download)
+                    .setStyle(ButtonStyle.Link),
+                );
+              } else {
+                buttons.addComponents(
+                  new ButtonBuilder()
+                    .setLabel("Download (External)")
+                    .setURL(download)
+                    .setStyle(ButtonStyle.Link),
+                );
+              }
+            }
             interaction.channel.send({
               embeds: [
                 new EmbedBuilder()
